@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Learning Şablon Deposu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #f1f5f9; overflow: hidden; }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .nav-link { transition: all 0.2s; border-left: 3px solid transparent; }
+        .nav-link:hover { background-color: #f8fafc; border-left-color: #94a3b8; }
+        .nav-link.active { background-color: #eff6ff; border-left-color: #3b82f6; color: #1d4ed8; font-weight: 700; }
+        .folder-title { cursor: pointer; user-select: none; }
+        .folder-title:hover { color: #1e293b; }
+        .folder-content { transition: max-height 0.4s ease-out; overflow: hidden; max-height: 5000px; }
+        .folder-content.collapsed { max-height: 0; }
+        .rotate-90 { transform: rotate(-90deg); }
+        iframe { transition: opacity 0.3s ease; }
+    </style>
+</head>
+<body class="flex h-screen w-full">
+
+    <aside class="w-80 bg-white border-r border-slate-200 flex flex-col h-full z-10 shadow-lg flex-shrink-0">
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-sm font-black text-slate-800 tracking-wide">E-LEARNING</h1>
+                <p class="text-[11px] font-bold text-slate-400">Şablon Kütüphanesi</p>
+            </div>
+        </div>
+
+        <div class="sidebar flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+            
+            <div class="mb-2">
+                <div class="folder-title flex items-center justify-between text-sm font-bold text-slate-600 mb-2 p-2 hover:bg-slate-50 rounded-lg" onclick="toggleFolder('tpl-folder', 'tpl-icon')">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                        Sablonlar_Etkinlik
+                    </div>
+                    <svg id="tpl-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div id="tpl-folder" class="folder-content flex flex-col gap-1 pl-4 border-l-2 border-slate-100 ml-4">
+                    <div class="text-[10px] font-black text-slate-400 mt-2 mb-1 tracking-wider uppercase">Temel Etkinlikler</div>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_01_klasik_bosluk_doldurma.html">etk_01_klasik_bosluk_doldurma.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_02_gorsel_destekli_bosluk.html">etk_02_gorsel_destekli_bosluk.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_03_tablo_bosluk.html">etk_03_tablo_bosluk.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_04_yatay_blok_bosluk.html">etk_04_yatay_blok_bosluk.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_05_gorsel_eslestirme_bosluk.html">etk_05_gorsel_eslestirme_bosluk.html</a>
+					
+					<div class="text-[10px] font-black text-slate-400 mt-2 mb-1 tracking-wider uppercase">Doğru Yanlış ve Eşleştirme</div>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_06_klasik_dogru_yanlis.html">etk_06_klasik_dogru_yanlis.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_07_adimli_dogru_yanlis.html">etk_07_adimli_dogru_yanlis.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_08_tablolu_dogru_yanlis.html">etk_08_tablolu_dogru_yanlis.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_09_dinamik_grid_eslestirme.html">etk_09_dinamik_grid_eslestirme.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_10_harita_konum_eslestirme.html">etk_10_harita_konum_eslestirme.html</a>
+					<a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_11_kategori_gruplandirma.html">etk_11_kategori_gruplandirma.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_12_cizgiyle_kelime_eslestirme.html">etk_12_cizgiyle_kelime_eslestirme.html</a>
+
+                    <div class="text-[10px] font-black text-slate-400 mt-3 mb-1 tracking-wider uppercase">Çoktan Seçmeli Serisi</div>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_13_coktan_secmeli_grid.html">etk_13_coktan_secmeli_grid.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_14_gorsel_uzeri_nokta_secimi.html">etk_14_gorsel_nokta_secimi.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_15_resimli_kart_secimi.html">etk_15_resimli_kart_secimi.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_16_coktan_secmeli_liste.html">etk_16_coktan_secmeli_liste.html</a>
+                    
+                    <div class="text-[10px] font-black text-slate-400 mt-3 mb-1 tracking-wider uppercase">Kompleks Girişler (Input)</div>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_17_sesli_ilerleme_listesi.html">etk_17_sesli_ilerleme_listesi.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_18_cengel_bulmaca.html">etk_18_cengel_bulmaca.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_19_test_ve_ozet_ekrani.html">etk_19_test_ve_ozet_ekrani.html</a>
+                    
+                    <div class="text-[10px] font-black text-slate-400 mt-3 mb-1 tracking-wider uppercase">Sıralama ve İleri Gruplama</div>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_20_zaman_cizelgesi_siralama.html">etk_20_zaman_cizelgesi.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_21_gelismis_gruplandirma.html">etk_21_gelismis_gruplandirma.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_22_yatay_slider_test.html">etk_22_yatay_slider_test.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Etkinlik/etk_23_satir_tipi_secim.html">etk_23_satir_tipi_secim.html</a>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <div class="folder-title flex items-center justify-between text-sm font-bold text-slate-600 mb-2 p-2 hover:bg-slate-50 rounded-lg" onclick="toggleFolder('konu-folder', 'konu-icon')">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                        Sablonlar_Konu_Anlatimi
+                    </div>
+                    <svg id="konu-icon" class="w-4 h-4 transition-transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div id="konu-folder" class="folder-content collapsed flex flex-col gap-1 pl-4 border-l-2 border-slate-100 ml-4">
+                    <div class="text-[10px] font-black text-slate-400 mt-2 mb-1 tracking-wider uppercase">Konu Anlatım Şablonları</div>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_01_slayt_karusel.html">ka_01_slayt_karusel.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_02_coklu_kart_grid.html">ka_02_coklu_kart_grid.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_03_iki_sutunlu.html">ka_03_iki_sutunlu.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_04_yatay_satirlar.html">ka_04_yatay_satirlar.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_05_gorsel_galerisi.html">ka_05_gorsel_galerisi.html</a>			
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_06_yan_menu_sekmeli.html">ka_06_yan_menu_sekmeli.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_07_tekil_metin_kutusu.html">ka_07_tekil_metin_kutusu.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_08_kavram_haritasi.html">ka_08_kavram_haritasi.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_09_tikla_ilerle.html">ka_09_tikla_ilerle.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Sablonlar_Konu_Anlatimi/ka_10_donen_kartlar.html">ka_10_donen_kartlar.html</a>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <div class="folder-title flex items-center justify-between text-sm font-bold text-slate-600 mb-2 p-2 hover:bg-slate-50 rounded-lg" onclick="toggleFolder('raw-etk-folder', 'raw-etk-icon')">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1H8a3 3 0 00-3 3v1.5a1.5 1.5 0 01-3 0V6z" clip-rule="evenodd"></path><path d="M6 12a2 2 0 012-2h8a2 2 0 012 2v2a2 2 0 01-2 2H2h2a2 2 0 002-2v-2z"></path></svg>
+                        Etkinlik_Ham
+                    </div>
+                    <svg id="raw-etk-icon" class="w-4 h-4 transition-transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div id="raw-etk-folder" class="folder-content collapsed flex flex-col gap-1 pl-4 border-l-2 border-slate-100 ml-4">
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/anahtar_kelimeler.html">anahtar_kelimeler.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/bosluk_doldurma_1.html">bosluk_doldurma_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/bosluk_doldurma_2.html">bosluk_doldurma_2.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/bosluk_doldurma_3.html">bosluk_doldurma_3.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/bosluk_doldurma_4.html">bosluk_doldurma_4.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/bosluk_doldurma_5.html">bosluk_doldurma_5.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/bosluk_doldurma_6.html">bosluk_doldurma_6.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/cengel_bulmaca_1.html">cengel_bulmaca_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/cengel_bulmaca_2.html">cengel_bulmaca_2.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/coklu_secim_1.html">coklu_secim_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/coklu_secim_2.html">coklu_secim_2.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/coklu_secim_3.html">coklu_secim_3.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/coklu_secim_4.html">coklu_secim_4.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/coklu_secim_5.html">coklu_secim_5.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/coklu_secim_6.html">coklu_secim_6.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/coklu_secim_7.html">coklu_secim_7.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/dogru_yanlis_1.html">dogru_yanlis_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/dogru_yanlis_2.html">dogru_yanlis_2.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/dogru_yanlis_3.html">dogru_yanlis_3.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/dort_secenek_1.html">dort_secenek_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/eslestirme_1.html">eslestirme_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/eslestirme_2.html">eslestirme_2.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/eslestirme_3.html">eslestirme_3.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/eslestirme_4.html">eslestirme_4.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/eslestirme_5.html">eslestirme_5.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/eslestirme_6.html">eslestirme_6.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/eslestirme_7.html">eslestirme_7.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/nesne_bulma_1.html">nesne_bulma_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/sayi_girme_1.html">sayi_girme_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/sayi_girme_2.html">sayi_girme_2.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/sayi_girme_3.html">sayi_girme_3.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/sayi_girme_4.html">sayi_girme_4.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/sayi_girme_5.html">sayi_girme_5.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/sayi_girme_6.html">sayi_girme_6.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/sayi_metin_girme_1.html">sayi_metin_girme_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/sifre_bulma_1.html">sifre_bulma_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/siralama_1.html">siralama_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/siralama_2.html">siralama_2.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/siralama_3.html">siralama_3.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/surukle_birak_1.html">surukle_birak_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/uc_secenek_1.html">uc_secenek_1.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Etkinlik_Ham/uc_secenek_2.html">uc_secenek_2.html</a>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <div class="folder-title flex items-center justify-between text-sm font-bold text-slate-600 mb-2 p-2 hover:bg-slate-50 rounded-lg" onclick="toggleFolder('raw-konu-folder', 'raw-konu-icon')">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1H8a3 3 0 00-3 3v1.5a1.5 1.5 0 01-3 0V6z" clip-rule="evenodd"></path><path d="M6 12a2 2 0 012-2h8a2 2 0 012 2v2a2 2 0 01-2 2H2h2a2 2 0 002-2v-2z"></path></svg>
+                        Konu_Anlatimi_Ham
+                    </div>
+                    <svg id="raw-konu-icon" class="w-4 h-4 transition-transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                <div id="raw-konu-folder" class="folder-content collapsed flex flex-col gap-1 pl-4 border-l-2 border-slate-100 ml-4">
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_01.html">konu_anlatim_01.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_02.html">konu_anlatim_02.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_03.html">konu_anlatim_03.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_04.html">konu_anlatim_04.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_05.html">konu_anlatim_05.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_06.html">konu_anlatim_06.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_07.html">konu_anlatim_07.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_08.html">konu_anlatim_08.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_09.html">konu_anlatim_09.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_10.html">konu_anlatim_10.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_11.html">konu_anlatim_11.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_12.html">konu_anlatim_12.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_13.html">konu_anlatim_13.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_14.html">konu_anlatim_14.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_15.html">konu_anlatim_15.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_16.html">konu_anlatim_16.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_17.html">konu_anlatim_17.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_18.html">konu_anlatim_18.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_19.html">konu_anlatim_19.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_20.html">konu_anlatim_20.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_21.html">konu_anlatim_21.html</a>
+                    <a href="#" class="nav-link block p-2 text-[12.5px] font-semibold text-slate-600 rounded-r-md truncate" data-src="Orijinal_Referanslar/Konu_Anlatimi_Ham/konu_anlatim_22.html">konu_anlatim_22.html</a>
+                </div>
+            </div>
+
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-slate-100 relative">
+        <div class="h-14 bg-white border-b border-slate-200 flex items-center px-6 justify-between shadow-sm z-10 flex-shrink-0">
+            <div class="text-sm font-bold text-slate-600" id="current-file-name">Lütfen sol taraftan bir dosya seçiniz.</div>
+            <button onclick="reloadFrame()" class="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-200 p-2 rounded-lg transition" title="Yenile">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+        </div>
+
+        <div class="flex-1 relative flex items-center justify-center p-8 overflow-hidden">
+            <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-300 pointer-events-none">
+                <svg class="w-24 h-24 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <p class="font-bold tracking-wide">SOL PANELDEN BİR ŞABLON SEÇİNİZ</p>
+            </div>
+
+            <div class="relative w-full h-full max-w-[1200px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200" style="display: none;" id="iframe-wrapper">
+                <iframe id="preview-frame" class="w-full h-full border-0" src=""></iframe>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleFolder(folderId, iconId) {
+            const folder = document.getElementById(folderId);
+            const icon = document.getElementById(iconId);
+            folder.classList.toggle('collapsed');
+            icon.classList.toggle('rotate-90');
+        }
+
+        const links = document.querySelectorAll('.nav-link');
+        const iframe = document.getElementById('preview-frame');
+        const wrapper = document.getElementById('iframe-wrapper');
+        const emptyState = document.getElementById('empty-state');
+        const titleLabel = document.getElementById('current-file-name');
+
+        links.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                links.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                const src = link.getAttribute('data-src');
+                if(!src) return; 
+
+                iframe.style.opacity = '0';
+                
+                setTimeout(() => {
+                    iframe.src = src;
+                    titleLabel.innerText = src;
+                    emptyState.style.display = 'none';
+                    wrapper.style.display = 'block';
+                    
+                    iframe.onload = () => {
+                        iframe.style.opacity = '1';
+                    };
+                }, 200);
+            });
+        });
+
+        function reloadFrame() {
+            if(iframe.src) {
+                iframe.style.opacity = '0';
+                setTimeout(() => {
+                    iframe.src = iframe.src;
+                }, 200);
+            }
+        }
+    </script>
+</body>
+</html>
