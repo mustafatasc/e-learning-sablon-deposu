@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            /* Tema Renkleri */
+            --primary-main: #16A34A; /* Yeşil Tema (İhtiyaca göre değişebilir) */
+            --primary-dark: #14532D;
+            --bg-cream: #F8FAFC;
+            --grid-line: rgba(22, 163, 74, 0.08); 
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; touch-action: none;
+        }
+        #scale-container {
+            width: 960px; height: 540px;
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-main);
+        }
+        
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 30px 0 30px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; flex: 1;
+            background: white; border-radius: 12px; padding: 10px 20px;
+            border-left: 5px solid var(--primary-main);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); margin-top: 0;
+        }
+        .instruction-text-main { 
+            font-size: 13px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px;}
+        
+        /* --- KAVRAM HARİTASI (GRID) --- */
+        .content-wrapper {
+            flex: 1; position: relative; padding: 5px 20px 10px 20px; display: flex; flex-direction: column;
+        }
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 Sütun */
+            grid-template-rows: repeat(3, 1fr);    /* 3 Satır */
+            gap: 12px; flex: 1; min-height: 0;
+        }
+
+        /* --- KUTULAR (NODES) --- */
+        .node {
+            background: white; border: 2.5px solid #E2E8F0; border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center; overflow: hidden; padding: 0;
+            /* Varsayılan açılma renkleri (HTML içinden ezilebilir) */
+            --reveal-bg: #3B82F6; 
+            --reveal-text: #FFFFFF;
+        }
+        .node:hover:not(.revealed) {
+            transform: scale(1.03); border-color: var(--primary-main);
+        }
+        .node-title {
+            font-size: 11.5px; font-weight: 900; color: #475569; padding: 8px 5px; width: 100%;
+            transition: color 0.3s; line-height: 1.2;
+        }
+        .node-content {
+            font-size: 10.5px; font-weight: 700; color: transparent; padding: 0 8px 8px 8px; height: 0; opacity: 0;
+            transition: all 0.3s ease; display: flex; align-items: flex-start; justify-content: center; line-height: 1.3;
+        }
+        
+        /* AÇILMIŞ (REVEALED) DURUM */
+        .node.revealed {
+            cursor: default; border-color: transparent;
+            background-color: var(--reveal-bg);
+        }
+        .node.revealed .node-title {
+            color: var(--reveal-text); border-bottom: 1px solid rgba(255,255,255,0.3); 
+            padding-top: 6px; padding-bottom: 4px; margin-bottom: 4px; 
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+        .node.revealed .node-content {
+            color: var(--reveal-text); height: auto; opacity: 1; text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+
+        /* --- ÖZEL YERLEŞİMLER (Grid içindeki koordinatlar) --- */
+        /* İstediğin kutuyu istediğin hücreye yerleştirmek için grid-column ve grid-row kullanabilirsin */
+        #n-1 { grid-column: 1; grid-row: 1; }
+        #n-2 { grid-column: 2; grid-row: 1; }
+        #n-3 { grid-column: 3; grid-row: 1; }
+        #n-4 { grid-column: 4; grid-row: 1; }
+        
+        #n-5 { grid-column: 1; grid-row: 2; }
+        /* Merkez Kutu (daha büyük ve farklı renkli yapılabilir) */
+        #n-center { grid-column: 2 / span 2; grid-row: 2; align-self: stretch; justify-self: stretch; justify-content: center; margin: 0;}
+        #n-center .node-title { font-size: 14px; border-bottom: none; }
+        #n-center.revealed .node-title { text-shadow: none; border-bottom: 1px solid rgba(0,0,0,0.15); }
+        #n-center.revealed .node-content { text-shadow: none; font-size: 12px; }
+        #n-6 { grid-column: 4; grid-row: 2; }
+
+        #n-7 { grid-column: 1; grid-row: 3; }
+        #n-8 { grid-column: 2; grid-row: 3; }
+        #n-9 { grid-column: 3; grid-row: 3; }
+        #n-10 { grid-column: 4; grid-row: 3; }
+
+        /* --- ALT PANEL --- */
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; 
+            padding: 10px 40px; height: 60px; flex-shrink: 0; background: white;
+            border-top: 2px solid #E2E8F0; z-index: 20;
+        }
+        .btn-action {
+            background: var(--primary-main); color: white; border: none; min-width: 250px;
+            padding: 12px 24px; font-size: 15px; font-weight: 800; border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3); cursor: pointer; transition: all 0.2s;
+            display: none; letter-spacing: 1px;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(22, 163, 74, 0.4);}
+        @keyframes pulseBtn {
+            0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="scale-container">
+        
+        <header class="header">
+            <div class="instruction-group">
+                <div class="instruction-text-main">
+                    <span class="text-green-700 font-black mr-2">YÖNERGE:</span> 
+                    {{YONERGE_METNI_ORN_Her_bolgeye_tiklayin}}
+                </div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            <div class="map-grid">
+                
+                <!-- --reveal-bg ile kutu açıldığındaki arka plan rengini; --reveal-text ile yazı rengini ayarlayabilirsin -->
+                <div class="node" id="n-1" style="--reveal-bg: #EF4444;" onclick="revealNode('n-1')">
+                    <div class="node-title">{{KUTU_1_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_1_ICERIK}}</div>
+                </div>
+                
+                <div class="node" id="n-2" style="--reveal-bg: #F97316;" onclick="revealNode('n-2')">
+                    <div class="node-title">{{KUTU_2_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_2_ICERIK}}</div>
+                </div>
+                
+                <div class="node" id="n-3" style="--reveal-bg: #EA580C;" onclick="revealNode('n-3')">
+                    <div class="node-title">{{KUTU_3_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_3_ICERIK}}</div>
+                </div>
+                
+                <div class="node" id="n-4" style="--reveal-bg: #22C55E;" onclick="revealNode('n-4')">
+                    <div class="node-title">{{KUTU_4_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_4_ICERIK}}</div>
+                </div>
+
+                <div class="node" id="n-5" style="--reveal-bg: #2563EB;" onclick="revealNode('n-5')">
+                    <div class="node-title">{{KUTU_5_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_5_ICERIK}}</div>
+                </div>
+
+                <!-- MERKEZ KUTU (2 Sütun genişliğinde) -->
+                <div class="node" id="n-center" style="--reveal-bg: #EAB308; --reveal-text: #1E293B;" onclick="revealNode('n-center')">
+                    <div class="node-title">{{MERKEZ_KUTU_BASLIK}}</div>
+                    <div class="node-content">{{MERKEZ_KUTU_ICERIK}}</div>
+                </div>
+
+                <div class="node" id="n-6" style="--reveal-bg: #86EFAC; --reveal-text: #064E3B;" onclick="revealNode('n-6')">
+                    <div class="node-title">{{KUTU_6_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_6_ICERIK}}</div>
+                </div>
+
+                <div class="node" id="n-7" style="--reveal-bg: #38BDF8; --reveal-text: #0F172A;" onclick="revealNode('n-7')">
+                    <div class="node-title">{{KUTU_7_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_7_ICERIK}}</div>
+                </div>
+
+                <div class="node" id="n-8" style="--reveal-bg: #67E8F9; --reveal-text: #0F172A;" onclick="revealNode('n-8')">
+                    <div class="node-title">{{KUTU_8_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_8_ICERIK}}</div>
+                </div>
+
+                <div class="node" id="n-9" style="--reveal-bg: #A855F7;" onclick="revealNode('n-9')">
+                    <div class="node-title">{{KUTU_9_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_9_ICERIK}}</div>
+                </div>
+
+                <div class="node" id="n-10" style="--reveal-bg: #EC4899;" onclick="revealNode('n-10')">
+                    <div class="node-title">{{KUTU_10_BASLIK}}</div>
+                    <div class="node-content">{{KUTU_10_ICERIK}}</div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="bottom-panel">
+            <button id="btn-complete" class="btn-action" onclick="finishActivity()">
+                TAMAMLA VE İLERLE ➜
+            </button>
+        </footer>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        // Tıklama Sesi (Pop)
+        function playPopSound() {
+            try {
+                const ctx = getAudioContext(); 
+                const osc = ctx.createOscillator(); 
+                const gain = ctx.createGain(); 
+                osc.connect(gain); 
+                gain.connect(ctx.destination);
+                osc.type = 'sine'; 
+                osc.frequency.setValueAtTime(400, ctx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.1); 
+                gain.gain.setValueAtTime(0.1, ctx.currentTime); 
+                gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.1); 
+                osc.start(); 
+                osc.stop(ctx.currentTime + 0.1);
+            } catch(e){}
+        }
+
+        // Tamamlama Sesi
+        function playSuccessSound() {
+            try {
+                const ctx = getAudioContext(); 
+                const osc = ctx.createOscillator(); 
+                const gain = ctx.createGain(); 
+                osc.connect(gain); 
+                gain.connect(ctx.destination);
+                osc.type = 'triangle'; 
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); 
+                gain.gain.setValueAtTime(0.1, ctx.currentTime); 
+                gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.3); 
+                osc.start(); 
+                osc.stop(ctx.currentTime + 0.3);
+            } catch(e){}
+        }
+
+        // TOPLAM KUTU SAYISI (Kullanmadığın kutuları HTML'den silersen bu sayıyı da güncellemelisin)
+        const totalNodes = 11; 
+        
+        let revealedNodes = 0;
+        let isAllRevealed = false;
+        let isActivityFinished = false;
+
+        function revealNode(nodeId) {
+            const node = document.getElementById(nodeId);
+            if (!node || node.classList.contains('revealed')) return;
+            
+            playPopSound();
+            node.classList.add('revealed');
+            revealedNodes++;
+            checkCompletion();
+        }
+
+        function checkCompletion() {
+            if (revealedNodes === totalNodes && !isAllRevealed) {
+                isAllRevealed = true;
+                
+                setTimeout(() => {
+                    playSuccessSound();
+                    const btn = document.getElementById('btn-complete');
+                    btn.style.display = 'block';
+                    btn.style.animation = "pulseBtn 1.5s infinite";
+                }, 500); 
+            }
+        }
+
+        function finishActivity() {
+            if (isActivityFinished) return;
+            isActivityFinished = true;
+            
+            const btn = document.getElementById('btn-complete');
+            btn.innerText = "TAMAMLANDI ✓";
+            btn.style.backgroundColor = "var(--success-green)";
+            btn.style.pointerEvents = "none";
+            btn.style.animation = "none"; 
+            
+            setVar('{{STORYLINE_DEGISKENI_ORN_c17}}', true);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        window.addEventListener('resize', applyScale);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            applyScale(); 
+            // İsteğe bağlı: Merkez düğümü açılışta otomatik göster
+            // setTimeout(() => { revealNode('n-center'); }, 500);
+        });
+    </script>
+</body>
+</html>

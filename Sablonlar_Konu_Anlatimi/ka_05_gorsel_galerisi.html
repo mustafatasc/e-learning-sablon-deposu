@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            /* Tema Renkleri */
+            --primary-color: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --success-green: #10B981;
+            
+            /* Galeri Vurgu Rengi */
+            --accent-color: #0ea5e9;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none;
+        }
+        #scale-container {
+            width: 960px; height: 540px;
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-color);
+        }
+        
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+        
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 20px 40px; gap: 15px; height: calc(540px - 85px);
+            z-index: 10;
+        }
+
+        /* --- ÜST YÖNERGE KUTUSU VE ANLATICI --- */
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            background: white; border-radius: 12px; padding: 10px 20px 10px 15px;
+            border-left: 5px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0;
+        }
+        .narrator-speaker {
+            width: 34px; height: 34px; background: var(--primary-color); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+        .narrator-speaker.playing { animation: pulsePlay 2s infinite; }
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+        .instruction-text {
+            font-size: 15px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        /* --- ORTA PANEL: GALERİ VE METİN --- */
+        .main-activity-area {
+            display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0; justify-content: center;
+        }
+        
+        /* GÖRSELLER SATIRI */
+        .visuals-row {
+            display: flex; justify-content: space-evenly; align-items: center; gap: 20px;
+            height: 150px;
+        }
+        .visual-card {
+            background: white; border: 3px solid #e2e8f0; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 10px 15px; width: 160px; height: 100%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: transform 0.3s;
+        }
+        .visual-card:hover { transform: translateY(-3px); border-color: #cbd5e1; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        
+        .img-container {
+            flex: 1; width: 100%; display: flex; align-items: center; justify-content: center;
+        }
+        .visual-img { max-width: 100%; max-height: 90px; object-fit: contain; border-radius: 8px; }
+        
+        .visual-label {
+            font-size: 13px; font-weight: 800; color: var(--accent-color); font-family: 'Montserrat', sans-serif;
+            margin-top: 5px; text-transform: uppercase; text-align: center;
+        }
+
+        /* ALT BİLGİ METNİ KUTUSU */
+        .info-box {
+            background: white; border: 2px dashed #cbd5e1; border-radius: 16px;
+            padding: 20px 30px; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02); position: relative;
+        }
+        .info-paragraph {
+            font-size: 16px; font-weight: 600; line-height: 1.6; color: var(--text-dark);
+        }
+
+        /* ANİMASYONLU ÖĞELER (Soru işareti vb. sıralı gelen vurgular) */
+        .animated-items-container {
+            display: flex; justify-content: center; gap: 8px; margin-top: 15px;
+            height: 40px; /* Zıplama sıçramasını önler */
+        }
+        .anim-item {
+            font-size: 32px; font-weight: 900; color: var(--primary-color);
+            opacity: 0; transform: translateX(40px); 
+            animation: slideInRight 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes slideInRight {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* --- ALT PANEL: BUTON --- */
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto;
+        }
+        .btn-action {
+            background: var(--success-green); color: white; min-width: 240px; height: 45px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto;
+            opacity: 0; pointer-events: none; transform: translateY(10px);
+        }
+        .btn-action.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-action:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .btn-action.completed { background: #64748b; pointer-events: none; transform: none; box-shadow: none;}
+    </style>
+</head>
+<body>
+    
+    <audio id="ses1" src="{{SES_1_URL}}" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">{{ANA_BASLIK_METNI}}</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="toggleAudio()">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text">
+                    {{UST_YONERGE_METNI}}
+                </div>
+            </div>
+
+            <!-- ORTA PANEL -->
+            <div class="main-activity-area">
+                
+                <!-- GÖRSELLER (İhtiyaca göre kart sayısı kopyalanıp artırılabilir) -->
+                <div class="visuals-row">
+                    
+                    <!-- Kart 1 -->
+                    <div class="visual-card">
+                        <div class="img-container">
+                            <img src="{{FOTOGRAF_1_URL}}" alt="Fotoğraf 1" class="visual-img" onerror="this.style.display='none';">
+                        </div>
+                        <div class="visual-label">{{FOTO_1_BASLIK}}</div>
+                    </div>
+
+                    <!-- Kart 2 -->
+                    <div class="visual-card">
+                        <div class="img-container">
+                            <img src="{{FOTOGRAF_2_URL}}" alt="Fotoğraf 2" class="visual-img" onerror="this.style.display='none';">
+                        </div>
+                        <div class="visual-label">{{FOTO_2_BASLIK}}</div>
+                    </div>
+
+                    <!-- Kart 3 -->
+                    <div class="visual-card">
+                        <div class="img-container">
+                            <img src="{{FOTOGRAF_3_URL}}" alt="Fotoğraf 3" class="visual-img" onerror="this.style.display='none';">
+                        </div>
+                        <div class="visual-label">{{FOTO_3_BASLIK}}</div>
+                    </div>
+
+                </div>
+
+                <!-- BİLGİ METNİ KUTUSU -->
+                <div class="info-box">
+                    <div class="info-paragraph">
+                        {{ALT_BILGI_METNI_HTML_KULLANILABILIR}}
+                    </div>
+                    
+                    <!-- Sıralı Animasyonlu Öğeler (İhtiyaca göre değiştir) -->
+                    <div class="animated-items-container">
+                        <span class="anim-item" style="animation-delay: 1.5s;">?</span>
+                        <span class="anim-item" style="animation-delay: 1.8s;">?</span>
+                        <span class="anim-item" style="animation-delay: 2.1s;">?</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ALT PANEL: TAMAMLA BUTONU -->
+            <div class="bottom-panel">
+                <button id="btn-complete" class="btn-action" onclick="completeTopic()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+            
+        </main>
+    </div>
+
+    <script>
+        let isAudioPlaying = false;
+        
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.classList.add('playing');
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.classList.remove('playing');
+                    });
+                }
+            }
+        }
+
+        function toggleAudio() {
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                if (audio.paused) {
+                    audio.play();
+                    isAudioPlaying = true;
+                    if(speaker) speaker.classList.add('playing');
+                } else {
+                    audio.pause();
+                    isAudioPlaying = false;
+                    if(speaker) speaker.classList.remove('playing');
+                }
+            }
+        }
+
+        function init() {
+            const audio = document.getElementById('ses1');
+            if(audio) {
+                audio.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.classList.remove('playing'); 
+                    isAudioPlaying = false; 
+                    
+                    // Ses bitince butonu görünür yap
+                    document.getElementById('btn-complete').classList.add('show-btn');
+                });
+            }
+            
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+            
+            // Ses hatasına karşı güvenli zamanlayıcı (Ses süresine göre ayarlanabilir)
+            setTimeout(() => {
+                document.getElementById('btn-complete').classList.add('show-btn');
+            }, 8000);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function completeTopic() {
+            const btn = document.getElementById('btn-complete');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            // Storyline Değişkeni
+            setVar('{{STORYLINE_DEGISKENI_ORN_d7}}', true);
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        window.onload = () => { init(); };
+        applyScale(); 
+        window.addEventListener('resize', applyScale);
+    </script>
+</body>
+</html>

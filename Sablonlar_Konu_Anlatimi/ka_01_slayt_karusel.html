@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Tema Renklerini Buradan Yönetebilirsin */
+            --primary-color: #B91C1C; /* Ana Vurgu Rengi */
+            --bg-light: #FCF9F2;      /* Slayt Arka Planı (Krem) */
+            --card-white: #FFFFFF;    /* Kutu ve Alt Panel Rengi */
+        }
+        body {
+            background-color: #0F172A;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0;
+            font-family: 'Montserrat', sans-serif; font-weight: 500; overflow: hidden;
+            user-select: none;
+        }
+        #app-window {
+            width: 960px; height: 540px;
+            background: var(--bg-light); position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            border-radius: 20px; overflow: hidden;
+            display: flex; flex-direction: column;
+            border-top: 6px solid var(--primary-color);
+        }
+        
+        /* --- HEADER VE LOGO ALANI --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 18px; line-height: 1.4; font-weight: 900; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        /* --- SLIDER VE İÇERİK --- */
+        #slider-container {
+            display: flex;
+            width: 100%; /* JS ile slayt sayısına göre hesaplanacak */
+            height: calc(100% - 175px); /* Header ve Controls alanları çıkarıldı */
+            transition: transform 0.7s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+        .page {
+            flex: 0 0 960px; /* Her slayt ekran genişliği kadar yer kaplar */
+            width: 960px; height: 100%; padding: 0 40px; box-sizing: border-box;
+            display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 30px; align-items: center;
+        }
+        
+        /* Sol Panel - Metinler */
+        .content-panel { display: flex; flex-direction: column; gap: 12px; }
+        .info-card {
+            background: var(--card-white); padding: 18px; border-radius: 16px;
+            border-left: 6px solid var(--primary-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Sağ Panel - Görseller/SVG */
+        .canvas-container {
+            background: var(--card-white); border-radius: 24px;
+            height: 290px; display: flex; justify-content: center; align-items: center;
+            position: relative; border: 2px solid rgba(226, 232, 240, 1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); overflow: hidden;
+        }
+        .math-svg { width: 100%; height: 100%; }
+        
+        /* --- ALT KONTROL PANELİ --- */
+        #controls {
+            height: 90px; background: var(--card-white); border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 45px 10px 45px; flex-shrink: 0; z-index: 20; margin-top: auto;
+        }
+        .nav-btn {
+            background: #f1f5f9; color: #334155; padding: 10px 26px; border-radius: 12px;
+            font-size: 14px; font-weight: 700; transition: 0.3s; border: 1px solid #e2e8f0; cursor: pointer;
+        }
+        .nav-btn.primary { background: var(--primary-color); color: white; border: none; }
+        .nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .nav-btn.completed { background: #10B981; pointer-events: none; transform: none; box-shadow: none;}
+        
+        .dot { width: 10px; height: 10px; background: #cbd5e1; border-radius: 50%; transition: 0.4s; }
+        .dot.active { width: 32px; border-radius: 6px; background: var(--primary-color); }
+        
+        /* Ses Butonu */
+        .audio-toggle {
+            display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 8px 16px;
+            border-radius: 14px; transition: 0.2s; background: #f8fafc; border: 1px solid #f1f5f9;
+        }
+        .audio-toggle:hover { background: #f1f5f9; }
+    </style>
+</head>
+<body>
+    <div id="app-window">
+        
+        <!-- HEADER VE LOGO -->
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">{{ANA_BASLIK_METNI}}</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <!-- İÇERİK ALANI -->
+        <div id="slider-container">
+            
+            <!-- SLAYT 1 -->
+            <div class="page">
+                <div class="content-panel">
+                    <div class="info-card">
+                        <p class="text-[14px] leading-relaxed text-slate-700 italic">
+                            <strong>{{SLAYT_1_BASLIK}}</strong> {{SLAYT_1_ACIKLAMA_1}}
+                        </p>
+                    </div>
+                    <div class="text-[14px] space-y-4 text-slate-600 font-semibold pl-2">
+                        <p>{{SLAYT_1_ACIKLAMA_2}}</p>
+                    </div>
+                </div>
+                <div class="canvas-container">
+                    <svg class="math-svg" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">
+                        <!-- {{SLAYT_1_SVG_KODLARI}} -->
+                    </svg>
+                </div>
+            </div>
+
+            <!-- SLAYT 2 -->
+            <div class="page">
+                <div class="content-panel">
+                    <div class="info-card">
+                        <p class="text-[14px] leading-relaxed text-slate-700 italic">
+                            {{SLAYT_2_ACIKLAMA_1}}
+                        </p>
+                    </div>
+                </div>
+                <div class="canvas-container">
+                    <svg class="math-svg" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">
+                        <!-- {{SLAYT_2_SVG_KODLARI}} -->
+                    </svg>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- ALT KONTROLLER -->
+        <div id="controls">
+            <div class="flex gap-4">
+                <button id="prevBtn" class="nav-btn">Geri</button>
+                <button id="nextBtn" class="nav-btn primary">İleri</button>
+            </div>
+            
+            <div class="hidden sm:flex gap-3" id="dots-container">
+                <!-- JS ile Slayt sayısına göre doldurulacak -->
+            </div>
+            
+            <div id="audioBtn" class="audio-toggle">
+                <span id="audioLabel" class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Sesli Anlatım</span>
+                <div class="w-10 h-10 bg-white border rounded-full flex items-center justify-center text-red-600 shadow-sm transition hover:scale-105 active:scale-95">
+                    <span id="playIcon">▶</span>
+                    <span id="pauseIcon" class="hidden">⏸</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-0" src="{{SES_1_URL}}"></audio>
+    <audio id="audio-1" src="{{SES_2_URL}}"></audio>
+
+    <script>
+        const pages = document.querySelectorAll('.page');
+        const totalPages = pages.length;
+        let currentIdx = 0;
+        let isPlaying = false;
+        
+        const slider = document.getElementById('slider-container');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const audioBtn = document.getElementById('audioBtn');
+        const audioLabel = document.getElementById('audioLabel');
+        const dotsContainer = document.getElementById('dots-container');
+
+        slider.style.width = `${totalPages * 100}%`;
+        for(let i=0; i<totalPages; i++) {
+            let dot = document.createElement('div');
+            dot.className = `dot ${i===0 ? 'active' : ''}`;
+            dotsContainer.appendChild(dot);
+        }
+        const dots = document.querySelectorAll('.dot');
+
+        function updateView() {
+            slider.style.transform = `translateX(-${currentIdx * 960}px)`; 
+            prevBtn.disabled = currentIdx === 0;
+            if(currentIdx === totalPages - 1) {
+                nextBtn.textContent = "Tamamla ✓";
+                nextBtn.classList.remove('primary');
+                nextBtn.style.backgroundColor = "#10B981"; 
+                nextBtn.style.color = "white";
+            } else {
+                nextBtn.textContent = "İleri";
+                nextBtn.classList.add('primary');
+                nextBtn.style.backgroundColor = "";
+            }
+            
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIdx));
+            stopAllAudios(true); 
+            
+            const activePage = pages[currentIdx];
+            const svg = activePage.querySelector('svg');
+            if (svg) {
+                const newSvg = svg.cloneNode(true);
+                svg.parentNode.replaceChild(newSvg, svg);
+            }
+        }
+
+        function toggleAudio() {
+            const currentAudio = document.getElementById(`audio-${currentIdx}`);
+            if(!currentAudio) return;
+            
+            if (isPlaying) {
+                currentAudio.pause();
+                isPlaying = false;
+            } else {
+                currentAudio.play().then(() => {
+                    isPlaying = true;
+                }).catch(() => {
+                    audioLabel.textContent = "Ses Hatası";
+                    setTimeout(() => audioLabel.textContent = "Sesli Anlatım", 2000);
+                });
+            }
+            updateAudioUI();
+            
+            currentAudio.onended = () => {
+                isPlaying = false;
+                updateAudioUI();
+            };
+        }
+
+        function stopAllAudios(resetTime = false) {
+            for(let i=0; i<totalPages; i++) {
+                let audio = document.getElementById(`audio-${i}`);
+                if (audio) {
+                    audio.pause();
+                    if(resetTime) audio.currentTime = 0;
+                }
+            }
+            isPlaying = false;
+            updateAudioUI();
+        }
+
+        function updateAudioUI() {
+            if (isPlaying) {
+                audioLabel.textContent = "Oynatılıyor";
+                document.getElementById('playIcon').classList.add('hidden');
+                document.getElementById('pauseIcon').classList.remove('hidden');
+            } else {
+                const currentAudio = document.getElementById(`audio-${currentIdx}`);
+                audioLabel.textContent = (currentAudio && currentAudio.currentTime > 0) ? "Duraklatıldı" : "Sesli Anlatım";
+                document.getElementById('playIcon').classList.remove('hidden');
+                document.getElementById('pauseIcon').classList.add('hidden');
+            }
+        }
+
+        function setVar(n, v) { 
+            try { parent.GetPlayer().SetVar(n, v); console.log(`Storyline: ${n} = ${v}`); } 
+            catch(e) { console.log(`(Lokal) Storyline: ${n} = ${v}`); } 
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIdx < totalPages - 1) {
+                currentIdx++;
+                updateView();
+            } else {
+                nextBtn.classList.add('completed');
+                nextBtn.textContent = "TAMAMLANDI ✓";
+                setVar('{{STORYLINE_DEGISKENI}}', true); 
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentIdx > 0) {
+                currentIdx--;
+                updateView();
+            }
+        });
+
+        audioBtn.addEventListener('click', toggleAudio);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "ArrowRight") nextBtn.click();
+            if (e.key === "ArrowLeft") prevBtn.click();
+            if (e.key === " ") { e.preventDefault(); audioBtn.click(); }
+        });
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('app-window').style.transform = `scale(${sc})`;
+        }
+        window.addEventListener('resize', applyScale);
+        
+        window.onload = () => {
+            applyScale();
+            updateView();
+        };
+    </script>
+</body>
+</html>

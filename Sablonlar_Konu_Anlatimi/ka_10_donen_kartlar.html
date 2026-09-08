@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            /* Tema Renkleri */
+            --primary-main: #B91C1C;
+            --primary-dark: #7F1D1D;
+            --primary-soft: #FCA5A5;
+            --cream-bg: #FCF9F2;
+            --paper-grid: rgba(185, 28, 28, 0.08); 
+            
+            --warm-grey: #334155;
+            --success-green: #10B981;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--warm-grey);
+            user-select: none; -webkit-user-select: none;
+        }
+        #scale-container {
+            width: 960px; height: 540px;
+            background-color: var(--cream-bg); 
+            background-image: linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-top: 6px solid var(--primary-main);
+        }
+        
+        /* Arka Plan Cam Süsleri */
+        #scale-container::before {
+            content: ''; position: absolute; top: -20%; left: -20%; width: 150%; height: 150%;
+            background: radial-gradient(circle, rgba(185, 28, 28, 0.08) 0%, transparent 60%);
+            z-index: 0; pointer-events: none;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-container { flex: 1; padding: 0; padding-top: 5px;}
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 900; color: var(--primary-dark); text-align: left; text-transform: uppercase; letter-spacing: 0.5px;}
+        .sub-instruction { font-size: 13.5px; font-weight: 600; color: #475569; margin-top: 4px; }
+        .logo-right-container { width: 85px; height: 85px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+        
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 20px 40px; gap: 15px; height: calc(540px - 85px);
+            z-index: 10; position: relative;
+        }
+
+        /* --- ÜST BANT: BİLGİ KARTI --- */
+        .info-card {
+            background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 15px 25px 15px 45px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: row; align-items: center; gap: 20px;
+            flex-shrink: 0; position: relative; border-left: 6px solid var(--primary-main);
+        }
+        .speaker-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--primary-main); color: white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3);
+            cursor: pointer; transition: all 0.3s; flex-shrink: 0;
+            position: absolute; left: -24px;
+        }
+        .speaker-btn:hover { transform: scale(1.08); }
+        .pulse-anim { animation: pulsePlay 2s infinite; }
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+        .info-left { flex: 1; }
+        .info-text { font-size: 15px; font-weight: 600; line-height: 1.5; color: #334155; }
+        .info-text strong { color: var(--primary-dark); font-weight: 800;}
+        .note-box {
+            background: #f8fafc; border-left: 5px solid #f59e0b; padding: 12px 15px; border-radius: 8px;
+            font-size: 14px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 12px;
+            width: 340px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        /* --- ALT BÖLÜM: DÖNEN KARTLAR (FLIP CARDS) --- */
+        .cards-grid {
+            display: flex; gap: 20px; justify-content: space-between; flex: 1; perspective: 1000px;
+            padding: 5px 0;
+        }
+        .flip-card {
+            background-color: transparent; flex: 1; height: 100%; min-height: 220px;
+            perspective: 1000px; cursor: pointer;
+            opacity: 0; transform: translateY(20px);
+            animation: slideUp 0.6s ease-out forwards;
+            /* Özel Arka Plan Rengi Değişkeni (HTML üzerinden ezilebilir) */
+            --card-bg: #0ea5e9; 
+        }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+        
+        /* Gecikmeli giriş efekti */
+        .flip-card:nth-child(1) { animation-delay: 0.1s; }
+        .flip-card:nth-child(2) { animation-delay: 0.3s; }
+        .flip-card:nth-child(3) { animation-delay: 0.5s; }
+        .flip-card:nth-child(4) { animation-delay: 0.7s; }
+
+        .flip-card-inner {
+            position: relative; width: 100%; height: 100%; text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d; border-radius: 16px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+        }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card:hover:not(.flipped) .flip-card-inner { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        
+        .flip-card-front, .flip-card-back {
+            position: absolute; width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; backface-visibility: hidden;
+            border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; border: 3px solid;
+        }
+        
+        /* ÖN YÜZ */
+        .flip-card-front { background-color: white; border-color: #e2e8f0;}
+        .front-svg-container {
+            width: 100%; height: 100px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 15px; position: relative;
+        }
+        .front-svg-container svg { width: 100%; height: 100%; max-height: 80px; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15)); }
+        .front-title { font-size: 16px; font-weight: 900; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px;}
+        .click-hint {
+            position: absolute; bottom: 15px; font-size: 10px; font-weight: 800; color: var(--primary-main);
+            background: var(--light-red); padding: 4px 12px; border-radius: 10px;
+            animation: bounceSoft 2s infinite;
+        }
+        @keyframes bounceSoft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        
+        /* ARKA YÜZ */
+        .flip-card-back {
+            transform: rotateY(180deg); color: white; justify-content: center;
+            background-color: var(--card-bg); 
+            border-color: rgba(0,0,0,0.1);
+        }
+        .back-item-name { font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.95); margin-bottom: 5px; letter-spacing: 0.5px; background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 10px; text-transform: uppercase;}
+        .back-title { font-size: 13px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .back-desc { font-size: 12px; font-weight: 600; line-height: 1.4; opacity: 0.95; background: rgba(0,0,0,0.15); padding: 6px 10px; border-radius: 8px;}
+
+        /* --- BUTON ALANI --- */
+        .bottom-controls { display: flex; justify-content: flex-end; align-items: center; margin-top: 5px; height: 50px;}
+        .btn-complete {
+            background: var(--success-green); color: white; padding: 12px 35px; border-radius: 12px;
+            font-size: 15px; font-weight: 900; border: none; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); opacity: 0; pointer-events: none; transform: translateY(10px);
+            display: flex; align-items: center; gap: 8px; letter-spacing: 1px;
+        }
+        .btn-complete.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-complete.active:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);}
+        .btn-complete.done { background: var(--warm-grey); box-shadow: none; transform: none; cursor: default; pointer-events: none;}
+        
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+    
+    <!-- Yönerge ve Etkileşim Ses Dosyaları -->
+    <div id="audio-container">
+        <!-- Dinamik olarak doldurulacak -->
+        <audio id="ses1" src="{{SES_1_URL}}" preload="auto"></audio>
+    </div>
+
+    <div id="scale-container">
+        <div id="toast-msg">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Tebrikler! Konuyu tamamladınız.</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">{{ANA_BASLIK}}</div>
+                <div class="sub-instruction">{{ALT_YONERGE_OPSIYONEL}}</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- ÜST BANT: BİLGİ KARTI -->
+            <div id="top-card" class="info-card">
+                <div id="main-speaker" class="speaker-btn pulse-anim" onclick="toggleAudio()">
+                    <svg id="icon-play" class="w-6 h-6 pl-0.5" style="display: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    <svg id="icon-pause" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </div>
+                <div class="info-left">
+                    <div class="info-text">
+                        {{UST_BILGI_METNI_HTML_KULLANILABILIR}}
+                    </div>
+                </div>
+                <div class="note-box">
+                    <div class="note-icon">💡</div>
+                    <div>{{EKSTRA_IPUCU_METNI}}</div>
+                </div>
+            </div>
+
+            <!-- ALT BÖLÜM: DÖNEN KARTLAR -->
+            <div class="cards-grid">
+                
+                <!-- Kart 1 -->
+                <!-- --card-bg ile kart arkasının rengini belirleyebilirsin (Mavi: #0ea5e9, Yeşil: #10b981 vb.) -->
+                <div class="flip-card" id="fc-1" style="--card-bg: #0ea5e9;" onclick="flipCard(1)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="front-svg-container">
+                                <!-- {{KART_1_SVG_VEYA_IMG_KODU}} -->
+                                <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#fbbf24" stroke-width="8"/></svg>
+                            </div>
+                            <div class="front-title">{{KART_1_BASLIK}}</div>
+                            <div class="click-hint">TIKLA VE ÇEVİR</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="back-item-name">{{KART_1_UST_ETIKET}}</div>
+                            <div class="back-title">{{KART_1_ARKA_BASLIK}}</div>
+                            <div class="back-desc">{{KART_1_ARKA_ACIKLAMA}}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kart 2 -->
+                <div class="flip-card" id="fc-2" style="--card-bg: #0ea5e9;" onclick="flipCard(2)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="front-svg-container">
+                                <!-- {{KART_2_SVG_VEYA_IMG_KODU}} -->
+                            </div>
+                            <div class="front-title">{{KART_2_BASLIK}}</div>
+                            <div class="click-hint">TIKLA VE ÇEVİR</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="back-item-name">{{KART_2_UST_ETIKET}}</div>
+                            <div class="back-title">{{KART_2_ARKA_BASLIK}}</div>
+                            <div class="back-desc">{{KART_2_ARKA_ACIKLAMA}}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kart 3 -->
+                <div class="flip-card" id="fc-3" style="--card-bg: #10b981;" onclick="flipCard(3)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="front-svg-container">
+                                <!-- {{KART_3_SVG_VEYA_IMG_KODU}} -->
+                            </div>
+                            <div class="front-title">{{KART_3_BASLIK}}</div>
+                            <div class="click-hint">TIKLA VE ÇEVİR</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="back-item-name">{{KART_3_UST_ETIKET}}</div>
+                            <div class="back-title">{{KART_3_ARKA_BASLIK}}</div>
+                            <div class="back-desc">{{KART_3_ARKA_ACIKLAMA}}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kart 4 -->
+                <div class="flip-card" id="fc-4" style="--card-bg: #10b981;" onclick="flipCard(4)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="front-svg-container">
+                                 <!-- {{KART_4_SVG_VEYA_IMG_KODU}} -->
+                            </div>
+                            <div class="front-title">{{KART_4_BASLIK}}</div>
+                            <div class="click-hint">TIKLA VE ÇEVİR</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="back-item-name">{{KART_4_UST_ETIKET}}</div>
+                            <div class="back-title">{{KART_4_ARKA_BASLIK}}</div>
+                            <div class="back-desc">{{KART_4_ARKA_ACIKLAMA}}</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Alt Kontrol -->
+            <div class="bottom-controls">
+                <button id="btn-complete" class="btn-complete" onclick="completeModule()">
+                    TAMAMLA
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // KART SAYISINA GÖRE GÜNCELLE!
+        const TOTAL_CARDS = 4;
+        let flippedCards = new Set();
+        let isCompleted = false;
+        
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='flip') { osc.type='sine'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime+0.15); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        function init() {
+            // İhtiyaca göre kart ses dosyalarını dinamik ekle
+            const container = document.getElementById('audio-container');
+            for(let i=2; i<=TOTAL_CARDS+1; i++) {
+                let au = document.createElement('audio');
+                au.id = `ses${i}`;
+                au.src = `ses${i}.mp3`; // Dosya isimlendirme formatı: ses2.mp3, ses3.mp3
+                container.appendChild(au);
+            }
+            playAudio('ses1');
+        }
+
+        function toggleAudio() {
+            const targetAudio = document.getElementById('ses1'); 
+            if(!targetAudio) return;
+            if(targetAudio.paused) {
+                // Diğerlerini sustur
+                for(let i=2; i<=TOTAL_CARDS+1; i++) {
+                    let el = document.getElementById(`ses${i}`);
+                    if(el) { el.pause(); el.currentTime = 0; }
+                }
+                targetAudio.play();
+                setSpeakerState(true);
+            } else {
+                targetAudio.pause();
+                setSpeakerState(false);
+            }
+        }
+
+        function playAudio(id) {
+            // Çalan sesleri durdur
+            for(let i=1; i<=TOTAL_CARDS+1; i++) {
+                let el = document.getElementById(`ses${i}`);
+                if(el) { el.pause(); el.currentTime = 0; }
+            }
+            const targetAudio = document.getElementById(id);
+            if(targetAudio && targetAudio.src) {
+                targetAudio.play().then(() => {
+                    if(id === 'ses1') setSpeakerState(true);
+                }).catch(()=>{ console.log("Otomatik ses çalma engellendi."); });
+                
+                targetAudio.onended = () => { 
+                    if(id === 'ses1') setSpeakerState(false);
+                };
+            }
+        }
+
+        function setSpeakerState(isPlaying) {
+            const speaker = document.getElementById('main-speaker');
+            const iconPlay = document.getElementById('icon-play');
+            const iconPause = document.getElementById('icon-pause');
+            if(isPlaying) {
+                speaker.classList.add('pulse-anim');
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            } else {
+                speaker.classList.remove('pulse-anim');
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            }
+        }
+
+        function flipCard(id) {
+            if(isCompleted) return;
+            const card = document.getElementById(`fc-${id}`);
+            
+            if(!card.classList.contains('flipped')) {
+                playSfx('flip');
+                card.classList.add('flipped');
+                flippedCards.add(id);
+                
+                // İlgili sesi çal (ses2, ses3 vs.)
+                playAudio(`ses${id + 1}`);
+            }
+            if(flippedCards.size === TOTAL_CARDS) {
+                document.getElementById('btn-complete').classList.add('active');
+            }
+        }
+
+        function completeModule() {
+            if(isCompleted) return;
+            isCompleted = true;
+            
+            // Tüm sesleri sustur
+            for(let i=1; i<=TOTAL_CARDS+1; i++) {
+                let el = document.getElementById(`ses${i}`);
+                if(el) { el.pause(); el.currentTime = 0; }
+            }
+            setSpeakerState(false);
+            playSfx('success');
+            
+            const btn = document.getElementById('btn-complete');
+            btn.classList.add('done');
+            btn.innerHTML = 'TAMAMLANDI ✓';
+            
+            const toast = document.getElementById('toast-msg');
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+            
+            setVar('{{STORYLINE_DEGISKENI_BURAYA}}', true); 
+        }
+
+        function setVar(n, v) { 
+            try { parent.GetPlayer().SetVar(n, v); console.log(`Storyline: ${n} -> ${v}`); } 
+            catch(e) { console.log(`(Lokal) ${n} -> ${v}`); } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { window.dispatchEvent(new Event('resize')); init(); };
+    </script>
+</body>
+</html>

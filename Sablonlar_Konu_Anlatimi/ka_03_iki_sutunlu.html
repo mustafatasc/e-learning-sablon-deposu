@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            /* Tema Renkleri */
+            --primary-color: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --success-green: #10B981;
+            
+            /* Başlık ve Vurgu Renkleri */
+            --title-blue: #1D4ED8;
+            --accent-pink: #ec4899;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none;
+        }
+        #scale-container {
+            width: 960px; height: 540px;
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-color);
+        }
+        
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+        
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; 
+            height: calc(540px - 85px); z-index: 10; position: relative;
+        }
+
+        /* --- İÇERİK KUTUSU (İKİ SÜTUNLU YAPI) --- */
+        .topic-content {
+            background: white; border-radius: 16px; padding: 20px 30px;
+            border-left: 6px solid var(--title-blue);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); 
+            display: flex; flex: 1; min-height: 0;
+        }
+        .grid-layout {
+            display: flex; gap: 30px; width: 100%; height: 100%;
+        }
+        
+        /* SOL SÜTUN (Metinler) */
+        .text-col {
+            flex: 1.3; display: flex; flex-direction: column; gap: 10px; justify-content: center;
+        }
+        .note-title {
+            color: var(--title-blue); font-weight: 800; font-size: 18px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px;
+        }
+        
+        /* 1. SEÇENEK: GENEL PARAGRAF DÜZENİ */
+        .info-row {
+            display: flex; align-items: flex-start; gap: 15px; position: relative;
+            padding: 8px 12px; border-radius: 12px; transition: all 0.3s; border-left: 4px solid transparent;
+        }
+        .note-paragraph {
+            font-size: 14.5px; font-weight: 600; line-height: 1.5; color: var(--text-dark); margin-top: 5px;
+        }
+
+        /* 2. SEÇENEK: MADDE MADDE LİSTE DÜZENİ */
+        .instruction-group {
+            display: flex; align-items: flex-start; gap: 12px; width: 100%;
+            background: white; border-radius: 12px; padding: 10px 12px;
+            border-left: 4px solid var(--title-blue); flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02); transition: all 0.3s;
+        }
+        .instruction-text-sub {
+            font-size: 13.5px; line-height: 1.4; font-weight: 600; color: var(--text-dark); margin-top: 4px;
+        }
+        
+        /* ORTAK AKTİF(ÇALAN) DURUM VURGUSU */
+        .active-item {
+            background-color: #eff6ff; border-left-color: var(--primary-color); transform: translateX(5px);
+        }
+
+        /* HOPARLÖR BUTONU */
+        .inline-speaker {
+            width: 32px; height: 32px; background: var(--primary-color); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3); cursor: pointer; flex-shrink: 0; transition: transform 0.2s;
+        }
+        .inline-speaker:hover { transform: scale(1.1); }
+        .inline-speaker.playing { animation: pulsePlaySmall 1.5s infinite; }
+        @keyframes pulsePlaySmall {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        /* SAĞ SÜTUN (Görsel ve Animasyonlar) */
+        .img-col {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px;
+            background-image: linear-gradient(#f1f5f9 1px, transparent 1px), linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .math-svg { width: 100%; height: 100%; max-height: 280px; }
+
+        /* --- SVG ANİMASYON SINIFLARI (İhtiyaç halinde SVG içine eklenir) --- */
+        /* Çizim Animasyonu (stroke-dasharray değeri yolun uzunluğuna göre ayarlanmalıdır) */
+        .anim-draw {
+            stroke-dasharray: 1000; stroke-dashoffset: 1000; 
+            transition: stroke-dashoffset 2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Yavaşça Belirme Animasyonu */
+        .anim-fade {
+            opacity: 0; transition: opacity 1.5s ease-in-out;
+        }
+        /* Nokta/Obje Büyüyerek Gelme */
+        .anim-pop {
+            transform: scale(0); transform-origin: center; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* .start-anim Sınıfı SVG'ye eklendiğinde içindeki animasyonlar çalışır */
+        svg.start-anim .anim-draw { stroke-dashoffset: 0; }
+        svg.start-anim .anim-fade { opacity: 1; }
+        svg.start-anim .anim-pop { transform: scale(1); }
+
+        /* --- ALT PANEL: BUTON --- */
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; height: 50px; margin-top: 15px; flex-shrink: 0;
+        }
+        .btn-action {
+            background: var(--primary-color); color: white; min-width: 200px; height: 50px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            opacity: 0; pointer-events: none; transform: translateY(15px);
+        }
+        .btn-action.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+    </style>
+</head>
+<body>
+    
+    <!-- Ses Dosyaları (Kaç tane madde varsa o kadar eklenebilir) -->
+    <audio id="ses1" src="{{SES_1_URL}}" preload="auto"></audio>
+    <audio id="ses2" src="{{SES_2_URL}}" preload="auto"></audio>
+    <audio id="ses3" src="{{SES_3_URL}}" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">{{ANA_YONERGE_METNI}}</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            <div class="topic-content">
+                <div class="grid-layout">
+                    
+                    <!-- SOL SÜTUN: METİNLER VE MADDELER -->
+                    <div class="text-col">
+                        <div class="note-title">{{KONU_BASLIGI}}</div>
+                        
+                        <!-- ÖRNEK 1: GENEL PARAGRAF YAPISI -->
+                        <div class="info-row" id="item-ses1">
+                            <div id="btn-ses1" class="inline-speaker" onclick="playSectionAudio('ses1', 'btn-ses1', 'item-ses1')">
+                                <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                            </div>
+                            <div class="note-paragraph" onclick="playSectionAudio('ses1', 'btn-ses1', 'item-ses1')" style="cursor:pointer;">
+                                {{GENEL_PARAGRAF_METNI_BURAYA}}
+                            </div>
+                        </div>
+
+                        <!-- ÖRNEK 2: BELİRGİN MADDE MADDE LİSTE YAPISI -->
+                        <div class="instruction-group" id="item-ses2">
+                            <div id="btn-ses2" class="inline-speaker" onclick="playSectionAudio('ses2', 'btn-ses2', 'item-ses2')">
+                                <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                            </div>
+                            <div class="instruction-text-sub" onclick="playSectionAudio('ses2', 'btn-ses2', 'item-ses2')" style="cursor:pointer;">
+                                {{MADDE_1_METNI_BURAYA}}
+                            </div>
+                        </div>
+
+                        <div class="instruction-group" id="item-ses3">
+                            <div id="btn-ses3" class="inline-speaker" onclick="playSectionAudio('ses3', 'btn-ses3', 'item-ses3')">
+                                <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                            </div>
+                            <div class="instruction-text-sub" onclick="playSectionAudio('ses3', 'btn-ses3', 'item-ses3')" style="cursor:pointer;">
+                                {{MADDE_2_METNI_BURAYA}}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- SAĞ SÜTUN: GÖRSEL VE ANİMASYONLAR -->
+                    <div class="img-col">
+                        <!-- Animasyonların çalışması için SVG'ye 'id="main-svg"' verilmiştir -->
+                        <svg id="main-svg" class="math-svg" viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg">
+                            
+                            <!-- Örnek Sabit Çizim -->
+                            <line x1="50" y1="200" x2="250" y2="200" stroke="#1E293B" stroke-width="4" stroke-linecap="round"/>
+                            
+                            <!-- Örnek Animasyonlu Çizgi (anim-draw) -->
+                            <line x1="150" y1="200" x2="200" y2="50" stroke="#B91C1C" stroke-width="4" stroke-linecap="round" class="anim-draw"/>
+                            
+                            <!-- Örnek Animasyonlu Metin (anim-fade) -->
+                            <text x="170" y="120" fill="#B91C1C" font-family="Montserrat" font-size="16" font-weight="800" class="anim-fade">Animasyonlu Açı</text>
+
+                            <!-- Örnek Animasyonlu Nokta (anim-pop) -->
+                            <circle cx="150" cy="200" r="6" fill="#10B981" class="anim-pop"/>
+                            
+                        </svg>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ALT PANEL: BUTON -->
+            <div class="bottom-panel">
+                <button id="btn-complete" class="btn-action" onclick="completeTopic()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+            
+        </main>
+    </div>
+
+    <script>
+        let currentPlayingId = null;
+        let isAudioPlaying = false;
+        
+        // Bu dizilere sayfada kullandığın ses sayısına göre ekleme yapmalısın.
+        const allAudioIds = ['ses1', 'ses2', 'ses3'];
+        const allBtnIds = ['btn-ses1', 'btn-ses2', 'btn-ses3'];
+        const allItemIds = ['item-ses1', 'item-ses2', 'item-ses3'];
+
+        // Seçilen Öğenin Arka Plan Vurgusunu Temizleme
+        function clearActiveStyles() {
+            allItemIds.forEach(id => {
+                let el = document.getElementById(id);
+                if (el) el.classList.remove('active-item');
+            });
+        }
+
+        // SVG Animasyonunu Tetikleme Fonksiyonu
+        function triggerSvgAnimation() {
+            const svg = document.getElementById('main-svg');
+            if (svg) svg.classList.add('start-anim');
+        }
+
+        function playSectionAudio(audioId, btnId, itemId) {
+            let targetAudio = document.getElementById(audioId);
+            let targetBtn = document.getElementById(btnId);
+            let targetItem = document.getElementById(itemId);
+
+            if (!targetAudio) return;
+
+            // Eğer aynı ses çalıyorsa DURDUR
+            if (currentPlayingId === audioId && !targetAudio.paused) {
+                targetAudio.pause();
+                if(targetBtn) targetBtn.classList.remove('playing');
+                if(targetItem) targetItem.classList.remove('active-item');
+                currentPlayingId = null;
+                isAudioPlaying = false;
+                return;
+            }
+
+            // Diğer tüm sesleri durdur ve stilleri temizle
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                let b = document.getElementById(allBtnIds[index]);
+                if (a) { a.pause(); a.currentTime = 0; }
+                if (b) b.classList.remove('playing');
+            });
+            clearActiveStyles();
+
+            // Seçilen sesi çal ve stilleri aktif et
+            let playPromise = targetAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    currentPlayingId = audioId;
+                    isAudioPlaying = true;
+                    if(targetBtn) targetBtn.classList.add('playing');
+                    if(targetItem) targetItem.classList.add('active-item');
+                    
+                    // ÖRNEK: Animasyonu ses2 başladığında tetiklemek için:
+                    if(audioId === 'ses2') {
+                        triggerSvgAnimation();
+                    }
+
+                }).catch(e => console.log("Otomatik oynatma engellendi."));
+            }
+            
+            // Ses bitiş olayları
+            targetAudio.onended = () => {
+                if(targetBtn) targetBtn.classList.remove('playing');
+                if(targetItem) targetItem.classList.remove('active-item');
+                currentPlayingId = null;
+                isAudioPlaying = false;
+                
+                // Sıradaki sesi otomatik başlat (Zincirleme çalma)
+                let nextIdx = allAudioIds.indexOf(audioId) + 1;
+                if(nextIdx < allAudioIds.length) {
+                    setTimeout(() => {
+                        playSectionAudio(allAudioIds[nextIdx], allBtnIds[nextIdx], allItemIds[nextIdx]);
+                    }, 500); 
+                } else {
+                    // Son ses bittiğinde İleri/Tamamla butonunu göster
+                    document.getElementById('btn-complete').classList.add('show-btn');
+                }
+            };
+        }
+
+        // Zorunlu Autoplay Başlangıcı
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            playSectionAudio('ses1', 'btn-ses1', 'item-ses1');
+            window.removeEventListener('click', forceAutoplay);
+            window.removeEventListener('touchstart', forceAutoplay);
+        }
+
+        function init() {
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+            
+            // Güvenlik: Ses sorunu olursa buton 10 saniye sonra kendiliğinden açılsın
+            setTimeout(() => { 
+                const btn = document.getElementById('btn-complete');
+                if(btn && !btn.classList.contains('show-btn')) {
+                    btn.classList.add('show-btn');
+                }
+            }, 10000);
+        }
+
+        function setVar(n, v) { 
+            try { parent.GetPlayer().SetVar(n, v); console.log(`Storyline Set: ${n} = ${v}`); } 
+            catch(e) { console.log(`(Lokal) Storyline Set: ${n} = ${v}`); } 
+        }
+
+        function completeTopic() {
+            // Çalan sesleri durdur
+            allAudioIds.forEach(id => {
+                let a = document.getElementById(id);
+                if (a) a.pause(); 
+            });
+            clearActiveStyles();
+            
+            const btn = document.getElementById('btn-complete');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            // Storyline Değişkeni
+            setVar('{{STORYLINE_DEGISKENI_BURAYA}}', true);
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => { init(); };
+        applyScale(); 
+        window.addEventListener('resize', applyScale);
+    </script>
+</body>
+</html>

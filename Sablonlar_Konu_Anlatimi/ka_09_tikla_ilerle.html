@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            /* Tema Renkleri */
+            --primary-color: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            
+            /* Kutular için ikincil renkler */
+            --box-accent: #1D4ED8; /* Mavi Başlık/Çizgi */
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none;
+        }
+        #scale-container {
+            width: 960px; height: 540px;
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-color);
+        }
+        
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+        
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; gap: 15px; 
+            height: calc(540px - 85px); z-index: 10;
+        }
+
+        /* --- YATAY SATIR YAPISI --- */
+        .info-row {
+            display: flex; gap: 20px; align-items: stretch; width: 100%; flex: 1; min-height: 0;
+        }
+        
+        /* Sol: Metin Kutuları */
+        .text-box {
+            flex: 1.2; background: white; border-radius: 12px; padding: 16px 20px 16px 25px;
+            border-left: 5px solid var(--box-accent); box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; justify-content: center; gap: 10px;
+        }
+        .text-header {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--primary-color); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer; transition: transform 0.2s;
+        }
+        .narrator-speaker:hover { transform: scale(1.1); }
+        .narrator-speaker.playing { animation: pulsePlay 2s infinite; }
+        
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+        
+        .row-title { font-weight: 800; color: var(--box-accent); font-size: 15px; text-transform: uppercase;}
+        .note-paragraph {
+            font-size: 14px; font-weight: 600; line-height: 1.5; color: var(--text-dark);
+        }
+        
+        /* Sağ: Görsel Kutuları */
+        .visual-box {
+            flex: 1; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px;
+            display: flex; justify-content: space-evenly; align-items: center; padding: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02); overflow: hidden;
+            background-image: 
+                linear-gradient(#f1f5f9 1px, transparent 1px), 
+                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 15px 15px; background-position: center;
+        }
+        .math-svg { width: 100%; height: 100%; }
+
+        /* --- ALT PANEL: KONTROL --- */
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto;
+        }
+        .btn-action {
+            background: var(--primary-color); color: white; min-width: 240px; height: 45px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transform: translateY(10px);
+        }
+        .btn-action.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+    </style>
+</head>
+<body>
+    
+    <!-- Ses Dosyaları -->
+    <audio id="ses1" src="{{SES_1_URL}}" preload="auto"></audio>
+    <audio id="ses2" src="{{SES_2_URL}}" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">{{ANA_YONERGE_METNI}}</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="{{LOGO_URL_ORN_r1.png}}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- 1. YATAY SATIR -->
+            <div class="info-row">
+                <div class="text-box">
+                    <div class="text-header">
+                        <div id="btn-ses1" class="narrator-speaker" onclick="playSectionAudio('ses1', 'btn-ses1')">
+                            <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                        </div>
+                        <span class="row-title">{{SATIR_1_BASLIK}}</span>
+                    </div>
+                    <div class="note-paragraph">
+                        {{SATIR_1_METIN_HTML_DESTEKLI}}
+                    </div>
+                </div>
+                <div class="visual-box">
+                    <svg class="math-svg" viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- {{SATIR_1_SVG_KODU}} -->
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 2. YATAY SATIR -->
+            <div class="info-row">
+                <div class="text-box">
+                    <div class="text-header">
+                        <div id="btn-ses2" class="narrator-speaker" onclick="playSectionAudio('ses2', 'btn-ses2')">
+                            <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                        </div>
+                        <span class="row-title">{{SATIR_2_BASLIK}}</span>
+                    </div>
+                    <div class="note-paragraph">
+                        {{SATIR_2_METIN_HTML_DESTEKLI}}
+                    </div>
+                </div>
+                <div class="visual-box">
+                    <svg class="math-svg" viewBox="0 0 340 160" xmlns="http://www.w3.org/2000/svg">
+                        <!-- {{SATIR_2_SVG_KODU}} -->
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ALT PANEL: BUTON -->
+            <div class="bottom-panel">
+                <button id="btn-complete" class="btn-action" onclick="completeTopic()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+            
+        </main>
+    </div>
+
+    <script>
+        let isAudioPlaying = false;
+        let currentPlayingId = null;
+        
+        const allAudioIds = ['ses1', 'ses2'];
+        const allBtnIds = ['btn-ses1', 'btn-ses2'];
+
+        function playSectionAudio(audioId, btnId) {
+            let targetAudio = document.getElementById(audioId);
+            let targetBtn = document.getElementById(btnId);
+            
+            if (!targetAudio) return;
+            
+            if (currentPlayingId === audioId && !targetAudio.paused) {
+                targetAudio.pause();
+                if(targetBtn) targetBtn.classList.remove('playing');
+                currentPlayingId = null;
+                isAudioPlaying = false;
+                return;
+            }
+            
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                let b = document.getElementById(allBtnIds[index]);
+                if (a) { a.pause(); a.currentTime = 0; }
+                if (b) b.classList.remove('playing');
+            });
+            
+            let playPromise = targetAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    currentPlayingId = audioId;
+                    if(targetBtn) targetBtn.classList.add('playing');
+                    isAudioPlaying = true;
+                }).catch(e => console.log("Otomatik oynatma engellendi."));
+            }
+            
+            targetAudio.onended = () => {
+                if(targetBtn) targetBtn.classList.remove('playing');
+                currentPlayingId = null;
+                isAudioPlaying = false;
+                
+                // Zincirleme çalma: Ses 1 bitince Ses 2'ye geç
+                let nextIdx = allAudioIds.indexOf(audioId) + 1;
+                if(nextIdx < allAudioIds.length) {
+                    setTimeout(() => {
+                        playSectionAudio(allAudioIds[nextIdx], allBtnIds[nextIdx]);
+                    }, 500); 
+                } else {
+                    // Son ses bittiğinde butonu göster
+                    document.getElementById('btn-complete').classList.add('show-btn');
+                }
+            };
+        }
+
+        function stopAllAudios() {
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                let b = document.getElementById(allBtnIds[index]);
+                if (a) { a.pause(); a.currentTime = 0; }
+                if (b) b.classList.remove('playing');
+            });
+            currentPlayingId = null;
+            isAudioPlaying = false;
+        }
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            playSectionAudio('ses1', 'btn-ses1');
+            window.removeEventListener('click', forceAutoplay);
+            window.removeEventListener('touchstart', forceAutoplay);
+        }
+
+        function init() {
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+            
+            // Güvenlik: Ses sorun olursa 8 saniye sonra butonu göster
+            setTimeout(() => { 
+                const btn = document.getElementById('btn-complete');
+                if(btn && !btn.classList.contains('show-btn')) {
+                    btn.classList.add('show-btn');
+                }
+            }, 8000);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function completeTopic() {
+            stopAllAudios();
+            const btn = document.getElementById('btn-complete');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            // Storyline Değişkeni
+            setVar('{{STORYLINE_DEGISKENI_BURAYA}}', true);
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => { init(); };
+        applyScale(); 
+        window.addEventListener('resize', applyScale);
+    </script>
+</body>
+</html>

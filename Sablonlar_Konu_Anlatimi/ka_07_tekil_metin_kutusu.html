@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            /* Tema Renkleri */
+            --primary-color: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --title-blue: #1D4ED8;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none;
+        }
+        #scale-container {
+            width: 960px; height: 540px;
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-color);
+        }
+        
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+        
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 20px 40px; height: calc(540px - 85px);
+            z-index: 10; position: relative;
+        }
+
+        /* --- TEKİL METİN KUTUSU --- */
+        .topic-content {
+            background: white; border-radius: 12px; padding: 30px 40px 30px 50px;
+            border-left: 6px solid var(--primary-color); line-height: 1.6;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); width: 100%;
+            max-width: 600px; /* Okunabilirliği artırmak için kutu genişliği sınırlandı */
+            margin: 20px auto 0 auto; /* Kutuyu ortala */
+            position: relative;
+        }
+
+        /* Ses butonu (Hoparlör) */
+        .narrator-speaker {
+            position: absolute; top: 30px; left: -18px; 
+            width: 36px; height: 36px; 
+            background: var(--primary-color); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+            z-index: 20; transition: transform 0.2s;
+        }
+        .narrator-speaker:hover { transform: scale(1.1); }
+        .narrator-speaker.playing { animation: pulsePlay 2s infinite; }
+        
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        /* Metin Stilleri */
+        .note-title {
+            color: var(--title-blue); font-weight: 700; font-size: 15px; 
+            text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.5px;
+        }
+        .note-paragraph {
+            font-weight: 500; margin-bottom: 15px; font-size: 13px; color: var(--text-dark);
+        }
+        .note-list {
+            margin-left: 30px; display: flex; flex-direction: column; gap: 10px;
+            margin-bottom: 20px; font-size: 13px; color: var(--text-dark);
+        }
+        .note-list div {
+            font-weight: 600; display: flex; align-items: center;
+        }
+
+        /* --- İLERİ / TAMAMLA BUTONU --- */
+        .btn-next {
+            position: absolute; bottom: 20px; right: 40px;
+            background: var(--primary-color); color: white; padding: 12px 30px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.4s ease; letter-spacing: 1px;
+            display: flex; align-items: center; gap: 8px; z-index: 20;
+            opacity: 0; pointer-events: none; transform: translateY(10px); 
+        }
+        .btn-next.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-next:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-next.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+    </style>
+</head>
+<body>
+    <div id="scale-container">
+        
+        <audio id="ses1" src="{{SES_1_URL}}" preload="auto"></audio>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">{{ANA_BASLIK_METNI}}</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="topic-content">
+                <!-- Hoparlör Butonu -->
+                <div id="main-speaker" class="narrator-speaker" onclick="toggleAudio()">
+                    <svg class="w-5 h-5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                
+                <div class="note-title">
+                    {{KUTU_BASLIGI}}
+                </div>
+                
+                <div class="note-paragraph">
+                    {{PARAGRAF_1_METNI_HTML_KULLANILABILIR}}
+                </div>
+                
+                <!-- Liste formatı örneği (İsteğe bağlı) -->
+                <div class="note-list">
+                    <div>1) {{MADDE_1}}</div>
+                    <div>2) {{MADDE_2}}</div>
+                    <div>3) {{MADDE_3}}</div>
+                </div>
+                
+                <div class="note-paragraph" style="margin-bottom: 0;">
+                    {{PARAGRAF_2_ALT_METIN}}
+                </div>
+            </div>
+
+            <!-- İleri / Tamamla Butonu -->
+            <button id="btn-next" class="btn-next" onclick="completeTopic()">
+                TAMAMLA ✓
+            </button>
+            
+        </main>
+    </div>
+
+    <script>
+        let isAudioPlaying = false;
+        
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.classList.add('playing');
+                        
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.classList.remove('playing');
+                    });
+                }
+            }
+        }
+        
+        function init() {
+            const audio = document.getElementById('ses1');
+            if(audio) {
+                audio.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.classList.remove('playing'); 
+                    isAudioPlaying = false; 
+                    
+                    const btnNext = document.getElementById('btn-next');
+                    if(btnNext) btnNext.classList.add('show-btn');
+                });
+            }
+            
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+            
+            // Ses sorunu olursa 8 saniye sonra butonu aktif et
+            setTimeout(() => {
+                const btnNext = document.getElementById('btn-next');
+                if(btnNext && !btnNext.classList.contains('show-btn')) {
+                    btnNext.classList.add('show-btn');
+                }
+            }, 8000);
+        }
+
+        function toggleAudio() {
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if(audio) {
+                if(audio.paused) {
+                    audio.currentTime = 0; 
+                    audio.play();
+                    isAudioPlaying = true;
+                    if(speaker) speaker.classList.add('playing');
+                } else {
+                    audio.pause();
+                    isAudioPlaying = false;
+                    if(speaker) speaker.classList.remove('playing');
+                }
+            }
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function completeTopic() {
+            const btn = document.getElementById('btn-next');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            const audio = document.getElementById('ses1');
+            if (audio) { audio.pause(); }
+            
+            // Storyline Değişkenini Gönder
+            setVar('{{STORYLINE_DEGISKENI_ORN_a4}}', true);
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { applyScale(); init(); };
+    </script>
+</body>
+</html>
