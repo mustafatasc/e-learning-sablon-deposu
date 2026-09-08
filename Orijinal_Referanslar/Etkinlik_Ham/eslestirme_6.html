@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Türkiye'nin Komşuları Harita Eşleştirme</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --cream-bg: #FCF9F2;
+            --paper-grid: rgba(65, 82, 196, 0.05);
+            
+            /* Sosyal Bilgiler Mavi Paleti */
+            --primary-main: #4152C4;
+            --primary-dark: #2A3680;
+            --primary-soft: #7E8CDE;
+            --warm-grey: #455A64;
+            
+            /* Başarı / Hata Renkleri */
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--warm-grey);
+            user-select: none; -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--cream-bg); 
+            background-image: linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-top: 6px solid var(--primary-main);
+        }
+
+        /* Arka Plan Cam Süsleri */
+        #scale-container::before {
+            content: ''; position: absolute; top: -20%; left: -20%; width: 150%; height: 150%;
+            background: radial-gradient(circle, rgba(126, 140, 222, 0.1) 0%, transparent 60%);
+            z-index: 0; pointer-events: none;
+        }
+
+        .header {
+            padding: 15px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; display: flex; flex-direction: column; justify-content: center; height: 100%;}
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 900; color: var(--primary-dark); text-align: left; text-transform: uppercase; letter-spacing: 0.5px;}
+        .sub-instruction { font-size: 12.5px; font-weight: 600; color: #64748b; margin-top: 2px; }
+        .logo-right-container { width: 85px; height: 85px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: row; flex: 1; padding: 0px 40px 15px 40px; gap: 20px; height: calc(540px - 85px);
+            z-index: 10; position: relative;
+        }
+
+        /* --- SOL PANEL: HARİTA VE HEDEF KUTULARI --- */
+        .left-panel {
+            flex: 1; position: relative; display: flex; align-items: center; justify-content: center; z-index: 10;
+        }
+
+        .map-container {
+            width: 600px; height: 400px; position: relative;
+            background: rgba(255, 255, 255, 0.7); border: 2.5px solid rgba(65, 82, 196, 0.15);
+            border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex; align-items: center; justify-content: center; 
+        }
+
+        /* Harita Görseli (r2.png) */
+        .tr-map-image {
+            width: 100%; height: 100%; object-fit: stretch; z-index: 5;
+            filter: drop-shadow(0 15px 15px rgba(0,0,0,0.1));
+            pointer-events: none; opacity: 0.95; border-radius: 12px;
+        }
+
+        /* Harita Üzerindeki Özel Boşluklar (Drop Zones) - Yeni Konumlar */
+        .drop-zone {
+            position: absolute; display: inline-flex; align-items: center; justify-content: center;
+            height: 32px; width: 115px; padding: 0 4px; 
+            border: 2px dashed #94a3b8; background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px; cursor: pointer; z-index: 20;
+            color: transparent; font-weight: 800; font-size: 11px;
+            transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .drop-zone::before {
+            content: 'Bırakınız'; position: absolute; font-size: 10px; font-weight: 800; color: #cbd5e1; pointer-events: none;
+        }
+
+        /* Gerçekçi Coğrafi Konumlar (600x400 baz alınarak) - Görsele Göre Kusursuz Hizalandı */
+        .dz-bg { top: 12%; left: 4%; }       /* Bulgaristan */
+        .dz-gr { top: 38%; left: 1%; }       /* Yunanistan (İzmir'in üzerinden alındı, Ege Denizi/Sınır hattı) */
+        
+        .dz-ge { top: 15%; right: 12%; }     /* Gürcistan */
+        .dz-am { top: 28%; right: 2%; }      /* Ermenistan */
+        .dz-az { top: 42%; right: 1%; }      /* Azerbaycan/Nahçıvan */
+        .dz-ir { top: 60%; right: 2%; }      /* İran */
+        
+        .dz-iq { top: 82%; right: 12%; }     /* Irak */
+        .dz-sy { top: 85%; left: 58%; transform: translateX(-50%); } /* Suriye (Güney sınırı ortalandı) */
+
+        /* Durum Stilleri */
+        .drop-zone.active-hover { border-color: var(--primary-main); background: rgba(65, 82, 196, 0.1); }
+        .drop-zone.active-hover::before { color: var(--primary-main); }
+        
+        .drop-zone.has-card { border: none !important; background: transparent !important; padding: 0 !important; width: auto !important; min-width: 0 !important; box-shadow: none;}
+        .drop-zone.has-card::before { display: none; }
+        
+        .drop-zone.correct-zone { border-color: var(--success-green); background: #ecfdf5; color: #065f46; pointer-events: none; }
+        .drop-zone.incorrect-zone { border-color: var(--error-red); background: #fef2f2; color: var(--error-red); animation: shake 0.4s ease-in-out; }
+
+        /* --- SAĞ PANEL: HAVUZ VE KONTROL --- */
+        .right-panel {
+            width: 250px !important; display: flex; flex-direction: column; gap: 8px; justify-content: space-between;
+            z-index: 50;
+        }
+
+        .pool-title { font-size: 13px; font-weight: 900; color: var(--primary-main); text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 6px; letter-spacing: 0.5px;}
+        
+        .pool-container {
+            background: rgba(255, 255, 255, 0.6); border: 2px dashed var(--primary-soft); border-radius: 14px;
+            padding: 10px 8px; display: flex; flex-direction: column; gap: 6px; flex: 1; align-content: flex-start; justify-items: center;
+            overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--primary-soft) transparent;
+        }
+        .pool-container::-webkit-scrollbar { width: 4px; }
+        .pool-container::-webkit-scrollbar-thumb { background-color: var(--primary-soft); border-radius: 10px; }
+
+        .pool-slot { width: 100%; height: 32px; position: relative; flex-shrink: 0; margin: 0 auto; max-width: 220px;}
+        .placeholder-card { width: 100%; height: 100%; border: 2px dashed #cbd5e1; border-radius: 8px; background: rgba(241, 245, 249, 0.5); }
+        
+        /* Draggable Kartlar */
+        .draggable-card {
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white;
+            border: 2px solid var(--primary-main); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11.5px; font-weight: 800; cursor: grab; box-shadow: 0 3px 6px rgba(65, 82, 196, 0.1);
+            z-index: 100; touch-action: none; text-align: center; padding: 0 8px;
+            line-height: 1.1; color: var(--primary-dark); white-space: nowrap;
+        }
+        
+        .draggable-card.dragging { cursor: grabbing; box-shadow: 0 10px 25px rgba(0,0,0,0.25); z-index: 1000 !important; transition: none; transform: scale(1.05); }
+        .draggable-card.selected { border-color: var(--warning-orange); background: #fffbeb; }
+
+        .draggable-card.correct-state { border-color: var(--success-green) !important; background: #f0fdf4 !important; color: #065f46 !important; pointer-events: none;}
+        .draggable-card.incorrect-state { border-color: var(--error-red) !important; background: #fef2f2 !important; color: #991b1b !important; animation: shake 0.4s ease-in-out;}
+
+        .control-panel { flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; position: relative; height: 50px;}
+        
+        .btn-action {
+            background: var(--primary-main); color: white; font-size: 15px; font-weight: 900;
+            padding: 12px; border-radius: 12px; transition: 0.2s; cursor: pointer; display: none; width: 100%;
+            text-align: center; border: none; box-shadow: 0 4px 10px rgba(65, 82, 196, 0.2); letter-spacing: 1px;
+            align-items: center; justify-content: center; height: 100%;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(65, 82, 196, 0.3);}
+        .btn-action:disabled { opacity: 0.5; pointer-events: none; box-shadow: none; transform: none; cursor: not-allowed; }
+        .btn-action.completed-state {
+            background-color: var(--success-green) !important; color: white !important;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3) !important; cursor: default; transform: none !important; pointer-events: none; opacity: 1;
+        }
+        .btn-action.timer-active { background: var(--warning-orange) !important; opacity: 1; pointer-events: none; transform: none; box-shadow: none;}
+
+        .message-box { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 800; padding: 8px 16px; border-radius: 8px; display: none; text-align: center; white-space: nowrap; z-index: 50;}
+        .msg-success { background: #d1fae5; color: #065f46; border: 1px solid #10B981;}
+        .msg-error { background: #fef2f2; color: #991b1b; border: 1px solid #EF4444;}
+
+        /* Sürükleme Katmanı */
+        #drag-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+        #drag-layer > * { pointer-events: auto; }
+
+        /* Toast Bildirimleri */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 13px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-3px); } 40%, 80% { transform: translateX(3px); } }
+
+    </style>
+</head>
+<body>
+
+    <audio id="audio1" src="ses1.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Bildirim metni.</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">TÜRKİYE'NİN KOMŞULARI</div>
+                <div class="sub-instruction">Sağ taraftaki ülke kartlarını haritanın etrafındaki doğru kutucuklara sürükleyiniz veya tıklayarak yerleştiriniz.</div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- SOL PANEL: HARİTA VE HEDEF KUTULARI -->
+            <div class="left-panel">
+                <div class="map-container">
+                    
+                    <!-- Türkiye Haritası (r2.png) -->
+                    <img src="r2.png" class="tr-map-image" alt="Türkiye Haritası" 
+                         onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/c/cd/Turkey_blank_map.svg'">
+                    
+                    <!-- Noktasal Harita Hedefleri -->
+                    <div id="z-bg" class="drop-zone dz-bg" data-ans="bg" onclick="onDropZoneClick(event)"></div>
+                    <div id="z-gr" class="drop-zone dz-gr" data-ans="gr" onclick="onDropZoneClick(event)"></div>
+                    <div id="z-ge" class="drop-zone dz-ge" data-ans="ge" onclick="onDropZoneClick(event)"></div>
+                    <div id="z-am" class="drop-zone dz-am" data-ans="am" onclick="onDropZoneClick(event)"></div>
+                    <div id="z-az" class="drop-zone dz-az" data-ans="az" onclick="onDropZoneClick(event)"></div>
+                    <div id="z-ir" class="drop-zone dz-ir" data-ans="ir" onclick="onDropZoneClick(event)"></div>
+                    <div id="z-iq" class="drop-zone dz-iq" data-ans="iq" onclick="onDropZoneClick(event)"></div>
+                    <div id="z-sy" class="drop-zone dz-sy" data-ans="sy" onclick="onDropZoneClick(event)"></div>
+
+                </div>
+            </div>
+
+            <!-- SAĞ PANEL: İPUÇLARI VE KONTROL -->
+            <div class="right-panel">
+                <div class="pool-title">ÜLKE KARTLARI</div>
+                <div class="pool-container" id="pool-container">
+                    
+                    <!-- Doğrudan HTML'e Gömülmüş Kartlar -->
+                    <div class="pool-slot"><div id="c-1" class="draggable-card" data-val="bg" onclick="onCardClick(event)">Bulgaristan</div></div>
+                    <div class="pool-slot"><div id="c-2" class="draggable-card" data-val="gr" onclick="onCardClick(event)">Yunanistan</div></div>
+                    <div class="pool-slot"><div id="c-3" class="draggable-card" data-val="ge" onclick="onCardClick(event)">Gürcistan</div></div>
+                    <div class="pool-slot"><div id="c-4" class="draggable-card" data-val="am" onclick="onCardClick(event)">Ermenistan</div></div>
+                    <div class="pool-slot"><div id="c-5" class="draggable-card" data-val="az" onclick="onCardClick(event)">Azerbaycan</div></div>
+                    <div class="pool-slot"><div id="c-6" class="draggable-card" data-val="ir" onclick="onCardClick(event)">İran</div></div>
+                    <div class="pool-slot"><div id="c-7" class="draggable-card" data-val="iq" onclick="onCardClick(event)">Irak</div></div>
+                    <div class="pool-slot"><div id="c-8" class="draggable-card" data-val="sy" onclick="onCardClick(event)">Suriye</div></div>
+                    
+                </div>
+                
+                <div class="control-panel">
+                    <div id="m-box" class="message-box"></div>
+                    <button id="btn-c" class="btn-action" disabled onclick="checkAnswers()">KONTROL ET</button>
+                </div>
+            </div>
+            
+        </main>
+
+        <!-- Sürükleme Katmanı -->
+        <div id="drag-layer"></div>
+
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='jump') { osc.type='sine'; osc.frequency.setValueAtTime(150, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime+0.15); }
+                else if(type==='correct') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='incorrect') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let activeDrag = null, pointerId = null, placeholder = null;
+        let startDragX = 0, startDragY = 0, cardStartX = 0, cardStartY = 0;
+        let selCard = null, attempts = 0, done = false, preventClick = false;
+        const totalTargets = 8;
+
+        function init() {
+            // Slotlara ID ata
+            document.querySelectorAll('.pool-slot').forEach((slot, idx) => {
+                if(!slot.id) slot.id = 'pool-slot-' + idx;
+            });
+
+            shufflePool();
+            
+            document.querySelectorAll('.draggable-card').forEach(c => {
+                c.addEventListener('pointerdown', down);
+            });
+            
+            const audio = document.getElementById('audio1');
+            if(audio) {
+                audio.play().catch(()=>{ console.log("Otomatik ses çalma engellendi."); });
+            }
+        }
+
+        function shufflePool() {
+            const container = document.getElementById('pool-container');
+            const slots = Array.from(container.children);
+            for (let i = slots.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                container.insertBefore(slots[j], slots[i].nextSibling);
+            }
+        }
+
+        // --- KUSURSUZ SANAL SÜRÜKLEME ---
+        function down(e) {
+            if(done || activeDrag) return; 
+            if(e.pointerType === 'mouse' && e.button !== 0) return; 
+            if(selCard) { selCard.classList.remove('selected'); selCard=null; }
+            
+            activeDrag = e.currentTarget;
+            pointerId = e.pointerId;
+            
+            const rect = activeDrag.getBoundingClientRect();
+            const container = document.getElementById('scale-container');
+            const containerRect = container.getBoundingClientRect();
+            const scale = containerRect.width / 960;
+
+            if(!activeDrag.getAttribute('data-zone')) {
+                placeholder = document.createElement('div');
+                placeholder.className = 'placeholder-card';
+                activeDrag.parentNode.insertBefore(placeholder, activeDrag);
+            }
+
+            document.getElementById('drag-layer').appendChild(activeDrag);
+            
+            cardStartX = (rect.left - containerRect.left) / scale;
+            cardStartY = (rect.top - containerRect.top) / scale;
+
+            activeDrag.style.position = 'absolute';
+            activeDrag.style.width = (rect.width / scale) + 'px';
+            activeDrag.style.height = (rect.height / scale) + 'px';
+            activeDrag.style.margin = '0';
+            activeDrag.style.transition = 'none';
+            activeDrag.style.left = cardStartX + 'px';
+            activeDrag.style.top = cardStartY + 'px';
+            activeDrag.style.transform = 'translate(0px, 0px)';
+
+            activeDrag.classList.add('dragging');
+            
+            startDragX = e.clientX;
+            startDragY = e.clientY;
+            preventClick = false;
+            
+            window.addEventListener('pointermove', move);
+            window.addEventListener('pointerup', up);
+            window.addEventListener('pointercancel', up);
+            
+            try { activeDrag.setPointerCapture(pointerId); } catch(err){}
+            playSfx('click');
+        }
+
+        function move(e) {
+            if(!activeDrag) return;
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const dx = (e.clientX - startDragX) / scale;
+            const dy = (e.clientY - startDragY) / scale;
+            
+            if(Math.abs(dx) > 3 || Math.abs(dy) > 3) preventClick = true;
+            activeDrag.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
+        }
+
+        function up(e) {
+            if(!activeDrag) return;
+            
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+            window.removeEventListener('pointercancel', up);
+            try { activeDrag.releasePointerCapture(pointerId); } catch(err) {}
+            
+            activeDrag.classList.remove('dragging');
+            
+            let bestZone = null, maxOverlap = 0;
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            
+            const r1 = activeDrag.getBoundingClientRect();
+            // Merkez noktasını bul
+            const cx = r1.left + r1.width / 2;
+            const cy = r1.top + r1.height / 2;
+
+            const zones = document.querySelectorAll('.drop-zone');
+            
+            // Merkez uzaklığına göre en yakın bölgeyi bul (Hassas Mıknatıs Etkisi)
+            zones.forEach(zone => {
+                const r2 = zone.getBoundingClientRect();
+                const expLeft = r2.left - 25;
+                const expRight = r2.right + 25;
+                const expTop = r2.top - 25;
+                const expBottom = r2.bottom + 25;
+
+                // Merkez noktası genişletilmiş alanın içindeyse
+                if (cx >= expLeft && cx <= expRight && cy >= expTop && cy <= expBottom) {
+                    const zoneCx = r2.left + r2.width / 2;
+                    const zoneCy = r2.top + r2.height / 2;
+                    const dist = Math.hypot(cx - zoneCx, cy - zoneCy);
+                    const score = 1000 - dist; 
+                    if (score > maxOverlap) {
+                        maxOverlap = score;
+                        bestZone = zone;
+                    }
+                }
+            });
+            
+            if (!bestZone) {
+                const pool = document.getElementById('pool-container');
+                const pR = pool.getBoundingClientRect();
+                if (cx >= pR.left && cx <= pR.right && cy >= pR.top && cy <= pR.bottom) {
+                    bestZone = 'pool';
+                }
+            }
+            
+            if (bestZone === 'pool') {
+                virtualBack(activeDrag);
+            } else if (bestZone) {
+                dock(activeDrag, bestZone);
+            } else {
+                if(placeholder) {
+                    const oldR = activeDrag.getBoundingClientRect();
+                    placeholder.parentNode.insertBefore(activeDrag, placeholder);
+                    animateToNewParent(activeDrag, oldR);
+                } else {
+                    virtualBack(activeDrag);
+                }
+            }
+
+            if(placeholder) { placeholder.remove(); placeholder = null; }
+            if(preventClick) setTimeout(() => { preventClick = false; }, 50);
+            
+            activeDrag = null; pointerId = null; refreshUI();
+        }
+
+        // Virtual Docking Yöntemi
+        function dock(c, z, duration = '0.3s') {
+            const oldCardId = z.getAttribute('data-card');
+            if (oldCardId && oldCardId !== c.id) {
+                virtualBack(document.getElementById(oldCardId));
+            }
+            
+            const oldZoneId = c.getAttribute('data-zone');
+            if (oldZoneId) {
+                const oldZ = document.getElementById(oldZoneId);
+                if(oldZ) {
+                    oldZ.removeAttribute('data-card');
+                    oldZ.classList.remove('has-card');
+                }
+            }
+            
+            const oldRect = c.getBoundingClientRect();
+            z.appendChild(c);
+            
+            c.setAttribute('data-zone', z.id);
+            z.setAttribute('data-card', c.id);
+            z.classList.add('has-card');
+            
+            resetCardStyle(c);
+            
+            c.style.position = 'relative'; 
+            c.style.width = 'max-content'; 
+            c.style.minWidth = '115px'; 
+            c.style.height = '32px';
+            c.style.fontSize = '11px'; 
+            
+            z.style.width = 'auto';
+
+            const newRect = c.getBoundingClientRect();
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const dx = (oldRect.left - newRect.left) / scale;
+            const dy = (oldRect.top - newRect.top) / scale;
+
+            c.style.transition = 'none';
+            c.style.transform = `translate(${dx}px, ${dy}px)`;
+            void c.offsetWidth;
+            
+            c.style.transition = `transform ${duration} cubic-bezier(0.2, 0, 0.2, 1), font-size ${duration}`;
+            c.style.transform = 'translate(0px, 0px)';
+            
+            playSfx('jump');
+        }
+
+        function virtualBack(c) {
+            const zId = c.getAttribute('data-zone');
+            if (zId) {
+                const z = document.getElementById(zId);
+                if(z) {
+                    z.removeAttribute('data-card');
+                    z.classList.remove('has-card');
+                }
+            }
+            c.removeAttribute('data-zone');
+            
+            const emptySlot = Array.from(document.querySelectorAll('.pool-slot:not(.placeholder)')).find(s => s.children.length === 0);
+            if(emptySlot) {
+                const oldRect = c.getBoundingClientRect();
+                emptySlot.appendChild(c);
+                animateToNewParent(c, oldRect);
+            }
+        }
+
+        function resetCardStyle(c) {
+            c.style.position = 'absolute';
+            c.style.width = '100%';
+            c.style.height = '100%';
+            c.style.left = '0';
+            c.style.top = '0';
+            c.style.margin = '0';
+            c.style.minWidth = '';
+            c.style.transform = '';
+            c.style.transition = 'all 0.3s cubic-bezier(0.2, 0, 0.2, 1)';
+            c.style.fontSize = ''; 
+            c.classList.remove('incorrect-state');
+        }
+
+        function animateToNewParent(c, oldRect, duration = '0.2s') {
+            resetCardStyle(c);
+            const r2 = c.getBoundingClientRect();
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const dx = (oldRect.left - r2.left) / scale;
+            const dy = (oldRect.top - r2.top) / scale;
+
+            c.style.transition = 'none';
+            c.style.transform = `translate(${dx}px, ${dy}px)`;
+            void c.offsetWidth;
+            
+            c.style.transition = `transform ${duration} cubic-bezier(0.2, 0, 0.2, 1)`;
+            c.style.transform = 'translate(0px, 0px)';
+        }
+
+        function onCardClick(e) {
+            if(done || preventClick) return; 
+            const c = e.currentTarget;
+            if(c.getAttribute('data-zone')) { virtualBack(c); refreshUI(); return; }
+            if(selCard) selCard.classList.remove('selected');
+            if(selCard === c) {
+                selCard = null;
+            } else { 
+                selCard = c; 
+                selCard.classList.add('selected'); 
+                playSfx('click'); 
+            }
+        }
+
+        function onDropZoneClick(e) {
+            if(done || !selCard) return; 
+            dock(selCard, e.currentTarget); 
+            selCard.classList.remove('selected'); 
+            selCard = null; 
+            refreshUI();
+        }
+
+        function refreshUI() {
+            const zones = document.querySelectorAll('.drop-zone');
+            let filledCount = 0;
+            zones.forEach(z => { if(z.getAttribute('data-card')) filledCount++; });
+            
+            const btn = document.getElementById('btn-c');
+            btn.disabled = filledCount < totalTargets;
+            if(filledCount === totalTargets) btn.style.display = 'block';
+        }
+
+        function checkAnswers() {
+            if(done) return;
+            let correctCount = 0;
+            const zones = document.querySelectorAll('.drop-zone');
+            
+            zones.forEach(z => {
+                const cardId = z.getAttribute('data-card');
+                if(cardId) {
+                    const c = document.getElementById(cardId);
+                    if(c.getAttribute('data-val') === z.getAttribute('data-ans')) {
+                        correctCount++; 
+                        c.classList.add('correct-state');
+                        c.classList.remove('incorrect-state');
+                    } else { 
+                        c.classList.add('incorrect-state'); 
+                        c.classList.remove('correct-state');
+                    }
+                }
+            });
+            
+            const btnCheck = document.getElementById('btn-c');
+
+            if(correctCount === totalTargets) {
+                done = true;
+                btnCheck.className = "btn-action completed-state";
+                btnCheck.innerText = "TAMAMLANDI ✓";
+                btnCheck.disabled = true;
+
+                playSfx('correct');
+                
+                showToast("Tebrikler! Sınır komşularımızı doğru yerleştirdiniz. ✓", "msg-success");
+                
+                // Storyline Değişkeni (İlk Hak veya İkinci Hakta Doğru: q13)
+                setVar('q13', true); 
+            } else {
+                attempts++;
+                if(attempts === 1) {
+                    playSfx('incorrect');
+                    showMsg('Bazı eşleşmeler hatalı. Lütfen tekrar deneyiniz.', 'msg-error');
+                    zones.forEach(z => {
+                        const cardId = z.getAttribute('data-card');
+                        if(cardId) {
+                            const c = document.getElementById(cardId);
+                            if(c.getAttribute('data-val') !== z.getAttribute('data-ans')) {
+                                setTimeout(() => { if(!done){ virtualBack(c); c.classList.remove('incorrect-state'); refreshUI(); } }, 1500); 
+                            }
+                        }
+                    });
+                    setTimeout(() => { if(!done) { document.getElementById('m-box').style.display = 'none'; } }, 3000);
+                } else { 
+                    done = true; 
+                    btnCheck.style.display = 'none'; 
+                    solveAll(); 
+                }
+            }
+        }
+
+        function solveAll() {
+            const zones = document.querySelectorAll('.drop-zone');
+            const cards = document.querySelectorAll('.draggable-card');
+            if(selCard) { selCard.classList.remove('selected'); selCard = null; }
+
+            // Yanlışları havuza gönder
+            zones.forEach(z => {
+                const cardId = z.getAttribute('data-card');
+                if(cardId) {
+                    const c = document.getElementById(cardId);
+                    if(c.getAttribute('data-val') !== z.getAttribute('data-ans')) {
+                        virtualBack(c);
+                        c.classList.remove('incorrect-state');
+                    } else {
+                        c.classList.add('correct-state');
+                        c.setAttribute('data-locked', 'true');
+                    }
+                }
+            });
+
+            // Doğruları yerleştir
+            let delay = 0;
+            zones.forEach(z => {
+                if(!z.getAttribute('data-card')) {
+                    const targetVal = z.getAttribute('data-ans');
+                    const correctCard = Array.from(cards).find(c => c.getAttribute('data-val') === targetVal && !c.hasAttribute('data-zone') && !c.hasAttribute('data-locked'));
+                    
+                    if(correctCard) {
+                        correctCard.setAttribute('data-locked', 'true');
+                        setTimeout(() => {
+                            dock(correctCard, z, '0.5s');
+                            correctCard.classList.add('correct-state');
+                        }, delay);
+                        delay += 350;
+                    }
+                }
+            });
+
+            showMsg('Hakkınız bitti. Doğru harita yerleştiriliyor...', 'msg-error');
+            
+            setTimeout(() => {
+                document.getElementById('m-box').style.display = 'none';
+                const actionBtn = document.getElementById('btn-c');
+                actionBtn.style.display = 'flex';
+                actionBtn.disabled = true;
+                actionBtn.className = "btn-action timer-active";
+                
+                let countdown = 10;
+                actionBtn.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                const interval = setInterval(() => {
+                    countdown--;
+                    actionBtn.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                    if(countdown <= 0) {
+                        clearInterval(interval);
+                        actionBtn.innerText = "TAMAMLANDI ✓";
+                        actionBtn.classList.remove('timer-active');
+                        actionBtn.classList.add('completed-state');
+                        setVar('q14', true); // İnceleme süresi dolunca
+                        
+                        showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    }
+                }, 1000);
+            }, delay + 500);
+        }
+
+        function showMsg(t, cls) { const b = document.getElementById('m-box'); b.innerText = t; b.className = 'message-box ' + cls; b.style.display = 'block'; }
+        function setVar(n, v) { try { parent.GetPlayer().SetVar(n, v); console.log(`${n} -> ${v}`); } catch(e) { console.log(`${n} -> ${v}`); } }
+
+        function showToast(msg, typeCls = '') {
+            const toast = document.getElementById('toast-msg');
+            const txtEl = document.getElementById('toast-text');
+            
+            toast.className = '';
+            toast.classList.add('show');
+            if (typeCls) toast.classList.add(typeCls);
+            
+            if(msg) txtEl.innerText = msg;
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { window.dispatchEvent(new Event('resize')); init(); };
+    </script>
+</body>
+</html>

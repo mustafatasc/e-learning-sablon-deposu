@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Etkinlik: Açı Çeşitleri Hazırlık</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+            --cyan-accent: #0ea5e9;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; gap: 10px; height: calc(540px - 75px);
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        /* --- YÖNERGE KUTUSU --- */
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            background: white; border-radius: 12px; padding: 10px 20px 10px 15px;
+            border-left: 5px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0; z-index: 10;
+        }
+
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .instruction-text-sub {
+            font-size: 14.5px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        /* --- SLIDER YAPISI --- */
+        .slider-viewport {
+            flex: 1; width: 100%; overflow: hidden; position: relative; min-height: 0;
+        }
+
+        .slider-track {
+            display: flex; width: 200%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .slide {
+            width: 50%; height: 100%; display: flex; flex-direction: column; padding: 5px 0;
+        }
+
+        /* --- ORTA PANEL: ÇİZİM VE SORULAR --- */
+        .activity-area {
+            display: flex; gap: 25px; flex: 1; min-height: 0; align-items: stretch;
+        }
+
+        .svg-container {
+            flex: 1; background: white; border: 2px solid #cbd5e1; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center; padding: 10px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+            background-image: 
+                linear-gradient(#f1f5f9 1px, transparent 1px), 
+                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 20px 20px; background-position: center;
+        }
+
+        .math-svg { width: 100%; height: 100%; max-height: 250px; }
+
+        .questions-panel {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 15px;
+        }
+
+        .question-text {
+            font-size: 15px; font-weight: 700; color: #1E293B; line-height: 1.5;
+            background: #f8fafc; padding: 12px 16px; border-radius: 12px; border: 1px dashed #94a3b8;
+        }
+
+        /* Buton Grupları */
+        .q-box {
+            background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: all 0.3s;
+        }
+
+        .q-title { font-size: 15px; font-weight: 800; color: #334155; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;}
+        
+        .opt-group { display: flex; gap: 10px; }
+        
+        .opt-btn {
+            flex: 1; height: 45px; border-radius: 10px; font-weight: 800; font-size: 15px;
+            border: 2px solid #cbd5e1; background: #f8fafc; color: #64748B;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        
+        .opt-btn:hover { background: #e2e8f0; transform: translateY(-2px); }
+        .opt-btn:active { transform: translateY(0); }
+        
+        .opt-btn.selected { background: var(--cyan-accent); border-color: var(--cyan-accent); color: white; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); }
+
+        /* Hata / Doğru Animasyonları */
+        .q-box.is-correct { border-color: var(--success-green); background: #ecfdf5;}
+        .q-box.is-correct .opt-btn.selected { background: var(--success-green); border-color: var(--success-green); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); pointer-events: none;}
+        .q-box.is-correct .opt-btn:not(.selected) { opacity: 0.5; pointer-events: none; }
+        
+        .q-box.is-incorrect { border-color: var(--error-red); background: #fef2f2; animation: shake 0.4s ease-in-out;}
+        .q-box.is-incorrect .opt-btn.selected { background: var(--error-red); border-color: var(--error-red); }
+
+        /* --- ALT PANEL: KONTROL VE GERİ BİLDİRİM --- */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto;
+        }
+
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 10px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 200px; height: 45px;
+            font-size: 14px; font-weight: 800; border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-warning { background-color: var(--warning-orange) !important; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">AÇI ÇEŞİTLERİ</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text-sub" onclick="playAudio('ses1')" style="cursor: pointer;">
+                    Şimdi açı çeşitleri konusuna hazır olmak için birkaç örnek çözelim.
+                </div>
+            </div>
+
+            <!-- SLIDER GÖRÜNÜMÜ -->
+            <div class="slider-viewport">
+                <div class="slider-track" id="slider">
+                    
+                    <!-- ========================================== -->
+                    <!-- SLAYT 1: NORMAL KAPI -->
+                    <!-- ========================================== -->
+                    <div class="slide">
+                        <div class="activity-area">
+                            <div class="svg-container">
+                                <svg class="math-svg" viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Kapı (Dikdörtgen) -->
+                                    <rect x="50" y="40" width="100" height="200" fill="#f8fafc" stroke="#1E293B" stroke-width="4"/>
+                                    <!-- Kapı Kolu -->
+                                    <circle cx="135" cy="140" r="4" fill="#1E293B"/>
+                                    
+                                    <!-- Harfler -->
+                                    <text x="35" y="255" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">A</text>
+                                    <text x="155" y="255" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">B</text>
+                                    <text x="155" y="30" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">C</text>
+                                    <text x="35" y="30" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">D</text>
+
+                                    <!-- Açı İşaretleri (Diklik Sembolleri) -->
+                                    <!-- A Köşesi -->
+                                    <polyline points="50,225 65,225 65,240" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <!-- B Köşesi -->
+                                    <polyline points="150,225 135,225 135,240" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <!-- C Köşesi -->
+                                    <polyline points="150,55 135,55 135,40" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <!-- D Köşesi -->
+                                    <polyline points="50,55 65,55 65,40" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            
+                            <div class="questions-panel">
+                                <div class="question-text">
+                                    Yanda verilen kapının köşelerinde oluşan açıları inceleyiniz. Sizce bu açıların türü nedir?
+                                </div>
+                                <div class="q-box" id="box-1">
+                                    <div class="opt-group">
+                                        <button class="opt-btn btn-1" onclick="selectOpt(1, 'dar')">Dar</button>
+                                        <button class="opt-btn btn-1" onclick="selectOpt(1, 'dik')">Dik</button>
+                                        <button class="opt-btn btn-1" onclick="selectOpt(1, 'genis')">Geniş</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bottom-panel">
+                            <div id="fb-1" class="feedback-msg"></div>
+                            <button class="btn-action" onclick="checkStep1()" id="btn-check-1">KONTROL ET</button>
+                        </div>
+                    </div>
+
+                    <!-- ========================================== -->
+                    <!-- SLAYT 2: YAMUK KAPI (Paralelkenar) -->
+                    <!-- ========================================== -->
+                    <div class="slide">
+                        <div class="activity-area">
+                            <div class="svg-container">
+                                <svg class="math-svg" viewBox="0 0 250 300" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Paralelkenar (Sağa eğik) -->
+                                    <!-- A(50, 240), B(150, 240), C(190, 40), D(90, 40) -->
+                                    <polygon points="50,240 150,240 190,40 90,40" fill="#f8fafc" stroke="#1E293B" stroke-width="4"/>
+                                    <!-- Kapı Kolu -->
+                                    <circle cx="165" cy="140" r="4" fill="#1E293B"/>
+                                    
+                                    <!-- Harfler -->
+                                    <text x="35" y="255" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">A</text>
+                                    <text x="155" y="255" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">B</text>
+                                    <text x="195" y="30" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">C</text>
+                                    <text x="75" y="30" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">D</text>
+
+                                    <!-- Açı Yayı: ABC (Geniş Açı - B Köşesi) - YAY YÖNÜ İÇE DÖNÜK OLARAK DÜZELTİLDİ -->
+                                    <path d="M 130,240 A 20 20 0 0 1 154,220" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+                                    <!-- Açı Yayı: BCD (Dar Açı - C Köşesi) -->
+                                    <path d="M 170,40 A 20 20 0 0 0 186,60" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+                                </svg>
+                            </div>
+
+                            <div class="questions-panel">
+                                <div class="question-text">
+                                    Eğer kapıyı bu şekilde tasarlasaydık oluşan açıların çeşidi ile ilgili ne söyleyebilirdiniz?
+                                </div>
+                                
+                                <div class="q-box" id="box-2">
+                                    <div class="q-title"><span>ABC açısı ...</span> <span style="color:#ef4444; font-size:12px;">(Kırmızı Açı)</span></div>
+                                    <div class="opt-group">
+                                        <button class="opt-btn btn-2" onclick="selectOpt(2, 'dar')">Dar</button>
+                                        <button class="opt-btn btn-2" onclick="selectOpt(2, 'dik')">Dik</button>
+                                        <button class="opt-btn btn-2" onclick="selectOpt(2, 'genis')">Geniş</button>
+                                    </div>
+                                </div>
+
+                                <div class="q-box" id="box-3">
+                                    <div class="q-title"><span>BCD açısı ...</span> <span style="color:#3b82f6; font-size:12px;">(Mavi Açı)</span></div>
+                                    <div class="opt-group">
+                                        <button class="opt-btn btn-3" onclick="selectOpt(3, 'dar')">Dar</button>
+                                        <button class="opt-btn btn-3" onclick="selectOpt(3, 'dik')">Dik</button>
+                                        <button class="opt-btn btn-3" onclick="selectOpt(3, 'genis')">Geniş</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-panel">
+                            <div id="fb-2" class="feedback-msg"></div>
+                            <button class="btn-action" onclick="checkStep2()" id="btn-check-2">KONTROL ET</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                else if(type==='slide') { osc.type='sine'; osc.frequency.setValueAtTime(200, ctx.currentTime); osc.frequency.linearRampToValueAtTime(400, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let step1Completed = false;
+        let step2Completed = false;
+        let attemptsStep2 = 0;
+        
+        let answers = { 1: null, 2: null, 3: null };
+        const correctAnswers = { 1: 'dik', 2: 'genis', 3: 'dar' };
+
+        // Zorunlu Otomatik Oynatma Fonksiyonu
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function selectOpt(group, val) {
+            if ((group === 1 && step1Completed) || (group > 1 && step2Completed)) return;
+            
+            playSfx('click');
+            answers[group] = val;
+            
+            // Seçimleri temizle
+            document.querySelectorAll(`.btn-${group}`).forEach(btn => btn.classList.remove('selected'));
+            
+            // Tıklananı seç
+            event.target.classList.add('selected');
+            
+            // Kutunun hata durumunu temizle
+            document.getElementById(`box-${group}`).classList.remove('is-incorrect');
+        }
+
+        // --- STEP 1 MANTIĞI ---
+        function checkStep1() {
+            if(step1Completed) return;
+            
+            if(!answers[1]) {
+                showToast("Lütfen bir açı türü seçiniz.", "toast-warning");
+                return;
+            }
+
+            const box = document.getElementById('box-1');
+            const fb = document.getElementById('fb-1');
+            fb.className = "feedback-msg";
+
+            if (answers[1] === correctAnswers[1]) {
+                // DOĞRU
+                step1Completed = true;
+                playSfx('success');
+                box.classList.add('is-correct');
+                
+                fb.innerHTML = `Harika! Dikdörtgenlerin köşeleri 90 derecelik dik açılardır. Diğer adıma geçiliyor...`;
+                fb.classList.add('fb-success');
+                
+                let btn = document.getElementById('btn-check-1');
+                btn.innerHTML = `DOĞRU ✓`;
+                btn.classList.add('completed');
+                
+                // 2 Saniye sonra 2. Slayta Kaydır
+                setTimeout(() => {
+                    playSfx('slide');
+                    document.getElementById('slider').style.transform = `translateX(-50%)`;
+                }, 2000);
+
+            } else {
+                // YANLIŞ
+                playSfx('error');
+                box.classList.add('is-incorrect');
+                fb.innerHTML = `Hatalı seçim. Dikdörtgenin köşelerinin açıları tam olarak 90 derecedir. Lütfen tekrar deneyin.`;
+                fb.classList.add('fb-error');
+                
+                setTimeout(() => { 
+                    box.classList.remove('is-incorrect');
+                    fb.style.display = 'none';
+                    // Seçimi kaldır
+                    document.querySelectorAll(`.btn-1`).forEach(b => b.classList.remove('selected'));
+                    answers[1] = null;
+                }, 2500);
+            }
+        }
+
+        // --- STEP 2 MANTIĞI ---
+        function checkStep2() {
+            if(step2Completed) return;
+            
+            if(!answers[2] || !answers[3]) {
+                showToast("Lütfen her iki açının türünü de seçiniz.", "toast-warning");
+                return;
+            }
+
+            const box2 = document.getElementById('box-2');
+            const box3 = document.getElementById('box-3');
+            const fb = document.getElementById('fb-2');
+            const btn = document.getElementById('btn-check-2');
+            
+            fb.className = "feedback-msg";
+
+            let isCorrect2 = (answers[2] === correctAnswers[2]);
+            let isCorrect3 = (answers[3] === correctAnswers[3]);
+
+            if (isCorrect2 && isCorrect3) {
+                // TAM BAŞARI
+                step2Completed = true;
+                playSfx('success');
+                box2.classList.add('is-correct');
+                box3.classList.add('is-correct');
+                
+                fb.innerHTML = `TEBRİKLER! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:4px;">Paralelkenar şeklindeki nesnelerde oluşan geniş ve dar açıları doğru belirlediniz.</span>`;
+                fb.classList.add('fb-success');
+                
+                btn.innerHTML = `TAMAMLANDI ✓`;
+                btn.classList.add('completed');
+                
+                showToast("Hazırlık etkinliğini başarıyla tamamladınız.", "toast-success");
+                
+                // Başarı durumunda d18 değişkenini Storyline'a ilet
+                setVar('d18', true);
+
+            } else {
+                // HATA DURUMU
+                attemptsStep2++;
+                playSfx('error');
+
+                if (attemptsStep2 === 1) {
+                    fb.innerHTML = `Hatalı seçimleriniz var. Unutmayın: 90°'den küçük açılar DAR, büyük açılar GENİŞ açıdır.`;
+                    fb.classList.add('fb-error');
+                    
+                    if(!isCorrect2) {
+                        box2.classList.add('is-incorrect');
+                        setTimeout(() => { box2.classList.remove('is-incorrect'); document.querySelectorAll(`.btn-2`).forEach(b => b.classList.remove('selected')); answers[2] = null;}, 1500);
+                    }
+                    if(!isCorrect3) {
+                        box3.classList.add('is-incorrect');
+                        setTimeout(() => { box3.classList.remove('is-incorrect'); document.querySelectorAll(`.btn-3`).forEach(b => b.classList.remove('selected')); answers[3] = null;}, 1500);
+                    }
+
+                    setTimeout(() => { fb.style.display = 'none'; }, 3000);
+                } else {
+                    // OTOMATİK ÇÖZÜM
+                    step2Completed = true;
+                    fb.innerHTML = `Deneme hakkınız bitti. Doğru cevaplar işaretleniyor...`;
+                    fb.classList.add('fb-error');
+
+                    // Yanlışları temizle
+                    box2.classList.remove('is-incorrect');
+                    box3.classList.remove('is-incorrect');
+                    document.querySelectorAll(`.btn-2, .btn-3`).forEach(b => b.classList.remove('selected'));
+
+                    // Doğruları seç
+                    setTimeout(() => {
+                        document.querySelector(`.btn-2[onclick*="${correctAnswers[2]}"]`).classList.add('selected');
+                        box2.classList.add('is-correct');
+                        playSfx('click');
+                    }, 500);
+
+                    setTimeout(() => {
+                        document.querySelector(`.btn-3[onclick*="${correctAnswers[3]}"]`).classList.add('selected');
+                        box3.classList.add('is-correct');
+                        playSfx('click');
+                    }, 1000);
+
+                    // Sayaç Başlat
+                    setTimeout(() => {
+                        fb.style.display = 'none';
+                        triggerTimerAutoSolve();
+                    }, 2000);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve() {
+            const btnCheck = document.getElementById('btn-check-2');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar('d18', true); // Otomatik Çözüm Sonrası
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { init(); };
+    </script>
+</body>
+</html>

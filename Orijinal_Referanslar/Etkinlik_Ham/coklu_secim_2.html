@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Çemberin Merkezi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --cream-bg: #FCF9F2;
+            --paper-grid: rgba(185, 28, 28, 0.08); /* Kırmızımsı matematik ızgarası */
+            
+            /* Matematik Teması Kırmızı Palet */
+            --primary-main: #B91C1C;
+            --primary-dark: #7F1D1D;
+            --primary-soft: #FCA5A5;
+            --warm-grey: #334155;
+            
+            /* Başarı / Hata Renkleri */
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+            --select-blue: #3B82F6;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--warm-grey);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--cream-bg); 
+            background-image: linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-top: 6px solid var(--primary-main);
+        }
+
+        /* Arka Plan Cam Süsleri */
+        #scale-container::before {
+            content: ''; position: absolute; top: -20%; left: -20%; width: 150%; height: 150%;
+            background: radial-gradient(circle, rgba(185, 28, 28, 0.08) 0%, transparent 60%);
+            z-index: 0; pointer-events: none;
+        }
+
+        .header {
+            padding: 15px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 900; color: var(--primary-dark); text-align: left; text-transform: uppercase; letter-spacing: 0.5px;}
+        .sub-instruction { font-size: 13.5px; font-weight: 600; color: #475569; margin-top: 4px; }
+        .logo-right-container { width: 85px; height: 85px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0px 40px 10px 40px; gap: 10px; height: calc(540px - 85px);
+            z-index: 10;
+        }
+
+        /* --- 2x2 GRID ALANI --- */
+        .grid-container {
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+            gap: 15px; flex: 1; margin-bottom: 5px; min-height: 0;
+        }
+
+        .card-box {
+            background: rgba(255, 255, 255, 0.85); border: 2.5px solid rgba(185, 28, 28, 0.15); border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; transition: all 0.3s;
+        }
+        .card-box:hover { border-color: rgba(185, 28, 28, 0.3); box-shadow: 0 6px 20px rgba(185, 28, 28, 0.08); }
+
+        /* Kaymayı engelleyen interaktif sarıcı */
+        .interactive-area {
+            position: relative; width: 170px; height: 170px;
+        }
+
+        .svg-layer {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+        }
+
+        .dot-btn {
+            position: absolute; width: 34px; height: 34px; transform: translate(-50%, -50%);
+            border-radius: 50%; background: transparent; border: 2px solid transparent;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .inner-dot {
+            width: 8px; height: 8px; background: #1E293B; border-radius: 50%;
+            transition: 0.2s; pointer-events: none;
+        }
+
+        /* Hover, Selected, Correct, Incorrect States */
+        .dot-btn:hover { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
+        .dot-btn:hover .inner-dot { transform: scale(1.3); }
+
+        .dot-btn.selected { background: rgba(59, 130, 246, 0.2); border-color: var(--select-blue); }
+        .dot-btn.selected .inner-dot { background: var(--select-blue); transform: scale(1.5); }
+
+        .dot-btn.is-correct { background: #ecfdf5; border-color: var(--success-green); pointer-events: none;}
+        .dot-btn.is-correct .inner-dot { display: none; }
+        .dot-btn.is-correct::after { content: '✓'; color: var(--success-green); font-weight: 900; font-size: 18px; }
+
+        .dot-btn.is-incorrect { background: #fef2f2; border-color: var(--error-red); pointer-events: none; animation: shake 0.4s ease-in-out;}
+        .dot-btn.is-incorrect .inner-dot { display: none; }
+        .dot-btn.is-incorrect::after { content: '✗'; color: var(--error-red); font-weight: 900; font-size: 16px; }
+
+        /* --- KONTROL PANELI VE GERİ BİLDİRİM --- */
+        .control-panel {
+            display: flex; flex-direction: column; align-items: center; gap: 8px; height: 55px; justify-content: center; position: relative; flex-shrink: 0;
+        }
+
+        .feedback-msg {
+            position: absolute; bottom: 60px; font-size: 12.5px; font-weight: 800; text-align: center; padding: 10px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; min-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 20;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-main); color: white; width: 300px; height: 46px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-action:disabled { opacity: 0.6; pointer-events: none; box-shadow: none; transform: none; cursor: not-allowed; }
+        .btn-action:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Toast Bildirimleri */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 13px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; color: white !important;}
+
+    </style>
+</head>
+<body>
+
+    <audio id="audio1" src="ses1.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Tebrikler!</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">ÇEMBERİN MERKEZİ</div>
+                <div class="sub-instruction">Aşağıda verilen çemberlerin merkezi olan noktalara tıklayarak seçiniz.</div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="grid-container">
+                
+                <!-- Kart 1: Sol Üst -->
+                <div class="card-box" id="card-1">
+                    <div class="interactive-area">
+                        <svg class="svg-layer" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="70" fill="none" stroke="#1E293B" stroke-width="2" />
+                        </svg>
+                        <!-- Merkez Noktası (Doğru) -->
+                        <button class="dot-btn d-1" style="top: 50%; left: 50%;" data-ans="true" onclick="selectDot(1, this)"><div class="inner-dot"></div></button>
+                        <!-- Çember Üzerinde (Sol üst) -->
+                        <button class="dot-btn d-1" style="top: 25.25%; left: 25.25%;" data-ans="false" onclick="selectDot(1, this)"><div class="inner-dot"></div></button>
+                        <!-- Dışarıda (Sol alt) -->
+                        <button class="dot-btn d-1" style="top: 80%; left: 10%;" data-ans="false" onclick="selectDot(1, this)"><div class="inner-dot"></div></button>
+                    </div>
+                </div>
+
+                <!-- Kart 2: Sağ Üst -->
+                <div class="card-box" id="card-2">
+                    <div class="interactive-area">
+                        <svg class="svg-layer" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="70" fill="none" stroke="#1E293B" stroke-width="2" />
+                        </svg>
+                        <!-- Merkez Noktası (Doğru) -->
+                        <button class="dot-btn d-2" style="top: 50%; left: 50%;" data-ans="true" onclick="selectDot(2, this)"><div class="inner-dot"></div></button>
+                        <!-- Çember Üzerinde (Sağ üst) -->
+                        <button class="dot-btn d-2" style="top: 25.25%; left: 74.75%;" data-ans="false" onclick="selectDot(2, this)"><div class="inner-dot"></div></button>
+                        <!-- İçeride ama merkezde değil (Sağ) -->
+                        <button class="dot-btn d-2" style="top: 55%; left: 75%;" data-ans="false" onclick="selectDot(2, this)"><div class="inner-dot"></div></button>
+                    </div>
+                </div>
+
+                <!-- Kart 3: Sol Alt -->
+                <div class="card-box" id="card-3">
+                    <div class="interactive-area">
+                        <svg class="svg-layer" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="70" fill="none" stroke="#1E293B" stroke-width="2" />
+                        </svg>
+                        <!-- Merkez Noktası (Doğru) -->
+                        <button class="dot-btn d-3" style="top: 50%; left: 50%;" data-ans="true" onclick="selectDot(3, this)"><div class="inner-dot"></div></button>
+                        <!-- İçeride (Üst) -->
+                        <button class="dot-btn d-3" style="top: 30%; left: 50%;" data-ans="false" onclick="selectDot(3, this)"><div class="inner-dot"></div></button>
+                        <!-- Çember Üzerinde (Sol alt) -->
+                        <button class="dot-btn d-3" style="top: 74.75%; left: 25.25%;" data-ans="false" onclick="selectDot(3, this)"><div class="inner-dot"></div></button>
+                    </div>
+                </div>
+
+                <!-- Kart 4: Sağ Alt -->
+                <div class="card-box" id="card-4">
+                    <div class="interactive-area">
+                        <svg class="svg-layer" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="70" fill="none" stroke="#1E293B" stroke-width="2" />
+                        </svg>
+                        <!-- Merkez Noktası (Doğru) -->
+                        <button class="dot-btn d-4" style="top: 50%; left: 50%;" data-ans="true" onclick="selectDot(4, this)"><div class="inner-dot"></div></button>
+                        <!-- Çember Üzerinde (Sağ) -->
+                        <button class="dot-btn d-4" style="top: 50%; left: 85%;" data-ans="false" onclick="selectDot(4, this)"><div class="inner-dot"></div></button>
+                        <!-- Dışarıda (Sağ) -->
+                        <button class="dot-btn d-4" style="top: 50%; left: 96%;" data-ans="false" onclick="selectDot(4, this)"><div class="inner-dot"></div></button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- KONTROL -->
+            <div class="control-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" disabled onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+        
+        // Kullanıcının her karttaki seçimi (referans tutar)
+        let selections = { 1: null, 2: null, 3: null, 4: null };
+
+        function init() {
+            document.getElementById('audio1').play().catch(()=>{});
+        }
+
+        function selectDot(cardId, element) {
+            if(isCompleted) return;
+            getAudioContext();
+            playSfx('click');
+            
+            // Aynı karttaki diğer seçimleri temizle
+            document.querySelectorAll(`.d-${cardId}`).forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Seçileni aktifleştir
+            element.classList.add('selected');
+            selections[cardId] = element;
+
+            // Eğer 4 kartta da seçim yapıldıysa butonu aktif et
+            if (Object.values(selections).every(val => val !== null)) {
+                document.getElementById('btn-check').disabled = false;
+            }
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            getAudioContext();
+
+            let allCorrect = true;
+            let wrongElements = [];
+
+            // Tüm seçimleri kontrol et
+            for (let i = 1; i <= 4; i++) {
+                let el = selections[i];
+                if (el.getAttribute('data-ans') !== "true") {
+                    allCorrect = false;
+                    wrongElements.push(el);
+                }
+            }
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+            fbBox.className = "feedback-msg"; // Sınıfları sıfırla
+
+            if(allCorrect) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+
+                // Hepsini doğru işaretle
+                for (let i = 1; i <= 4; i++) {
+                    selections[i].classList.remove('selected');
+                    selections[i].classList.add('is-correct');
+                }
+
+                if(attempts === 0 || attempts === 1) {
+                    fbBox.innerHTML = `TEBRİKLER! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:2px;">Tüm çemberlerin merkezlerini doğru belirlediniz.</span>`;
+                    fbBox.classList.add('fb-success');
+                    
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                    setVar('w4', true); // BAŞARI: w4 = true
+                }
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+
+                if(attempts === 1) {
+                    // 1. HATA
+                    fbBox.innerHTML = `Bazı seçimleriniz hatalı. Çemberin içindeki tam orta noktayı bulmalısınız. Lütfen tekrar deneyin!`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Yanlış olanları salla ve temizle
+                    wrongElements.forEach(el => {
+                        el.classList.add('is-incorrect');
+                        setTimeout(() => {
+                            el.classList.remove('is-incorrect', 'selected');
+                            // İlgili kartın selection'ını temizle ki buton yeniden hesaplansın
+                            for (let key in selections) {
+                                if (selections[key] === el) selections[key] = null;
+                            }
+                            document.getElementById('btn-check').style.display = "none";
+                        }, 1500);
+                    });
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 3500);
+
+                } else {
+                    // 2. HATA - OTOMATİK ÇÖZÜM
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Merkez noktalar otomatik olarak işaretleniyor...`;
+                    fbBox.classList.add('fb-error');
+
+                    // Yanlışları temizle
+                    for (let i = 1; i <= 4; i++) {
+                        if (selections[i]) {
+                            selections[i].classList.remove('selected', 'is-incorrect');
+                        }
+                    }
+
+                    // Domino efekti ile doğruları işaretle
+                    let delay = 0;
+                    for (let i = 1; i <= 4; i++) {
+                        setTimeout(() => {
+                            // O kartın içindeki 'data-ans="true"' olanı bul
+                            const correctBtn = document.querySelector(`.d-${i}[data-ans="true"]`);
+                            if(correctBtn) {
+                                correctBtn.classList.add('is-correct');
+                                playSfx('click');
+                            }
+                        }, delay);
+                        delay += 400;
+                    }
+
+                    // Sayaç başlat (btn-check butonu görünür yapılarak sayaca dönüştürülüyor)
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        document.getElementById('btn-check').style.display = "flex";
+                        triggerTimerAutoSolve("w5"); // HATA SONRASI: w5 = true
+                    }, delay + 500);
+                }
+            }
+        }
+
+        // Sayaç fonksiyonu
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); // w5 değişkenini tetikle
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { 
+            window.dispatchEvent(new Event('resize')); 
+            init(); 
+        };
+    </script>
+</body>
+</html>

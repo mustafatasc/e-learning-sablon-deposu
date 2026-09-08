@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bilgi Kutusu: Açı Ölçüleri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            
+            --success-green: #10B981;
+            --cyan-accent: #0ea5e9;
+            --pink-accent: #ec4899;
+            --orange-box: #fff7ed;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 80px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; gap: 15px; height: calc(540px - 80px);
+            z-index: 10;
+        }
+
+        /* --- BİLGİ KUTUSU (ÜST METİN) --- */
+        .info-box {
+            display: flex; align-items: center; gap: 20px; width: 100%;
+            background: var(--orange-box); border-radius: 12px; padding: 15px 25px 15px 15px;
+            border: 2px solid #ffedd5; border-left: 6px solid #f97316; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .narrator-speaker {
+            width: 36px; height: 36px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer; transition: transform 0.2s;
+        }
+        
+        .narrator-speaker:hover { transform: scale(1.1); }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .info-text {
+            font-size: 15px; line-height: 1.5; font-weight: 600; color: var(--text-dark);
+        }
+        .info-text strong {
+            color: #ea580c; font-weight: 800;
+        }
+
+        /* --- ORTA PANEL: KARTLAR --- */
+        .cards-container {
+            display: flex; gap: 20px; flex: 1; min-height: 0; align-items: stretch; justify-content: center;
+        }
+
+        .angle-card {
+            background: white; border: 2px solid #e2e8f0; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 15px; flex: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .card-title {
+            font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* SVG Çizim Alanı */
+        .svg-container {
+            width: 100%; flex: 1; display: flex; align-items: center; justify-content: center;
+            background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;
+            background-image: 
+                linear-gradient(#f1f5f9 1px, transparent 1px), 
+                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 15px 15px; background-position: center; overflow: hidden;
+        }
+
+        .math-svg { width: 100%; height: 100%; max-height: 160px; }
+
+        /* Sembolik İsimlendirme Kutusu */
+        .notation-box {
+            margin-top: 15px; background: white; border: 2px dashed #cbd5e1; border-radius: 8px;
+            padding: 8px 15px; width: 100%; display: flex; justify-content: center; align-items: center;
+        }
+
+        .math-symbol-text {
+            font-family: 'Times New Roman', Times, serif; font-size: 18px; font-weight: 800; color: #1E293B;
+            display: flex; align-items: baseline; gap: 4px;
+        }
+
+        /* Açı Şapkası CSS Ayarı */
+        .angle-symbol {
+            display: inline-block; position: relative; padding-top: 6px; margin: 0 1px; line-height: 1;
+        }
+        .angle-symbol svg { 
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%); margin: 0; 
+        }
+
+        /* --- SVG Çizim Animasyonları --- */
+        .fade-in-group {
+            opacity: 0; animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .draw-arc {
+            stroke-dasharray: 120; stroke-dashoffset: 120;
+            animation: drawPath 1s ease-out 0.8s forwards;
+        }
+        
+        .draw-arc-full {
+            stroke-dasharray: 160; stroke-dashoffset: 160; 
+            animation: drawPath 1.5s linear 0.8s forwards;
+        }
+
+        .draw-arc-dot {
+            transform: scale(0); transform-origin: 67.5px 112.5px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1.5s forwards;
+        }
+
+        .draw-arc-text {
+            opacity: 0; transform: translateY(5px);
+            animation: slideUpFade 0.5s ease-out 1.2s forwards;
+        }
+
+        @keyframes drawPath { to { stroke-dashoffset: 0; } }
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes popIn { to { transform: scale(1); } }
+        @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
+
+        /* --- ALT PANEL: BUTON --- */
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; height: 45px; flex-shrink: 0; margin-top: 5px;
+        }
+
+        .btn-action {
+            background: var(--success-green); color: white; min-width: 200px; height: 45px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        
+        .btn-action:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .btn-action.completed { background: #64748b; pointer-events: none; transform: none; box-shadow: none;}
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white; background-color: var(--success-green);
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">BİLGİ KUTUSU: AÇI ÖLÇÜLERİ</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- ÜST BİLGİ METNİ -->
+            <div class="info-box">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="info-text">
+                    Dik açının ölçüsü <strong>90°</strong>, doğru açının ölçüsü <strong>180°</strong> ve tam açının ölçüsü <strong>360°</strong> dir.
+                </div>
+            </div>
+
+            <!-- ORTA PANEL: 3 AÇI KARTI -->
+            <div class="cards-container">
+                
+                <!-- 1. DİK AÇI -->
+                <div class="angle-card">
+                    <div class="card-title">DİK AÇI</div>
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-dark-1" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                                </marker>
+                            </defs>
+                            
+                            <!-- Kollar sabit fade-in ile gelecek, ok uçları bozulmayacak -->
+                            <g class="fade-in-group">
+                                <line x1="60" y1="120" x2="60" y2="40" stroke="#1E293B" stroke-width="2.5" marker-end="url(#arr-dark-1)"/>
+                                <line x1="60" y1="120" x2="150" y2="120" stroke="#1E293B" stroke-width="2.5" marker-end="url(#arr-dark-1)"/>
+                                
+                                <circle cx="60" cy="120" r="3" fill="#1E293B"/>
+                                <text x="45" y="135" font-family="Montserrat" font-size="14" font-weight="800" fill="#1E293B">B</text>
+                                
+                                <circle cx="60" cy="65" r="3" fill="#1E293B"/>
+                                <text x="45" y="70" font-family="Montserrat" font-size="14" font-weight="800" fill="#1E293B">A</text>
+                                
+                                <circle cx="125" cy="120" r="3" fill="#1E293B"/>
+                                <text x="120" y="140" font-family="Montserrat" font-size="14" font-weight="800" fill="#1E293B">C</text>
+                            </g>
+                            
+                            <!-- Diklik Sembolü Animasyonu -->
+                            <polyline points="60,105 75,105 75,120" fill="none" stroke="var(--cyan-accent)" stroke-width="2.5" class="draw-arc"/>
+                            <circle cx="67.5" cy="112.5" r="2.5" fill="var(--cyan-accent)" class="draw-arc-dot"/>
+                        </svg>
+                    </div>
+                    <div class="notation-box">
+                        <div class="math-symbol-text">
+                            m(<span class="angle-symbol"><svg width="20" height="6" viewBox="0 0 24 6"><polyline points="2,6 12,2 22,6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>ABC</span>) = 90°
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. DOĞRU AÇI -->
+                <div class="angle-card">
+                    <div class="card-title">DOĞRU AÇI</div>
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-dark-2" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                                </marker>
+                                <marker id="arr-cyan-2" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--cyan-accent)"/>
+                                </marker>
+                            </defs>
+                            
+                            <!-- Doğru / Kollar sabit fade-in ile -->
+                            <g class="fade-in-group">
+                                <line x1="100" y1="110" x2="30" y2="110" stroke="#1E293B" stroke-width="2.5" marker-end="url(#arr-dark-2)"/>
+                                <line x1="100" y1="110" x2="170" y2="110" stroke="#1E293B" stroke-width="2.5" marker-end="url(#arr-dark-2)"/>
+                                
+                                <circle cx="100" cy="110" r="3" fill="#1E293B"/>
+                                <text x="100" y="130" font-family="Montserrat" font-size="14" font-weight="800" fill="#1E293B" text-anchor="middle">E</text>
+                                
+                                <circle cx="60" cy="110" r="3" fill="#1E293B"/>
+                                <text x="60" y="130" font-family="Montserrat" font-size="14" font-weight="800" fill="#1E293B" text-anchor="middle">D</text>
+                                
+                                <circle cx="140" cy="110" r="3" fill="#1E293B"/>
+                                <text x="140" y="130" font-family="Montserrat" font-size="14" font-weight="800" fill="#1E293B" text-anchor="middle">F</text>
+                            </g>
+
+                            <!-- Açı Yayı (Yarım Çember) Animasyonu -->
+                            <path d="M 75 110 A 25 25 0 0 1 125 110" fill="none" stroke="var(--cyan-accent)" stroke-width="2.5" marker-end="url(#arr-cyan-2)" class="draw-arc"/>
+                            <text x="100" y="75" font-family="Montserrat" font-size="14" font-weight="800" fill="var(--cyan-accent)" text-anchor="middle" class="draw-arc-text">180°</text>
+                        </svg>
+                    </div>
+                    <div class="notation-box">
+                        <div class="math-symbol-text">
+                            m(<span class="angle-symbol"><svg width="20" height="6" viewBox="0 0 24 6"><polyline points="2,6 12,2 22,6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>DEF</span>) = 180°
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. TAM AÇI -->
+                <div class="angle-card">
+                    <div class="card-title">TAM AÇI</div>
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-dark-3" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                                </marker>
+                                <marker id="arr-cyan-3" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--cyan-accent)"/>
+                                </marker>
+                            </defs>
+                            
+                            <!-- Kol (Işın) sabit fade-in ile -->
+                            <g class="fade-in-group">
+                                <line x1="80" y1="100" x2="190" y2="100" stroke="#1E293B" stroke-width="2.5" marker-end="url(#arr-dark-3)"/>
+                                <circle cx="80" cy="100" r="3.5" fill="#1E293B"/>
+                            </g>
+                            
+                            <!-- Açı Yayı (Tam Çember) - Merkez kaymasını önlemek için iki yarım çember olarak çizildi -->
+                            <path d="M 105 100 A 25 25 0 0 0 55 100 A 25 25 0 0 0 105 102" fill="none" stroke="var(--cyan-accent)" stroke-width="2.5" marker-end="url(#arr-cyan-3)" class="draw-arc-full"/>
+                            <text x="80" y="65" font-family="Montserrat" font-size="14" font-weight="800" fill="var(--cyan-accent)" text-anchor="middle" class="draw-arc-text">360°</text>
+                        </svg>
+                    </div>
+                    <div class="notation-box">
+                        <div class="math-symbol-text" style="color: #64748b; font-family: 'Montserrat', sans-serif;">
+                            Ölçüsü 360° dir.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ALT PANEL: TAMAMLA BUTONU -->
+            <div class="bottom-panel">
+                <button id="btn-complete" class="btn-action" onclick="completeTopic()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function completeTopic() {
+            if (isCompleted) return;
+            isCompleted = true;
+            
+            playSfx('success');
+            
+            const btn = document.getElementById('btn-complete');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            showToast("İnceleme tamamlandı. İlerleyebilirsiniz.");
+            
+            // d21 değişkenini Storyline'a gönder
+            setVar('d21', true);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { init(); };
+    </script>
+</body>
+</html>

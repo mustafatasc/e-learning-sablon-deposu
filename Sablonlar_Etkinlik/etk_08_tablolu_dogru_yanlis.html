@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --cream-bg: #FCF9F2;
+            --paper-grid: rgba(185, 28, 28, 0.08); 
+            
+            --primary-main: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --primary-soft: #FCA5A5;
+            --warm-grey: #334155;
+            --text-dark: #1E293B;
+            
+            --true-color: #10B981; 
+            --false-color: #EF4444; 
+            --warning-orange: #F59E0B;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--warm-grey);
+            user-select: none; -webkit-user-select: none;
+        }
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--cream-bg); 
+            background-image: linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-top: 6px solid var(--primary-main);
+        }
+        #scale-container::before {
+            content: ''; position: absolute; top: -20%; left: -20%; width: 150%; height: 150%;
+            background: radial-gradient(circle, rgba(185, 28, 28, 0.08) 0%, transparent 60%);
+            z-index: 0; pointer-events: none;
+        }
+        .header {
+            padding: 15px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-container { flex: 1; padding: 0; display: flex; flex-direction: column; justify-content: center; height: 100%;}
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 900; color: var(--primary-dark); text-align: left; text-transform: uppercase; letter-spacing: 0.5px;}
+        .sub-instruction { font-size: 13px; font-weight: 600; color: #475569; margin-top: 2px; }
+        .logo-right-container { width: 85px; height: 85px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+        .content-wrapper {
+            display: flex; flex: 1; padding: 0 40px 20px 40px; gap: 30px; height: calc(540px - 85px);
+            z-index: 10; position: relative;
+        }
+        
+        .left-panel {
+            width: 400px !important; display: flex; flex-direction: column; gap: 15px; justify-content: flex-start;
+        }
+        .drawing-container {
+            background: white; border: 3px solid rgba(185, 28, 28, 0.15); border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05); overflow: hidden; width: 100%; height: 350px;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            background-image: linear-gradient(rgba(185, 28, 28, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(185, 28, 28, 0.05) 1px, transparent 1px);
+            background-size: 15px 15px;
+        }
+        .math-svg { width: 100%; height: 100%; }
+        .s-line { stroke: var(--text-dark); stroke-width: 4; stroke-linecap: square; fill: none;}
+        .s-text { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 15px; fill: var(--text-dark); text-anchor: middle; dominant-baseline: middle;}
+        .s-box { stroke: var(--text-dark); stroke-width: 2.5; fill: none; }
+        
+        .right-panel {
+            flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; gap: 10px;
+        }
+        .table-container {
+            background: white; border: 2px solid rgba(185, 28, 28, 0.2); border-radius: 16px;
+            padding: 5px; box-shadow: 0 4px 15px rgba(185, 28, 28, 0.05);
+            display: flex; flex-direction: column; overflow: hidden; flex: 1;
+        }
+        .dy-table {
+            width: 100%; border-collapse: collapse; text-align: left;
+        }
+        .dy-table th {
+            font-size: 18px; font-weight: 900; padding: 10px;
+            border-bottom: 3px solid var(--primary-main);
+            color: var(--primary-main); text-align: center;
+        }
+        .dy-table th:first-child { text-align: left; padding-left: 20px; }
+        .dy-table td {
+            border-bottom: 1px solid #e2e8f0; padding: 8px 10px;
+            font-size: 13.5px; font-weight: 700; color: #334155; vertical-align: middle;
+        }
+        .dy-table tr:last-child td { border-bottom: none; }
+        .dy-table tr:nth-child(even) td { background-color: #f8fafc; }
+        
+        .cb-wrapper {
+            display: flex; align-items: center; justify-content: center;
+        }
+        .dy-btn {
+            width: 32px; height: 32px; border: 2.5px solid #cbd5e1; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; background: white;
+            cursor: pointer; transition: all 0.2s; font-size: 18px; font-weight: 900; color: transparent;
+        }
+        .dy-btn.selected-t { border-color: var(--true-color); background: #ecfdf5; color: var(--true-color); box-shadow: 0 2px 5px rgba(16, 185, 129, 0.2);}
+        .dy-btn.selected-t::after { content: '✓'; }
+        
+        .dy-btn.selected-f { border-color: var(--false-color); background: #fef2f2; color: var(--false-color); box-shadow: 0 2px 5px rgba(239, 68, 68, 0.2);}
+        .dy-btn.selected-f::after { content: '✓'; }
+        
+        .dy-btn.is-correct { border-color: var(--true-color) !important; background: var(--true-color) !important; color: white !important; pointer-events: none;}
+        .dy-btn.is-correct::after { content: '✓'; }
+        
+        .dy-btn.is-incorrect { border-color: var(--false-color) !important; background: var(--false-color) !important; color: white !important; animation: shake 0.4s ease-in-out;}
+        .dy-btn.is-incorrect::after { content: '✗'; }
+        .dy-btn.disabled { pointer-events: none; opacity: 0.5; }
+        
+        .row-letter { color: var(--primary-main); font-weight: 900; margin-right: 5px;}
+        
+        .control-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: auto; }
+        .feedback-msg {
+            font-size: 12px; font-weight: 800; text-align: center; padding: 10px 15px; border-radius: 10px;
+            display: none; line-height: 1.4; width: 100%;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+        .btn-action {
+            background: var(--primary-main); color: white; width: 100%; height: 50px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 13px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-warning { background-color: var(--warning-orange) !important; color: white !important;}
+    </style>
+</head>
+<body>
+    <audio id="audio1" src="{{SES_DOSYASI_URL}}" preload="auto"></audio>
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Tebrikler!</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">{{ANA_BASLIK}}</div>
+                <div class="sub-instruction">{{ALT_YONERGE_METNI}}</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- SOL PANEL: KROKİ ÇİZİMİ VEYA GÖRSEL -->
+            <div class="left-panel">
+                <div class="drawing-container">
+                    <!-- {{GORSEL_VEYA_SVG_KODU_BURAYA}} -->
+                    <svg class="math-svg" viewBox="0 0 400 350">
+                        <line x1="20" y1="50" x2="380" y2="50" class="s-line" />
+                        <line x1="20" y1="90" x2="160" y2="90" class="s-line" />
+                        <line x1="220" y1="90" x2="380" y2="90" class="s-line" />
+                        <text x="120" y="70" class="s-text">Görsel Alanı</text>
+                        <line x1="160" y1="90" x2="160" y2="210" class="s-line" />
+                        <line x1="220" y1="90" x2="220" y2="210" class="s-line" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- SAĞ PANEL: D/Y TABLOSU VE KONTROL -->
+            <div class="right-panel">
+                
+                <div class="table-container">
+                    <table class="dy-table" id="dy-table">
+                        <thead>
+                            <tr>
+                                <th>İfadeler</th>
+                                <th style="width: 60px;">D</th>
+                                <th style="width: 60px;">Y</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            <!-- Satır 1 -->
+                            <tr>
+                                <td><span class="row-letter">a)</span> {{SORU_1_METNI}}</td>
+                                <td><div class="cb-wrapper"><div class="dy-btn btn-t" data-row="0" data-val="T" onclick="selectOption(0, 'T')"></div></div></td>
+                                <td><div class="cb-wrapper"><div class="dy-btn btn-f" data-row="0" data-val="F" onclick="selectOption(0, 'F')"></div></div></td>
+                            </tr>
+                            
+                            <!-- Satır 2 -->
+                            <tr>
+                                <td><span class="row-letter">b)</span> {{SORU_2_METNI}}</td>
+                                <td><div class="cb-wrapper"><div class="dy-btn btn-t" data-row="1" data-val="T" onclick="selectOption(1, 'T')"></div></div></td>
+                                <td><div class="cb-wrapper"><div class="dy-btn btn-f" data-row="1" data-val="F" onclick="selectOption(1, 'F')"></div></div></td>
+                            </tr>
+
+                            <!-- Satır 3 -->
+                            <tr>
+                                <td><span class="row-letter">c)</span> {{SORU_3_METNI}}</td>
+                                <td><div class="cb-wrapper"><div class="dy-btn btn-t" data-row="2" data-val="T" onclick="selectOption(2, 'T')"></div></div></td>
+                                <td><div class="cb-wrapper"><div class="dy-btn btn-f" data-row="2" data-val="F" onclick="selectOption(2, 'F')"></div></div></td>
+                            </tr>
+
+                            <!-- Satır 4 -->
+                            <tr>
+                                <td><span class="row-letter">d)</span> {{SORU_4_METNI}}</td>
+                                <td><div class="cb-wrapper"><div class="dy-btn btn-t" data-row="3" data-val="T" onclick="selectOption(3, 'T')"></div></div></td>
+                                <td><div class="cb-wrapper"><div class="dy-btn btn-f" data-row="3" data-val="F" onclick="selectOption(3, 'F')"></div></div></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="control-panel">
+                    <div id="q-fb" class="feedback-msg"></div>
+                    <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+        
+        // DOĞRU CEVAPLAR ANAHTARI
+        // DİKKAT: Test edebilmek için varsayılan olarak T ve F bırakılmıştır. T: Doğru, F: Yanlış
+        const correctAnswers = [
+            'T', /* {{CEVAP_1_T_VEYA_F}} */
+            'T', /* {{CEVAP_2_T_VEYA_F}} */
+            'F', /* {{CEVAP_3_T_VEYA_F}} */
+            'F'  /* {{CEVAP_4_T_VEYA_F}} */
+        ];
+        
+        let userSelections = [null, null, null, null];
+
+        function init() {
+            const audio = document.getElementById('audio1');
+            if(audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        console.log("Ses otomatik oynatılamadı, kullanıcı etkileşimi bekleniyor.");
+                    });
+                }
+            }
+        }
+
+        function selectOption(rowIdx, val) {
+            if(isCompleted) return;
+            getAudioContext();
+            playSfx('click');
+            
+            const tBtn = document.querySelector(`.btn-t[data-row="${rowIdx}"]`);
+            const fBtn = document.querySelector(`.btn-f[data-row="${rowIdx}"]`);
+            
+            tBtn.classList.remove('selected-t');
+            fBtn.classList.remove('selected-f');
+            tBtn.classList.remove('is-incorrect');
+            fBtn.classList.remove('is-incorrect');
+            
+            if(val === 'T') tBtn.classList.add('selected-t');
+            else fBtn.classList.add('selected-f');
+            
+            userSelections[rowIdx] = val;
+            
+            document.getElementById('q-fb').style.display = 'none';
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            getAudioContext();
+            
+            if(userSelections.includes(null)) {
+                const fbBox = document.getElementById('q-fb');
+                fbBox.innerHTML = `Lütfen tablodaki tüm boşlukları işaretleyiniz.`;
+                fbBox.className = "feedback-msg fb-error";
+                setTimeout(() => { fbBox.style.display = 'none'; }, 2000);
+                playSfx('error');
+                return;
+            }
+
+            let allCorrect = true;
+            
+            userSelections.forEach((ans, idx) => {
+                const tBtn = document.querySelector(`.btn-t[data-row="${idx}"]`);
+                const fBtn = document.querySelector(`.btn-f[data-row="${idx}"]`);
+                
+                tBtn.classList.remove('is-incorrect');
+                fBtn.classList.remove('is-incorrect');
+
+                if(ans === correctAnswers[idx]) {
+                    if(ans === 'T') { tBtn.classList.remove('selected-t'); tBtn.classList.add('is-correct'); fBtn.classList.add('disabled'); }
+                    if(ans === 'F') { fBtn.classList.remove('selected-f'); fBtn.classList.add('is-correct'); tBtn.classList.add('disabled'); }
+                } else {
+                    allCorrect = false;
+                    if(ans === 'T') tBtn.classList.add('is-incorrect');
+                    if(ans === 'F') fBtn.classList.add('is-incorrect');
+                }
+            });
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+
+            if(allCorrect) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+                if(attempts === 0 || attempts === 1) {
+                    fbBox.innerHTML = `TEBRİKLER! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:4px;">{{BASARI_GERI_BILDIRIM_METNI}}</span>`;
+                    fbBox.className = "feedback-msg fb-success";
+                    
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                    setVar('{{STORYLINE_VAR_TAMAMLANDI_ILK}}', true); 
+                }
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+                if(attempts === 1) {
+                    // 1. HATA
+                    fbBox.innerHTML = `{{HATA_GERI_BILDIRIM_METNI}}`;
+                    fbBox.className = "feedback-msg fb-error";
+                    
+                    setTimeout(() => {
+                        userSelections.forEach((ans, idx) => {
+                            if(ans !== correctAnswers[idx]) {
+                                userSelections[idx] = null; 
+                                const tBtn = document.querySelector(`.btn-t[data-row="${idx}"]`);
+                                const fBtn = document.querySelector(`.btn-f[data-row="${idx}"]`);
+                                tBtn.classList.remove('selected-t', 'is-incorrect');
+                                fBtn.classList.remove('selected-f', 'is-incorrect');
+                            }
+                        });
+                    }, 1500);
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 4000);
+                } else {
+                    // 2. HATA - OTOMATİK ÇÖZÜM
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Doğru cevaplar tabloya işleniyor...`;
+                    fbBox.className = "feedback-msg fb-error";
+                    
+                    let delay = 0;
+                    userSelections.forEach((ans, idx) => {
+                        if(ans !== correctAnswers[idx]) {
+                            const correctAns = correctAnswers[idx];
+                            const tBtn = document.querySelector(`.btn-t[data-row="${idx}"]`);
+                            const fBtn = document.querySelector(`.btn-f[data-row="${idx}"]`);
+                            
+                            setTimeout(() => {
+                                tBtn.classList.remove('selected-t', 'is-incorrect');
+                                fBtn.classList.remove('selected-f', 'is-incorrect');
+                                
+                                if(correctAns === 'T') { 
+                                    tBtn.classList.add('is-correct'); 
+                                    fBtn.classList.add('disabled');
+                                }
+                                if(correctAns === 'F') { 
+                                    fBtn.classList.add('is-correct'); 
+                                    tBtn.classList.add('disabled');
+                                }
+                                playSfx('click');
+                            }, delay);
+                            delay += 300; 
+                        }
+                    });
+
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve("{{STORYLINE_VAR_OTOMATIK_COZUM}}"); 
+                    }, delay + 500);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); 
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, iconColorClass) {
+            const toast = document.getElementById('toast-msg');
+            const iconSvg = toast.querySelector('svg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(iconColorClass) toast.classList.add(iconColorClass);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { 
+            window.dispatchEvent(new Event('resize')); 
+            init(); 
+        };
+    </script>
+</body>
+</html>

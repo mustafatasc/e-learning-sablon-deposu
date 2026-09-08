@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Doğruların Durumları - Konu Anlatımı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; /* Montserrat Medium */
+            color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden; /* Sıçrama engelleme */
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            /* Defter ızgarası */
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 20px 40px; height: calc(540px - 85px);
+            z-index: 10; position: relative;
+        }
+
+        /* --- KONU ANLATIMI KUTUSU --- */
+        .topic-content {
+            background: white; border-radius: 12px; padding: 30px 40px 30px 50px;
+            font-size: 12px; /* Yazı boyutu 12px olarak ayarlandı */
+            border-left: 6px solid var(--primary-red); line-height: 1.6;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.05); width: 100%;
+            max-width: 600px; /* Okunabilirliği artırmak için kutu genişliği sınırlandı */
+            margin: 20px auto 0 auto; /* Kutuyu ortala */
+            position: relative;
+        }
+
+        /* Ses butonu (Hoparlör) stilleri */
+        .narrator-speaker {
+            position: absolute; top: 30px; left: -18px; /* İkon boyutu küçüldüğü için hizalama güncellendi */
+            width: 36px; height: 36px; /* İkon boyutu 12px yazıya uygun olacak şekilde biraz küçültüldü */
+            background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+            z-index: 20;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        /* Mavi Başlık Stili Eklendi */
+        .note-title {
+            color: #1D4ED8; /* Mavi tükenmez kalem rengi (Fotoğraftaki gibi) */
+            font-weight: 700;
+            font-size: 14px; /* Başlık metinden biraz daha büyük (14px) */
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .note-paragraph {
+            font-weight: 500; /* Medium */
+            margin-bottom: 15px;
+            font-size: 12px; /* Yazı boyutu 12px */
+            color: var(--text-dark);
+        }
+
+        .note-list {
+            margin-left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 12px; /* Yazı boyutu 12px */
+            color: var(--text-dark);
+        }
+        
+        .note-list div {
+            font-weight: 600; /* Maddeler belirgin */
+            display: flex;
+            align-items: center;
+        }
+
+        /* İleri Butonu */
+        .btn-next {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            background: var(--primary-red); 
+            color: white; 
+            padding: 12px 30px;
+            font-size: 16px; 
+            font-weight: 800; 
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); 
+            border: none;
+            cursor: pointer; 
+            transition: all 0.5s ease; 
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 20;
+            opacity: 0; /* Başlangıçta gizli */
+            pointer-events: none; /* Başlangıçta tıklanamaz */
+            transform: translateY(10px); /* Aşağıdan gelme animasyonu için */
+        }
+
+        .btn-next.show-btn {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        
+        .btn-next:hover { 
+            background: #991b1b; 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); 
+        }
+
+        .btn-next.completed { 
+            background: var(--success-green); 
+            pointer-events: none; 
+            transform: none; 
+            box-shadow: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="scale-container">
+        
+        <!-- Ses Dosyası ID'si ve Kaynağı 'ses1' olarak ayarlandı -->
+        <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+        <!-- HEADER (BAŞLIK VE LOGO) -->
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">DOĞRULARIN BİRBİRİNE GÖRE DURUMLARI</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- Konu Anlatım İçeriği -->
+            <div class="topic-content">
+                <!-- Hoparlör Butonu -->
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-5 h-5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+
+                <!-- Fotoğraftaki Mavi Başlık -->
+                <div class="note-title">
+                    AYNI DÜZLEMDEKİ İKİ DOĞRUNUN BİRBİRİNE GÖRE DURUMLARI
+                </div>
+
+                <div class="note-paragraph">
+                    Aynı düzlemde bulunan iki doğrunun birbirine göre üç farklı durumu vardır.
+                </div>
+
+                <div class="note-list">
+                    <div>1) Paralel Doğrular</div>
+                    <div>2) Kesişen Doğrular</div>
+                    <div>3) Çakışık Doğrular</div>
+                </div>
+
+                <div class="note-paragraph" style="margin-bottom: 0;">
+                    Şimdi bu durumları inceleyelim;
+                </div>
+            </div>
+
+            <!-- İleri / Tamamla Butonu -->
+            <button id="btn-next" class="btn-next" onclick="completeTopic(event)">
+                İLERİ
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        // Zorunlu Otomatik Oynatma Fonksiyonu
+        function forceAutoplay() {
+            if (isAudioPlaying) return; // Zaten çalıyorsa tekrar başlatma
+            
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // Ses başarıyla başladıysa
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        
+                        // Başarıyla başladığı için tıklama dinleyicilerini kaldır
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        // Tarayıcı engellediyse animasyonu durdur
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+        
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; // Ses bitince animasyonu durdur
+                    isAudioPlaying = false; // Bittiğinde durumu sıfırla
+
+                    // Ses bittiğinde İLERİ butonunu görünür yap
+                    const btnNext = document.getElementById('btn-next');
+                    if(btnNext) btnNext.classList.add('show-btn');
+                });
+            }
+
+            // 1. Adım: Sayfa açılır açılmaz anında oynatmayı dene
+            forceAutoplay();
+
+            // 2. Adım: Eğer tarayıcı ilk adımı engellediyse, ekrana herhangi bir yere tıklanması sesi başlatır
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        // Hoparlöre tıklanınca manuel baştan başlatma
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            
+            if(audio) {
+                audio.pause(); 
+                audio.currentTime = 0; 
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function playSuccessSfx() {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25);
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function completeTopic(event) {
+            event.stopPropagation(); // Tıklamanın ses autoplay'ini tetiklemesini durdur
+            playSuccessSfx();
+            const btn = document.getElementById('btn-next');
+            btn.innerHTML = `
+                TAMAMLANDI ✓
+            `;
+            btn.classList.add('completed');
+            
+            // a4 değişkenini tetikle
+            setVar('a4', true);
+        }
+
+        // Sıçramayı engelleyen ölçeklendirme mantığı
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => {
+            init();
+        };
+
+        applyScale(); // Sayfa işlenirken anında ölçeklendir
+        document.body.style.visibility = 'visible'; // Ölçeklendirme sonrası görünür yap
+        window.addEventListener('resize', applyScale);
+
+    </script>
+</body>
+</html>

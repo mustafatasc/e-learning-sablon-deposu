@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Açılar Konu Anlatımı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* TAŞMAYI ÖNLEYEN KRİTİK KURAL */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 1920x1080 Full HD Çözünürlük */
+            --slide-width: 1920px;
+            --slide-height: 1080px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --cyan-accent: #0ea5e9;
+            --pink-accent: #ec4899;
+            --orange-accent: #f97316;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; 
+            color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden; 
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 3px, transparent 3px), 
+                linear-gradient(90deg, var(--grid-line) 3px, transparent 3px);
+            background-size: 60px 60px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 40px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+            border-top: 12px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 40px 80px 0 80px; height: 170px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 32px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 2px;}
+        .logo-right-container { width: 160px; height: 160px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 40px; margin-top: -20px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 80px 20px 80px; height: calc(1080px - 170px);
+            z-index: 10; position: relative;
+        }
+
+        /* --- İÇERİK ALANI --- */
+        .topic-content {
+            background: white; border-radius: 24px; padding: 0;
+            border-left: 12px solid var(--primary-red); line-height: 1.5;
+            box-shadow: 0 8px 20px rgba(185, 28, 28, 0.05); width: 100%; height: 100%;
+            margin: 10px auto 0 auto;
+            position: relative;
+            overflow: hidden; 
+        }
+
+        .slide-container {
+            display: flex; width: 300%; height: 100%; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide {
+            width: 33.333%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column;
+            padding: 50px 60px 120px 80px;
+        }
+
+        /* --- BAŞLIK İÇİ SES BUTONLARI --- */
+        .title-group {
+            display: flex; align-items: center; gap: 20px; margin-bottom: 10px;
+        }
+
+        .inline-speaker {
+            width: 56px; height: 56px;
+            background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3); cursor: pointer;
+            flex-shrink: 0; transition: transform 0.2s;
+        }
+        
+        .inline-speaker:hover { transform: scale(1.1); }
+
+        @keyframes pulsePlaySmall {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        /* Metin Stilleri */
+        .note-title { color: var(--pink-accent); font-weight: 800; font-size: 32px; margin: 0; }
+        .note-paragraph { font-weight: 500; margin-bottom: 20px; font-size: 26px; color: var(--text-dark); }
+        .highlight-cyan { color: var(--cyan-accent); font-weight: 800; }
+        
+        .note-list { margin-left: 20px; display: flex; flex-direction: column; gap: 24px; font-size: 26px; color: var(--text-dark); }
+        .note-list div { font-weight: 600; display: flex; align-items: flex-start; }
+        .bullet-icon { width: 24px; height: 24px; color: var(--pink-accent); flex-shrink: 0; margin-top: 6px; margin-right: 16px; }
+
+        .math-expr { font-family: 'Times New Roman', Times, serif; font-style: italic; font-weight: bold; }
+        
+        /* DÜZELTİLMİŞ AÇI İŞARETİ (ŞAPKA) */
+        .angle-hat { 
+            position: relative; 
+            display: inline-block; 
+            margin-top: 8px; /* Şapkanın üst satıra değmemesi için boşluk azaltıldı */
+        }
+        .angle-hat::after { 
+            content: ''; 
+            position: absolute; 
+            top: -7px; /* Yazıya yaklaştırıldı (Önceki: -12px) */
+            left: 50%; 
+            width: 14px; 
+            height: 14px; 
+            /* Karakter yerine çizim kullanılarak üçgen görünümü engellendi */
+            border-top: 2.5px solid currentColor; 
+            border-right: 2.5px solid currentColor; 
+            transform: translateX(-50%) scaleY(0.7) rotate(-45deg); 
+            border-radius: 1px;
+        }
+
+        /* Görsel Kutuları */
+        .image-container {
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px; border: 2px solid #e2e8f0; border-radius: 16px;
+            background-color: #f8fafc; flex: 1; min-height: 0;
+            position: relative; width: 100%; height: 100%;
+        }
+
+        .section-divider { width: 100%; height: 2px; background: #e2e8f0; margin: 25px 0; flex-shrink: 0; }
+
+        /* Navigasyon Okları */
+        .navigation-controls {
+            position: absolute; bottom: 30px; left: 0; width: 100%;
+            display: flex; justify-content: center; align-items: center; gap: 40px;
+            z-index: 30; pointer-events: none;
+        }
+
+        .nav-btn {
+            background: white; border: 4px solid var(--primary-red); color: var(--primary-red);
+            width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; pointer-events: auto;
+            box-shadow: 0 8px 12px rgba(185, 28, 28, 0.1);
+        }
+        .nav-btn:hover:not(:disabled) { background: var(--primary-red); color: white; transform: scale(1.1); }
+        .nav-btn:disabled { border-color: #cbd5e1; color: #cbd5e1; cursor: not-allowed; box-shadow: none; transform: none;}
+        .nav-btn svg { width: 40px; height: 40px; stroke-width: 3px; }
+
+        .slide-dots { display: flex; gap: 16px; pointer-events: auto;}
+        .dot { width: 20px; height: 20px; border-radius: 50%; background: #cbd5e1; transition: 0.3s; }
+        .dot.active { background: var(--primary-red); transform: scale(1.2); }
+
+        /* TAMAMLA Butonu */
+        .btn-complete {
+            position: absolute; bottom: 30px; right: 80px;
+            background: var(--primary-red); color: white; padding: 20px 50px;
+            font-size: 30px; font-weight: 800; border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.5s ease; letter-spacing: 2px;
+            display: flex; align-items: center; gap: 16px; z-index: 40;
+            opacity: 0; pointer-events: none; transform: translateY(20px); 
+        }
+
+        .btn-complete.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-complete:hover { background: #991b1b; transform: translateY(-4px); box-shadow: 0 16px 40px rgba(185, 28, 28, 0.4); }
+        .btn-complete.finished { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+
+    </style>
+</head>
+<body>
+
+    <div id="scale-container">
+        
+        <!-- Her başlık için ayrı ses dosyaları -->
+        <audio id="ses1" src="ses1.mp3" preload="auto"></audio>
+        <audio id="ses2" src="ses2.mp3" preload="auto"></audio>
+        <audio id="ses3" src="ses3.mp3" preload="auto"></audio>
+        <audio id="ses4" src="ses4.mp3" preload="auto"></audio>
+        <audio id="ses5" src="ses5.mp3" preload="auto"></audio>
+        <audio id="ses6" src="ses6.mp3" preload="auto"></audio>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">KESİŞEN DOĞRULAR ARASINDAKİ AÇILAR</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="topic-content">
+                
+                <div class="slide-container" id="slider">
+                    
+                    <!-- ============================================== -->
+                    <!-- SLAYT 1: Ters ve Komşu Açılar -->
+                    <!-- ============================================== -->
+                    <div class="slide">
+                        <!-- TERS AÇILAR -->
+                        <div class="flex-1 flex flex-row items-center gap-12 min-h-0 w-full">
+                            <div style="flex: 1.5;" class="flex flex-col justify-center min-w-0">
+                                <div class="title-group">
+                                    <div id="btn-ses1" class="inline-speaker" onclick="playSectionAudio('ses1', 'btn-ses1')">
+                                        <svg class="w-8 h-8 pl-1" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                                    </div>
+                                    <h2 class="note-title">Ters Açılar:</h2>
+                                </div>
+                                <div class="note-paragraph">Kesişen iki doğru arasında kalan ve zıt yönlere bakan açılardır. Ters açıların ölçüleri birbirine eşittir.</div>
+                                <div class="note-list">
+                                    <div><svg class="bullet-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3l10 7-10 7V3z"/></svg><span><span class="angle-hat">AOB</span> ile <span class="angle-hat">COD</span> ve <span class="angle-hat">AOC</span> ile <span class="angle-hat">BOD</span> ters açılardır.</span></div>
+                                    <div><svg class="bullet-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3l10 7-10 7V3z"/></svg><span>m(<span class="angle-hat">AOB</span>) = m(<span class="angle-hat">COD</span>) ve m(<span class="angle-hat">AOC</span>) = m(<span class="angle-hat">BOD</span>) dir.</span></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;" class="h-full py-4 min-w-0">
+                                <div class="image-container">
+                                    <svg width="100%" height="100%" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                            <marker id="arr-cyan" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 2 L 10 5 L 0 8 z" fill="#0ea5e9"/></marker>
+                                            <marker id="arr-cyan-rev" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 10 2 L 0 5 L 10 8 z" fill="#0ea5e9"/></marker>
+                                        </defs>
+                                        <line x1="30" y1="30" x2="170" y2="90" stroke="#0ea5e9" stroke-width="2" marker-start="url(#arr-cyan-rev)" marker-end="url(#arr-cyan)" />
+                                        <line x1="30" y1="90" x2="170" y2="30" stroke="#0ea5e9" stroke-width="2" marker-start="url(#arr-cyan-rev)" marker-end="url(#arr-cyan)" />
+                                        <!-- Düzeltilmiş Açı Yayları: Tamamen boş (transparent) ve belirgin (stroke-width: 2.5) -->
+                                        <path d="M 85 53 A 20 20 0 0 1 115 53" fill="transparent" stroke="#f97316" stroke-width="2.5"/>
+                                        <path d="M 85 67 A 20 20 0 0 0 115 67" fill="transparent" stroke="#f97316" stroke-width="2.5"/>
+                                        <circle cx="100" cy="60" r="2" fill="#10B981"/><text x="96" y="75" fill="#10B981" font-size="10" font-weight="bold">O</text>
+                                        <circle cx="60" cy="43" r="2" fill="#10B981"/><text x="56" y="38" fill="#10B981" font-size="10" font-weight="bold">A</text>
+                                        <circle cx="140" cy="43" r="2" fill="#10B981"/><text x="136" y="38" fill="#10B981" font-size="10" font-weight="bold">B</text>
+                                        <circle cx="60" cy="77" r="2" fill="#10B981"/><text x="56" y="90" fill="#10B981" font-size="10" font-weight="bold">C</text>
+                                        <circle cx="140" cy="77" r="2" fill="#10B981"/><text x="136" y="90" fill="#10B981" font-size="10" font-weight="bold">D</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-divider"></div>
+
+                        <!-- KOMŞU AÇILAR -->
+                        <div class="flex-1 flex flex-row items-center gap-12 min-h-0 w-full">
+                            <div style="flex: 1.5;" class="flex flex-col justify-center min-w-0">
+                                <div class="title-group">
+                                    <div id="btn-ses2" class="inline-speaker" onclick="playSectionAudio('ses2', 'btn-ses2')">
+                                        <svg class="w-8 h-8 pl-1" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                                    </div>
+                                    <h2 class="note-title">Komşu Açılar:</h2>
+                                </div>
+                                <div class="note-paragraph">Köşeleri ve aralarındaki ışınları ortak olan açılardır.</div>
+                                <div class="note-list">
+                                    <div><svg class="bullet-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3l10 7-10 7V3z"/></svg><span><span class="angle-hat">AOB</span> ile <span class="angle-hat">BOC</span> komşu açılardır.</span></div>
+                                    <div style="padding-left: 40px;"><span>İki açının O köşesi ve OB ışını ortaktır.</span></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;" class="h-full py-4 min-w-0">
+                                <div class="image-container">
+                                    <svg width="100%" height="100%" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                                        <line x1="50" y1="90" x2="160" y2="90" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                        <line x1="50" y1="90" x2="110" y2="20" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                        <line x1="50" y1="90" x2="150" y2="50" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                        <!-- Düzeltilmiş Açı Yayları: Tamamen boş (transparent) -->
+                                        <path d="M 75 90 A 25 25 0 0 0 83 77" fill="transparent" stroke="#ec4899" stroke-width="2.5"/>
+                                        <path d="M 83 77 A 25 25 0 0 0 68 68" fill="transparent" stroke="#f97316" stroke-width="2.5"/>
+                                        <circle cx="50" cy="90" r="2" fill="#ec4899"/><text x="38" y="95" fill="#1E293B" font-size="10" font-weight="bold">O</text>
+                                        <circle cx="90" cy="43" r="2" fill="#ec4899"/><text x="80" y="40" fill="#1E293B" font-size="10" font-weight="bold">A</text>
+                                        <circle cx="120" cy="62" r="2" fill="#ec4899"/><text x="110" y="55" fill="#1E293B" font-size="10" font-weight="bold">B</text>
+                                        <circle cx="130" cy="90" r="2" fill="#ec4899"/><text x="127" y="105" fill="#1E293B" font-size="10" font-weight="bold">C</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================== -->
+                    <!-- SLAYT 2: Tümler Açılar -->
+                    <!-- ============================================== -->
+                    <div class="slide">
+                        
+                        <div class="flex-1 flex flex-row items-center gap-12 min-h-0 w-full mt-4">
+                            <div style="flex: 1.5;" class="flex flex-col justify-center min-w-0">
+                                <div class="title-group">
+                                    <div id="btn-ses3" class="inline-speaker" onclick="playSectionAudio('ses3', 'btn-ses3')">
+                                        <svg class="w-8 h-8 pl-1" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                                    </div>
+                                    <h2 class="note-title">Tümler Açılar:</h2>
+                                </div>
+                                <div class="note-paragraph">Ölçüleri toplamı 90° olan açılardır.</div>
+                                <div class="note-list">
+                                    <div><svg class="bullet-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3l10 7-10 7V3z"/></svg><span>m(<span class="angle-hat">ABC</span>) + m(<span class="angle-hat">DEF</span>) = 90° olduğundan <span class="angle-hat">ABC</span> ile <span class="angle-hat">DEF</span> tümler açılardır.</span></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;" class="h-full py-4 min-w-0">
+                                <div class="image-container">
+                                    <svg width="100%" height="100%" viewBox="0 0 250 100" xmlns="http://www.w3.org/2000/svg">
+                                        <g transform="translate(30, 80)">
+                                            <line x1="0" y1="0" x2="80" y2="0" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <line x1="0" y1="0" x2="35" y2="-60" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <path d="M 20 0 A 20 20 0 0 0 10 -17" fill="transparent" stroke="#f97316" stroke-width="2.5"/>
+                                            <text x="24" y="-8" font-size="11" font-weight="bold" fill="#1E293B">60°</text>
+                                            <circle cx="0" cy="0" r="2" fill="#ec4899"/><text x="-10" y="10" font-size="10" font-weight="bold">B</text>
+                                            <circle cx="50" cy="0" r="2" fill="#ec4899"/><text x="47" y="12" font-size="10" font-weight="bold">C</text>
+                                            <circle cx="20" cy="-35" r="2" fill="#ec4899"/><text x="10" y="-35" font-size="10" font-weight="bold">A</text>
+                                        </g>
+                                        <g transform="translate(160, 80)">
+                                            <line x1="0" y1="0" x2="50" y2="-60" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <line x1="0" y1="0" x2="15" y2="-70" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <path d="M 12 -15 A 20 20 0 0 0 4 -19" fill="transparent" stroke="#eab308" stroke-width="2.5"/>
+                                            <text x="14" y="-28" font-size="11" font-weight="bold" fill="#1E293B">30°</text>
+                                            <circle cx="0" cy="0" r="2" fill="#ec4899"/><text x="-10" y="10" font-size="10" font-weight="bold">E</text>
+                                            <circle cx="35" cy="-42" r="2" fill="#ec4899"/><text x="42" y="-35" font-size="10" font-weight="bold">F</text>
+                                            <circle cx="10" cy="-48" r="2" fill="#ec4899"/><text x="-2" y="-45" font-size="10" font-weight="bold">D</text>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-divider"></div>
+
+                        <div class="flex-1 flex flex-row items-center gap-12 min-h-0 w-full mt-4">
+                            <div style="flex: 1.5;" class="flex flex-col justify-center min-w-0">
+                                <div class="title-group">
+                                    <div id="btn-ses4" class="inline-speaker" onclick="playSectionAudio('ses4', 'btn-ses4')">
+                                        <svg class="w-8 h-8 pl-1" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                                    </div>
+                                    <h2 class="note-title">Komşu Tümler Açılar:</h2>
+                                </div>
+                                <div class="note-list">
+                                    <div><svg class="bullet-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3l10 7-10 7V3z"/></svg><span>Ölçüleri toplamı 90° olan komşu iki açıya <span class="highlight-cyan">komşu tümler açılar</span> denir.</span></div>
+                                    <div style="padding-left: 40px; margin-top: 10px;"><span><span class="angle-hat">AOB</span> ile <span class="angle-hat">BOC</span> komşu tümler açılardır.</span></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;" class="h-full py-4 min-w-0">
+                                <div class="image-container">
+                                    <svg width="100%" height="100%" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
+                                        <g transform="translate(60, 90)">
+                                            <line x1="0" y1="0" x2="80" y2="0" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <line x1="0" y1="0" x2="0" y2="-70" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <line x1="0" y1="0" x2="60" y2="-25" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            
+                                            <path d="M 25 0 A 25 25 0 0 0 23 -10" fill="transparent" stroke="#eab308" stroke-width="2.5"/>
+                                            <path d="M 23 -10 A 25 25 0 0 0 0 -25" fill="transparent" stroke="#f97316" stroke-width="2.5"/>
+                                            
+                                            <text x="32" y="-6" font-size="11" font-weight="bold" fill="#1E293B">20°</text>
+                                            <text x="8" y="-24" font-size="11" font-weight="bold" fill="#1E293B">70°</text>
+
+                                            <circle cx="0" cy="0" r="2" fill="#ec4899"/><text x="-12" y="10" font-size="10" font-weight="bold">O</text>
+                                            <circle cx="50" cy="0" r="2" fill="#ec4899"/><text x="47" y="12" font-size="10" font-weight="bold">C</text>
+                                            <circle cx="0" cy="-45" r="2" fill="#ec4899"/><text x="-12" y="-45" font-size="10" font-weight="bold">A</text>
+                                            <circle cx="45" cy="-19" r="2" fill="#ec4899"/><text x="42" y="-25" font-size="10" font-weight="bold">B</text>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================== -->
+                    <!-- SLAYT 3: Bütünler Açılar -->
+                    <!-- ============================================== -->
+                    <div class="slide">
+                        
+                        <div class="flex-1 flex flex-row items-center gap-12 min-h-0 w-full mt-4">
+                            <div style="flex: 1.5;" class="flex flex-col justify-center min-w-0">
+                                <div class="title-group">
+                                    <div id="btn-ses5" class="inline-speaker" onclick="playSectionAudio('ses5', 'btn-ses5')">
+                                        <svg class="w-8 h-8 pl-1" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                                    </div>
+                                    <h2 class="note-title">Bütünler Açılar:</h2>
+                                </div>
+                                <div class="note-paragraph">Ölçüleri toplamı 180° olan açılardır.</div>
+                                <div class="note-list">
+                                    <div><svg class="bullet-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3l10 7-10 7V3z"/></svg><span>m(<span class="angle-hat">KLM</span>) + m(<span class="angle-hat">PRS</span>) = 180° olduğundan <span class="angle-hat">KLM</span> ile <span class="angle-hat">PRS</span> bütünler açılardır.</span></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;" class="h-full py-4 min-w-0">
+                                <div class="image-container">
+                                    <svg width="100%" height="100%" viewBox="0 0 260 100" xmlns="http://www.w3.org/2000/svg">
+                                        <g transform="translate(60, 80)">
+                                            <line x1="0" y1="0" x2="50" y2="0" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <line x1="0" y1="0" x2="-40" y2="0" stroke="#0ea5e9" stroke-width="2" marker-start="url(#arr-cyan-rev)" />
+                                            <line x1="0" y1="0" x2="30" y2="-50" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <path d="M -15 0 A 15 15 0 0 1 8 -13" fill="transparent" stroke="#f97316" stroke-width="2.5"/>
+                                            <text x="-26" y="-16" font-size="11" font-weight="bold" fill="#1E293B">130°</text>
+                                            <circle cx="0" cy="0" r="2" fill="#ec4899"/><text x="-5" y="12" font-size="10" font-weight="bold">L</text>
+                                            <circle cx="-25" cy="0" r="2" fill="#ec4899"/><text x="-30" y="12" font-size="10" font-weight="bold">K</text>
+                                            <circle cx="20" cy="-33" r="2" fill="#ec4899"/><text x="10" y="-35" font-size="10" font-weight="bold">M</text>
+                                        </g>
+                                        <g transform="translate(180, 80)">
+                                            <line x1="0" y1="0" x2="50" y2="0" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <line x1="0" y1="0" x2="-30" y2="0" stroke="#0ea5e9" stroke-width="2" marker-start="url(#arr-cyan-rev)" />
+                                            <line x1="0" y1="0" x2="30" y2="-50" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <path d="M 15 0 A 15 15 0 0 0 8 -13" fill="transparent" stroke="#f97316" stroke-width="2.5"/>
+                                            <text x="18" y="-10" font-size="11" font-weight="bold" fill="#1E293B">50°</text>
+                                            <circle cx="0" cy="0" r="2" fill="#ec4899"/><text x="-8" y="12" font-size="10" font-weight="bold">R</text>
+                                            <circle cx="35" cy="0" r="2" fill="#ec4899"/><text x="32" y="12" font-size="10" font-weight="bold">S</text>
+                                            <circle cx="20" cy="-33" r="2" fill="#ec4899"/><text x="10" y="-35" font-size="10" font-weight="bold">P</text>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-divider"></div>
+
+                        <div class="flex-1 flex flex-row items-center gap-12 min-h-0 w-full mt-4">
+                            <div style="flex: 1.5;" class="flex flex-col justify-center min-w-0">
+                                <div class="title-group">
+                                    <div id="btn-ses6" class="inline-speaker" onclick="playSectionAudio('ses6', 'btn-ses6')">
+                                        <svg class="w-8 h-8 pl-1" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                                    </div>
+                                    <h2 class="note-title">Komşu Bütünler Açılar:</h2>
+                                </div>
+                                <div class="note-list">
+                                    <div><svg class="bullet-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3l10 7-10 7V3z"/></svg><span>Ölçüleri toplamı 180° olan iki komşu açıya <span class="highlight-cyan">komşu bütünler açılar</span> denir.</span></div>
+                                    <div style="padding-left: 40px; margin-top: 10px;"><span><span class="angle-hat">DEF</span> ile <span class="angle-hat">FEG</span> komşu bütünler açılardır.</span></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;" class="h-full py-4 min-w-0">
+                                <div class="image-container">
+                                    <svg width="100%" height="100%" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
+                                        <g transform="translate(100, 80)">
+                                            <line x1="0" y1="0" x2="60" y2="0" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            <line x1="0" y1="0" x2="-60" y2="0" stroke="#0ea5e9" stroke-width="2" marker-start="url(#arr-cyan-rev)" />
+                                            <line x1="0" y1="0" x2="50" y2="-40" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-cyan)" />
+                                            
+                                            <path d="M 20 0 A 20 20 0 0 0 15 -12" fill="transparent" stroke="#eab308" stroke-width="2.5"/>
+                                            <path d="M 15 -12 A 20 20 0 0 0 -20 0" fill="transparent" stroke="#f97316" stroke-width="2.5"/>
+                                            
+                                            <text x="24" y="-6" font-size="11" font-weight="bold" fill="#1E293B">20°</text>
+                                            <text x="-28" y="-18" font-size="11" font-weight="bold" fill="#1E293B">160°</text>
+
+                                            <circle cx="0" cy="0" r="2" fill="#ec4899"/><text x="-5" y="12" font-size="10" font-weight="bold">E</text>
+                                            <circle cx="40" cy="0" r="2" fill="#ec4899"/><text x="37" y="12" font-size="10" font-weight="bold">G</text>
+                                            <circle cx="-40" cy="0" r="2" fill="#ec4899"/><text x="-45" y="12" font-size="10" font-weight="bold">D</text>
+                                            <circle cx="35" cy="-28" r="2" fill="#ec4899"/><text x="25" y="-35" font-size="10" font-weight="bold">F</text>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sayfa Değiştirme Butonları ve Noktalar -->
+                <div class="navigation-controls">
+                    <button class="nav-btn" id="prev-btn" onclick="moveSlide(-1)" disabled>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <div class="slide-dots">
+                        <div class="dot active" id="dot-0"></div>
+                        <div class="dot" id="dot-1"></div>
+                        <div class="dot" id="dot-2"></div>
+                    </div>
+                    <button class="nav-btn" id="next-btn" onclick="moveSlide(1)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- TAMAMLA Butonu -->
+            <button id="btn-complete" class="btn-complete" onclick="completeTopic(event)">
+                TAMAMLA ✓
+            </button>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let currentPlayingId = null;
+        let currentSlide = 0;
+        const totalSlides = 3;
+        
+        // Tüm ses ID'leri ve buton ID'leri
+        const allAudioIds = ['ses1', 'ses2', 'ses3', 'ses4', 'ses5', 'ses6'];
+        const allBtnIds = ['btn-ses1', 'btn-ses2', 'btn-ses3', 'btn-ses4', 'btn-ses5', 'btn-ses6'];
+
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        // Bireysel Başlık Seslerini Yöneten Fonksiyon
+        function playSectionAudio(audioId, btnId) {
+            let targetAudio = document.getElementById(audioId);
+            let targetBtn = document.getElementById(btnId);
+
+            if (!targetAudio) return;
+
+            // Eğer aynı butona tekrar tıklandıysa ve müzik çalıyorsa DURAKLAT (Pause)
+            if (currentPlayingId === audioId && !targetAudio.paused) {
+                targetAudio.pause();
+                if(targetBtn) targetBtn.style.animation = 'none';
+                currentPlayingId = null;
+                return;
+            }
+
+            // Önce ÇALAN TÜM SESLERİ DURDUR ve başa sar
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                let b = document.getElementById(allBtnIds[index]);
+                if (a) { a.pause(); a.currentTime = 0; }
+                if (b) b.style.animation = 'none';
+            });
+
+            // Seçilen Sesi Çal
+            let playPromise = targetAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    currentPlayingId = audioId;
+                    if(targetBtn) targetBtn.style.animation = 'pulsePlaySmall 2s infinite';
+                }).catch(e => console.log("Otomatik oynatma engellendi: " + e));
+            }
+            
+            // Ses bitince animasyonu kaldır
+            targetAudio.onended = () => {
+                if(targetBtn) targetBtn.style.animation = 'none';
+                currentPlayingId = null;
+            };
+        }
+
+        // Tüm sesleri durduran yardımcı fonksiyon
+        function stopAllAudios() {
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                let b = document.getElementById(allBtnIds[index]);
+                if (a) { a.pause(); a.currentTime = 0; }
+                if (b) b.style.animation = 'none';
+            });
+            currentPlayingId = null;
+        }
+
+        function moveSlide(dir) {
+            currentSlide += dir;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+            
+            playSfx('click');
+
+            // Slayt geçişi yapıldığında mevcut çalan sesi kes
+            stopAllAudios();
+
+            // Slaytı Kaydır
+            document.getElementById('slider').style.transform = `translateX(-${currentSlide * 33.333}%)`;
+            
+            // Buton Durumları
+            document.getElementById('prev-btn').disabled = (currentSlide === 0);
+            document.getElementById('next-btn').disabled = (currentSlide === totalSlides - 1);
+            
+            // Noktaları Güncelle
+            for(let i=0; i<totalSlides; i++) {
+                document.getElementById(`dot-${i}`).classList.remove('active');
+            }
+            document.getElementById(`dot-${currentSlide}`).classList.add('active');
+
+            // Son Slayt Kontrolü (Tamamla Butonu Görünsün)
+            if(currentSlide === totalSlides - 1) {
+                document.getElementById('btn-complete').classList.add('show-btn');
+            }
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function completeTopic(event) {
+            if(event) event.stopPropagation(); // Tıklama çakışmalarını önler
+
+            stopAllAudios();
+            playSuccessSfx();
+            const btn = document.getElementById('btn-complete');
+            if(btn) {
+                btn.innerHTML = `TAMAMLANDI ✓`;
+                btn.classList.add('finished');
+            }
+            
+            // Storyline için a22 değişkenini kesin olarak true yap
+            setVar('a22', true);
+            
+            // Alternatif tetikleme metodu (garanti olması için)
+            try {
+                if(window.parent && window.parent.GetPlayer) {
+                    window.parent.GetPlayer().SetVar('a22', true);
+                }
+            } catch(e) {
+                console.log("Alternatif SetVar tetiklenemedi:", e);
+            }
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => {
+            // Sayfa yüklendiğinde otomatik olarak ilk başlığın sesini başlatmayı dene
+            playSectionAudio('ses1', 'btn-ses1');
+        };
+
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        window.addEventListener('resize', applyScale);
+
+    </script>
+</body>
+</html>

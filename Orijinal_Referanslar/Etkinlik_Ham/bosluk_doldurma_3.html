@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yarıçap ve Çap Uzunluğu Tablosu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --cream-bg: #FCF9F2;
+            --paper-grid: rgba(185, 28, 28, 0.08); /* Kırmızımsı matematik ızgarası (dış zemin) */
+            
+            /* Matematik Teması Kırmızı Palet */
+            --primary-main: #B91C1C;
+            --primary-dark: #7F1D1D;
+            --primary-soft: #FCA5A5;
+            --warm-grey: #334155;
+            --text-muted: #64748B;
+            
+            /* Başarı Renkleri */
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--warm-grey);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--cream-bg); 
+            background-image: linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-top: 6px solid var(--primary-main);
+        }
+
+        .header {
+            padding: 15px 40px 0 40px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; display: flex; flex-direction: column; justify-content: center; height: 100%; position: relative;}
+
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 900; color: var(--primary-dark); text-align: left; text-transform: uppercase; letter-spacing: 0.5px;}
+        .sub-instruction { font-size: 13px; font-weight: 600; color: #475569; margin-top: 2px; }
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -5px; }
+
+        .content-wrapper {
+            display: flex; flex: 1; padding: 5px 40px 15px 40px; gap: 20px; height: calc(540px - 75px);
+            z-index: 10; position: relative;
+        }
+
+        /* --- SOL PANEL: TABLO --- */
+        .left-panel { width: 440px !important; display: flex; flex-direction: column; justify-content: center;}
+        
+        .table-container {
+            background: white; border: 3px solid rgba(185, 28, 28, 0.15); border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; width: 100%;
+        }
+
+        .math-table {
+            width: 100%; border-collapse: collapse; text-align: center;
+        }
+        
+        .math-table thead {
+            background-color: #fef2f2; border-bottom: 3px solid var(--primary-main);
+        }
+
+        .math-table th {
+            padding: 6px 4px; color: var(--primary-main); font-weight: 800; font-size: 13px; line-height: 1.2;
+        }
+        
+        .math-table th span { font-size: 11px; font-weight: 600; color: #475569; }
+
+        .math-table td {
+            padding: 4px 6px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;
+            font-size: 15px; font-weight: 700; color: var(--text-dark); height: 34px;
+        }
+
+        .math-table tr:nth-child(even) td { background-color: #f8fafc; }
+        .math-table td:last-child { border-right: none; }
+        .math-table tr:last-child td { border-bottom: none; }
+        
+        /* Drop Zones */
+        .drop-zone {
+            height: 28px; width: 55px; border: 2px dashed #94a3b8; background: rgba(241, 245, 249, 0.8);
+            border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; margin: 0 auto; flex-shrink: 0; cursor: pointer;
+            color: var(--text-blue); font-weight: 800; font-size: 14px; position: relative;
+        }
+        .drop-zone.active-hover { border-color: var(--primary-main); background: rgba(185, 28, 28, 0.1); }
+        .drop-zone.has-card { border: none; background: transparent; }
+
+        /* --- SAĞ PANEL: KELİME HAVUZU VE KONTROL --- */
+        .right-panel { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: center;}
+        .pool-title { font-size: 14px; font-weight: 900; color: var(--primary-main); text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 4px; letter-spacing: 0.5px;}
+        
+        .pool-container {
+            background: rgba(255, 255, 255, 0.5); border: 2px dashed var(--primary-soft); border-radius: 16px;
+            padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; flex: 1; 
+            align-content: center; justify-items: center;
+        }
+
+        .pool-slot { width: 100%; max-width: 80px; height: 34px; position: relative; }
+        
+        /* Draggable Kartlar */
+        .draggable-card {
+            position: absolute; width: 100%; height: 100%; background: white;
+            border: 2px solid var(--primary-main); border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: 800; cursor: grab; box-shadow: 0 4px 8px rgba(185, 28, 28, 0.15);
+            z-index: 100; touch-action: none; text-align: center;
+            color: var(--primary-dark);
+        }
+        
+        .draggable-card.dragging { cursor: grabbing; box-shadow: 0 10px 25px rgba(0,0,0,0.25); z-index: 9999 !important; transition: none; transform: scale(1.05);}
+        .draggable-card.selected { border-color: var(--warning-orange); background: #fffbeb; }
+        .draggable-card.correct-state { border-color: var(--success-green) !important; background: #f0fdf4 !important; color: var(--success-green) !important; pointer-events: none;}
+        .draggable-card.incorrect-state { border-color: var(--error-red) !important; background: #fef2f2 !important; color: var(--error-red) !important; }
+
+        /* Kontrol Paneli */
+        .control-panel { height: 60px; display: flex; flex-direction: column; justify-content: center; position: relative;}
+        
+        .btn-action {
+            background: var(--primary-main); color: white; font-size: 15px; font-weight: 900;
+            padding: 14px; border-radius: 12px; transition: 0.3s; cursor: pointer; width: 100%;
+            text-align: center; border: none; box-shadow: 0 4px 10px rgba(185, 28, 28, 0.2);
+            letter-spacing: 1px; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-action:disabled { opacity: 0.5; pointer-events: none; box-shadow: none; cursor: not-allowed; }
+        .btn-action:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4);}
+        
+        .btn-action.completed-state {
+            background-color: var(--success-green) !important; color: white !important;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3) !important; cursor: default; transform: none !important; opacity: 1; pointer-events: none;
+        }
+        .btn-action.timer-active { background: var(--warning-orange) !important; opacity: 1; pointer-events: none; transform: none; box-shadow: none;}
+
+        .message-box { position: absolute; top: -55px; left: 50%; transform: translateX(-50%); font-size: 12.5px; font-weight: 800; padding: 10px 16px; border-radius: 8px; display: none; text-align: center; white-space: nowrap; z-index: 50; box-shadow: 0 4px 15px rgba(0,0,0,0.1);}
+        .msg-success { background: #d1fae5; color: #065f46; border: 1px solid #10B981;}
+        .msg-error { background: #fef2f2; color: #991b1b; border: 1px solid #EF4444;}
+
+        /* Toast Bildirimleri */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 13px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Bildirim metni.</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">YARIÇAP VE ÇAP UZUNLUĞU</div>
+                <div class="sub-instruction">Aşağıdaki tabloda bazı çemberlerin yarıçap (r) ya da çap (R) uzunluğu verilmiştir. Tablodaki boş alanları sürükleyerek doldurunuz.</div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- Sol Panel: TABLO -->
+            <div class="left-panel">
+                <div class="table-container">
+                    <table class="math-table">
+                        <thead>
+                            <tr>
+                                <th>Yarıçap (cm)<br><span>uzunluğu (r)</span></th>
+                                <th>Çap (cm)<br><span>uzunluğu (R)</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Satır 1 -->
+                            <tr>
+                                <td>8</td>
+                                <td><div id="z-1" class="drop-zone" data-ans="16" onclick="onDropZoneClick(event)"></div></td>
+                            </tr>
+                            <!-- Satır 2 -->
+                            <tr>
+                                <td><div id="z-2" class="drop-zone" data-ans="6" onclick="onDropZoneClick(event)"></div></td>
+                                <td>12</td>
+                            </tr>
+                            <!-- Satır 3 -->
+                            <tr>
+                                <td><div id="z-3" class="drop-zone" data-ans="18" onclick="onDropZoneClick(event)"></div></td>
+                                <td>36</td>
+                            </tr>
+                            <!-- Satır 4 -->
+                            <tr>
+                                <td>9</td>
+                                <td><div id="z-4" class="drop-zone" data-ans="18" onclick="onDropZoneClick(event)"></div></td>
+                            </tr>
+                            <!-- Satır 5 -->
+                            <tr>
+                                <td><div id="z-5" class="drop-zone" data-ans="10" onclick="onDropZoneClick(event)"></div></td>
+                                <td>20</td>
+                            </tr>
+                            <!-- Satır 6 -->
+                            <tr>
+                                <td><div id="z-6" class="drop-zone" data-ans="50" onclick="onDropZoneClick(event)"></div></td>
+                                <td>100</td>
+                            </tr>
+                            <!-- Satır 7 -->
+                            <tr>
+                                <td>40</td>
+                                <td><div id="z-7" class="drop-zone" data-ans="80" onclick="onDropZoneClick(event)"></div></td>
+                            </tr>
+                            <!-- Satır 8 -->
+                            <tr>
+                                <td>16</td>
+                                <td><div id="z-8" class="drop-zone" data-ans="32" onclick="onDropZoneClick(event)"></div></td>
+                            </tr>
+                            <!-- Satır 9 -->
+                            <tr>
+                                <td><div id="z-9" class="drop-zone" data-ans="42" onclick="onDropZoneClick(event)"></div></td>
+                                <td>84</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sağ Panel: Sözcük Bankası -->
+            <div class="right-panel">
+                <div class="pool-title">VERİ HAVUZU</div>
+                <div class="pool-container">
+                    
+                    <!-- Doğru Kartlar (9 Adet) -->
+                    <div class="pool-slot"><div id="c-1" class="draggable-card" data-val="16" onclick="onCardClick(event)">16</div></div>
+                    <div class="pool-slot"><div id="c-2" class="draggable-card" data-val="6" onclick="onCardClick(event)">6</div></div>
+                    <div class="pool-slot"><div id="c-3" class="draggable-card" data-val="18" onclick="onCardClick(event)">18</div></div>
+                    <div class="pool-slot"><div id="c-4" class="draggable-card" data-val="18" onclick="onCardClick(event)">18</div></div>
+                    <div class="pool-slot"><div id="c-5" class="draggable-card" data-val="10" onclick="onCardClick(event)">10</div></div>
+                    <div class="pool-slot"><div id="c-6" class="draggable-card" data-val="50" onclick="onCardClick(event)">50</div></div>
+                    <div class="pool-slot"><div id="c-7" class="draggable-card" data-val="80" onclick="onCardClick(event)">80</div></div>
+                    <div class="pool-slot"><div id="c-8" class="draggable-card" data-val="32" onclick="onCardClick(event)">32</div></div>
+                    <div class="pool-slot"><div id="c-9" class="draggable-card" data-val="42" onclick="onCardClick(event)">42</div></div>
+
+                    <!-- Çeldirici Kartlar (2 Adet) -->
+                    <div class="pool-slot"><div id="c-11" class="draggable-card" data-val="24" onclick="onCardClick(event)">24</div></div>
+                    <div class="pool-slot"><div id="c-12" class="draggable-card" data-val="60" onclick="onCardClick(event)">60</div></div>
+
+                </div>
+                <div class="control-panel">
+                    <div id="m-box" class="message-box"></div>
+                    <button id="btn-c" class="btn-action" disabled onclick="checkAnswers()">KONTROL ET</button>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- Drag Layer -->
+    <div id="drag-layer" style="position: absolute; inset: 0; pointer-events: none; z-index: 9999;"></div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='jump') { osc.type='sine'; osc.frequency.setValueAtTime(150, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime+0.15); }
+                else if(type==='correct') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='incorrect') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        // Kusursuz Transform Sürükleme Motoru Değişkenleri
+        let activeDrag = null, pointerId = null;
+        let startDragX = 0, startDragY = 0, cardStartX = 0, cardStartY = 0;
+        let selCard = null, attempts = 0, done = false, preventClick = false;
+
+        function init() {
+            // Slotlara ID ata (Eğer yoksa geri dönüşte bulabilmek için)
+            document.querySelectorAll('.pool-slot').forEach((slot, idx) => {
+                if(!slot.id) slot.id = 'pool-slot-' + idx;
+            });
+
+            shufflePool();
+            
+            document.querySelectorAll('.draggable-card').forEach(c => {
+                c.addEventListener('pointerdown', down);
+            });
+            
+            const audio = document.getElementById('ses1');
+            if(audio) {
+                audio.play().catch(()=>{ console.log("Otomatik ses çalma engellendi."); });
+            }
+        }
+
+        function shufflePool() {
+            const container = document.querySelector('.pool-container');
+            const slots = Array.from(container.children);
+            for (let i = slots.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                container.insertBefore(slots[j], slots[i].nextSibling);
+            }
+        }
+
+        // YENİ NESİL KUSURSUZ SÜRÜKLEME (TRANSFORM ONLY)
+        function down(e) {
+            if(done || activeDrag) return; 
+            if(selCard) { selCard.classList.remove('selected'); selCard=null; }
+            
+            activeDrag = e.currentTarget;
+            pointerId = e.pointerId;
+            activeDrag.setPointerCapture(pointerId);
+            
+            activeDrag.classList.add('dragging');
+            
+            startDragX = e.clientX;
+            startDragY = e.clientY;
+            
+            const matrix = new DOMMatrixReadOnly(window.getComputedStyle(activeDrag).transform);
+            cardStartX = matrix.m41;
+            cardStartY = matrix.m42;
+            
+            activeDrag.addEventListener('pointermove', move);
+            activeDrag.addEventListener('pointerup', up);
+            activeDrag.addEventListener('pointercancel', up);
+            
+            playSfx('click');
+        }
+
+        function move(e) {
+            if(!activeDrag || e.pointerId !== pointerId) return;
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const dx = (e.clientX - startDragX) / scale;
+            const dy = (e.clientY - startDragY) / scale;
+            
+            if(Math.abs(dx) > 3 || Math.abs(dy) > 3) preventClick = true;
+            
+            activeDrag.style.transform = `translate(${cardStartX + dx}px, ${cardStartY + dy}px)`;
+        }
+
+        function up(e) {
+            if(!activeDrag || e.pointerId !== pointerId) return;
+            
+            activeDrag.releasePointerCapture(pointerId);
+            activeDrag.removeEventListener('pointermove', move);
+            activeDrag.removeEventListener('pointerup', up);
+            activeDrag.removeEventListener('pointercancel', up);
+            
+            activeDrag.classList.remove('dragging');
+            
+            const zones = document.querySelectorAll('.drop-zone');
+            let bestZone = null, maxOverlap = 0;
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            
+            zones.forEach(zone => {
+                const r1 = activeDrag.getBoundingClientRect(), r2 = zone.getBoundingClientRect();
+                const ox = Math.max(0, Math.min(r1.right, r2.right) - Math.max(r1.left, r2.left));
+                const oy = Math.max(0, Math.min(r1.bottom, r2.bottom) - Math.max(r1.top, r2.top));
+                const unscaledOverlap = (ox * oy) / (scale * scale);
+                // Çakışma algılama alanı (tablo hücresine göre)
+                if(unscaledOverlap > 150) { maxOverlap = unscaledOverlap; bestZone = zone; }
+            });
+            
+            if(bestZone && maxOverlap > 150) {
+                dock(activeDrag, bestZone);
+            } else {
+                back(activeDrag);
+            }
+
+            if(preventClick) setTimeout(() => { preventClick = false; }, 50);
+            
+            activeDrag = null; pointerId = null; refreshUI();
+        }
+
+        function dock(c, z, duration = '0.2s') {
+            // Eğer hedef bölgede zaten bir kart varsa onu havuza gönder
+            const oldCardId = z.getAttribute('data-card');
+            if(oldCardId && oldCardId !== c.id) {
+                back(document.getElementById(oldCardId));
+            }
+            
+            // Eğer bu kart daha önce başka bir bölgedeyse, o bölgeden kaydını sil
+            const oldZoneId = c.getAttribute('data-zone');
+            if(oldZoneId) {
+                const oldZone = document.getElementById(oldZoneId);
+                if(oldZone) {
+                    oldZone.removeAttribute('data-card');
+                    oldZone.classList.remove('has-card');
+                }
+            }
+            
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const parentSlot = c.parentNode;
+            const slotRect = parentSlot.getBoundingClientRect();
+            const zoneRect = z.getBoundingClientRect();
+            
+            const dx = (zoneRect.left - slotRect.left) / scale;
+            const dy = (zoneRect.top - slotRect.top) / scale;
+
+            // Kartı hedef bölgeye animasyonla uçur ve boyutunu ayarla
+            c.style.transition = `transform ${duration} cubic-bezier(0.2, 0, 0.2, 1), width ${duration}, height ${duration}`;
+            c.style.transform = `translate(${dx}px, ${dy}px)`;
+            c.style.width = z.offsetWidth + 'px';
+            c.style.height = z.offsetHeight + 'px';
+            c.style.fontSize = '13px'; // Tablo içindeki font boyutu
+            
+            c.setAttribute('data-zone', z.id);
+            z.setAttribute('data-card', c.id);
+            z.classList.add('has-card');
+            playSfx('jump');
+        }
+
+        function back(c) {
+            // Kartın eski bölgesinden kaydını sil
+            const zId = c.getAttribute('data-zone');
+            if(zId) {
+                const z = document.getElementById(zId);
+                if(z) {
+                    z.removeAttribute('data-card');
+                    z.classList.remove('has-card');
+                }
+            }
+            c.removeAttribute('data-zone');
+            
+            // Kartı ana yuvasına sıfırla
+            c.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1), width 0.3s, height 0.3s';
+            c.style.transform = 'translate(0px, 0px)';
+            c.style.width = '100%';
+            c.style.height = '100%';
+            c.style.fontSize = ''; // CSS varsayılanına döner
+        }
+
+        function onCardClick(e) {
+            if(done || preventClick) return; 
+            const c = e.currentTarget;
+            if(c.getAttribute('data-zone')) { back(c); refreshUI(); return; }
+            if(selCard) selCard.classList.remove('selected');
+            if(selCard === c) {
+                selCard = null;
+            } else { 
+                selCard = c; 
+                selCard.classList.add('selected'); 
+                playSfx('click'); 
+            }
+        }
+
+        function onDropZoneClick(e) {
+            if(done || !selCard) return; 
+            dock(selCard, e.currentTarget); 
+            selCard.classList.remove('selected'); 
+            selCard = null; 
+            refreshUI();
+        }
+
+        function refreshUI() {
+            // Sadece dolu mu diye kontrol et, butonu görünür yap
+            const zones = document.querySelectorAll('.drop-zone');
+            const allFilled = Array.from(zones).every(z => z.getAttribute('data-card'));
+            document.getElementById('btn-c').disabled = !allFilled;
+        }
+
+        function checkAnswers() {
+            if(done) return;
+            let correctCount = 0;
+            const zones = document.querySelectorAll('.drop-zone');
+            
+            zones.forEach(z => {
+                const cardId = z.getAttribute('data-card');
+                if(cardId) {
+                    const c = document.getElementById(cardId);
+                    if(c.getAttribute('data-val') === z.getAttribute('data-ans')) {
+                        correctCount++; 
+                        c.classList.add('correct-state');
+                        c.classList.remove('incorrect-state');
+                    } else { 
+                        c.classList.add('incorrect-state'); 
+                        c.classList.remove('correct-state');
+                    }
+                }
+            });
+            
+            if(correctCount === zones.length) {
+                done = true;
+                const actionBtn = document.getElementById('btn-c');
+                actionBtn.className = "btn-action completed-state";
+                actionBtn.innerText = "TAMAMLANDI ✓";
+                actionBtn.disabled = true;
+
+                playSfx('correct');
+                
+                setVar('w11', true); // İlk veya ikinci hakkında bildiyse w11 = true
+                showToast("Tebrikler! Tabloyu kusursuz doldurdunuz. ✓", "msg-success");
+            } else {
+                attempts++;
+                if(attempts === 1) {
+                    playSfx('incorrect');
+                    showMsg('Bazı eşleşmeler hatalı, lütfen tekrar deneyiniz.', 'msg-error');
+                    zones.forEach(z => {
+                        const cardId = z.getAttribute('data-card');
+                        if(cardId) {
+                            const c = document.getElementById(cardId);
+                            if(c.getAttribute('data-val') !== z.getAttribute('data-ans')) {
+                                setTimeout(() => { if(!done){ back(c); c.classList.remove('incorrect-state'); refreshUI(); } }, 1500); 
+                            }
+                        }
+                    });
+                    setTimeout(() => { if(!done) { document.getElementById('m-box').style.display = 'none'; } }, 2000);
+                } else { 
+                    done = true; 
+                    document.getElementById('btn-c').style.display = 'none'; 
+                    solveAll(); 
+                }
+            }
+        }
+
+        function solveAll() {
+            const zones = document.querySelectorAll('.drop-zone');
+            const cards = document.querySelectorAll('.draggable-card');
+            if(selCard) { selCard.classList.remove('selected'); selCard = null; }
+
+            // Yanlış olanları havuza gönder
+            zones.forEach(z => {
+                const cardId = z.getAttribute('data-card');
+                if(cardId) {
+                    const c = document.getElementById(cardId);
+                    if(c.getAttribute('data-val') !== z.getAttribute('data-ans')) {
+                        back(c);
+                        c.classList.remove('incorrect-state');
+                    } else {
+                        c.classList.add('correct-state');
+                        c.setAttribute('data-locked', 'true'); // Zaten doğru olanı kilitliyoruz
+                    }
+                }
+            });
+
+            // Kalan boşlukları uygun kartlarla doldur
+            let delay = 0;
+            zones.forEach(z => {
+                if(!z.getAttribute('data-card')) {
+                    const targetVal = z.getAttribute('data-ans');
+                    // Kilitli olmayan sıradaki doğru kartı bul
+                    const correctCard = Array.from(cards).find(c => c.getAttribute('data-val') === targetVal && !c.hasAttribute('data-zone') && !c.hasAttribute('data-locked'));
+                    
+                    if(correctCard) {
+                        correctCard.setAttribute('data-locked', 'true'); // Diğer boşluklar çalmasın diye anında kilitliyoruz
+                        setTimeout(() => {
+                            dock(correctCard, z, '0.6s');
+                            correctCard.classList.add('correct-state');
+                        }, delay);
+                        delay += 300;
+                    }
+                }
+            });
+
+            showMsg('Hakkınız bitti. Doğru cevaplar yerleştiriliyor...', 'msg-error');
+            
+            setTimeout(() => {
+                document.getElementById('m-box').style.display = 'none';
+                const actionBtn = document.getElementById('btn-c');
+                actionBtn.style.display = 'flex';
+                actionBtn.disabled = true;
+                actionBtn.className = "btn-action timer-active";
+                
+                let countdown = 10;
+                actionBtn.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                const interval = setInterval(() => {
+                    countdown--;
+                    actionBtn.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                    if(countdown <= 0) {
+                        clearInterval(interval);
+                        actionBtn.innerText = "TAMAMLANDI ✓";
+                        actionBtn.classList.remove('timer-active');
+                        actionBtn.classList.add('completed-state');
+                        setVar('w12', true); // İnceleme süresi dolunca w12 = true
+                        showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "msg-success");
+                    }
+                }, 1000);
+            }, delay + 500);
+        }
+
+        function showMsg(t, cls) { const b = document.getElementById('m-box'); b.innerText = t; b.className = 'message-box ' + cls; b.style.display = 'block'; }
+        
+        function setVar(n, v) { try { parent.GetPlayer().SetVar(n, v); console.log(`${n} -> ${v}`); } catch(e) { console.log(`${n} -> ${v}`); } }
+
+        function showToast(msg, typeCls = '') {
+            const toast = document.getElementById('toast-msg');
+            const txtEl = document.getElementById('toast-text');
+            
+            toast.className = '';
+            toast.classList.add('show');
+            if (typeCls) toast.classList.add(typeCls);
+            
+            if(msg) txtEl.innerText = msg;
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { window.dispatchEvent(new Event('resize')); init(); };
+    </script>
+</body>
+</html>

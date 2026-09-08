@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08); 
+            
+            --primary-red: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --primary-soft: #FCA5A5;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+        }
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+        
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+        
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; flex: 1;
+            background: white; border-radius: 12px; padding: 10px 20px 10px 15px;
+            border-left: 5px solid var(--primary-red);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 5px;
+        }
+        .narrator-speaker {
+            width: 36px; height: 36px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 800; color: var(--text-dark); cursor: pointer; transition: color 0.2s;}
+        .instruction-text:hover { color: var(--primary-red); }
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -5px; }
+        
+        /* --- CONTENT --- */
+        .content-wrapper {
+            display: flex; flex-direction: row; flex: 1; padding: 10px 40px 20px 40px; gap: 30px; height: calc(540px - 85px);
+            z-index: 10; position: relative;
+        }
+        
+        /* --- SOL PANEL: BÜYÜK GÖRSEL ÇİZİMİ --- */
+        .left-panel {
+            flex: 1.1; display: flex; flex-direction: column; justify-content: center; min-width: 0;
+        }
+        .drawing-card {
+            background: white; border: 3px solid rgba(185, 28, 28, 0.15); border-radius: 16px;
+            padding: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: center; height: 100%; position: relative;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(#f1f5f9 1px, transparent 1px), 
+                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* Zırhlı Görsel Alanı */
+        .visual-target {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+        }
+        .visual-target img, .visual-target svg {
+            max-width: 100%; max-height: 100%; object-fit: contain;
+        }
+        
+        /* --- SAĞ PANEL: LİSTE SEÇENEKLERİ --- */
+        .right-panel {
+            flex: 1; display: flex; flex-direction: column; position: relative; justify-content: space-between; min-width: 0;
+        }
+        .options-container {
+            display: flex; flex-direction: column; gap: 10px; flex: 1; justify-content: center; overflow-y: auto; padding-right: 5px;
+        }
+        
+        .opt-row {
+            display: flex; align-items: center; gap: 15px; background: white; border: 2px solid #e2e8f0;
+            border-radius: 12px; padding: 10px 15px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); min-height: 55px; flex-shrink: 0;
+        }
+        .opt-row:hover { border-color: var(--primary-red); background: #fef2f2; transform: translateX(-4px); }
+        .opt-row:active { transform: translateX(0); }
+        
+        .opt-letter { font-size: 16px; font-weight: 900; color: #64748B; width: 25px; flex-shrink: 0;}
+        .opt-text { font-size: 14.5px; font-weight: 700; color: #334155; flex: 1; line-height: 1.3;}
+        
+        /* Checkbox İkonu */
+        .checkbox-box {
+            width: 28px; height: 28px; border: 2.5px solid #cbd5e1; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; background: white;
+            transition: 0.2s; flex-shrink: 0; color: transparent; font-weight: 900; font-size: 18px;
+        }
+        
+        /* Seçili Durum */
+        .opt-row.selected {
+            background: #fef2f2; border-color: var(--primary-red); box-shadow: inset 0 0 0 1px var(--primary-red);
+        }
+        .opt-row.selected .checkbox-box {
+            background: var(--primary-red); border-color: var(--primary-red); color: white;
+        }
+        .opt-row.selected .checkbox-box::after { content: '✓'; }
+        .opt-row.selected .opt-letter { color: var(--primary-red); }
+        
+        /* Hata / Doğru Durumları */
+        .opt-row.is-correct { 
+            border-color: var(--success-green) !important; background: #ecfdf5 !important; pointer-events: none;
+            animation: popCorrect 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 1 !important;
+        }
+        .opt-row.is-correct .checkbox-box { background: var(--success-green); border-color: var(--success-green); color: white;}
+        .opt-row.is-correct .checkbox-box::after { content: '✓'; }
+        .opt-row.is-correct .opt-letter { color: var(--success-green); }
+        
+        .opt-row.is-incorrect { 
+            border-color: var(--error-red) !important; background: #fef2f2 !important; 
+            animation: shake 0.4s ease-in-out;
+        }
+        .opt-row.is-incorrect .checkbox-box { background: var(--error-red); border-color: var(--error-red); color: white;}
+        .opt-row.is-incorrect .checkbox-box::after { content: '✗'; }
+        .opt-row.is-incorrect .opt-letter { color: var(--error-red); }
+        
+        .opt-row.disabled { pointer-events: none; opacity: 0.6; }
+        
+        @keyframes popCorrect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        /* --- KONTROL PANELI VE GERİ BİLDİRİM --- */
+        .control-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 15px; position: relative;}
+        
+        .feedback-msg {
+            position: absolute; top: -50px; font-size: 12.5px; font-weight: 800; text-align: center; padding: 10px 15px; border-radius: 8px;
+            display: none; line-height: 1.4; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+        
+        .btn-action {
+            background: var(--primary-red); color: white; width: 100%; height: 48px;
+            font-size: 15px; font-weight: 900; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+        
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 13px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; color: white !important;}
+        .toast-warning { background-color: var(--warning-orange) !important; color: white !important;}
+        .toast-error { background-color: var(--error-red) !important; color: white !important;}
+    </style>
+</head>
+<body>
+    <audio id="audio1" src="{{SES_DOSYASI_URL}}" preload="auto"></audio>
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg id="toast-icon" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio()">
+                    <svg class="w-5 h-5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text" onclick="playAudio()">
+                    {{ANA_YONERGE_METNI_ORN_Dogru_ifadeleri_isaretleyiniz}}
+                </div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- SOL PANEL: BÜYÜK ÇİZİM/GÖRSEL -->
+            <div class="left-panel">
+                <div class="drawing-card">
+                    <div class="visual-target">
+                        <!-- Buraya bir IMG veya SVG kodu gelebilir. Test için boş bir görsel eklendi -->
+                        {{SOL_PANEL_GORSEL_VEYA_SVG_KODU}}
+                        <svg width="100%" height="100%" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="50" y="50" width="200" height="100" fill="#f1f5f9" stroke="#1E293B" stroke-width="4" rx="10"/>
+                            <text x="150" y="105" fill="#94a3b8" font-family="Montserrat" font-weight="700" font-size="14" text-anchor="middle">GÖRSEL ALANI</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAĞ PANEL: SEÇENEKLER LİSTESİ VE KONTROL -->
+            <div class="right-panel">
+                
+                <!-- DİKKAT: Doğru şıklar için data-ans="true", yanlışlar için "false" yazılmalıdır. -->
+                <div class="options-container">
+                    
+                    <div class="opt-row" id="opt-1" data-ans="true" onclick="toggleOption('1')">
+                        <div class="opt-letter">a)</div>
+                        <div class="opt-text">{{SECENEK_1_METNI}} (Doğru Şık Örneği)</div>
+                        <div class="checkbox-box"></div>
+                    </div>
+                    
+                    <div class="opt-row" id="opt-2" data-ans="false" onclick="toggleOption('2')">
+                        <div class="opt-letter">b)</div>
+                        <div class="opt-text">{{SECENEK_2_METNI}} (Yanlış Şık Örneği)</div>
+                        <div class="checkbox-box"></div>
+                    </div>
+                    
+                    <div class="opt-row" id="opt-3" data-ans="false" onclick="toggleOption('3')">
+                        <div class="opt-letter">c)</div>
+                        <div class="opt-text">{{SECENEK_3_METNI}} (Yanlış Şık Örneği)</div>
+                        <div class="checkbox-box"></div>
+                    </div>
+                    
+                    <div class="opt-row" id="opt-4" data-ans="true" onclick="toggleOption('4')">
+                        <div class="opt-letter">d)</div>
+                        <div class="opt-text">{{SECENEK_4_METNI}} (Doğru Şık Örneği)</div>
+                        <div class="checkbox-box"></div>
+                    </div>
+                    
+                    <!-- İhtiyaca göre 5. veya 6. şık eklenebilir -->
+                    <div class="opt-row" id="opt-5" data-ans="false" onclick="toggleOption('5')">
+                        <div class="opt-letter">e)</div>
+                        <div class="opt-text">{{SECENEK_5_METNI}} (Yanlış Şık Örneği)</div>
+                        <div class="checkbox-box"></div>
+                    </div>
+
+                </div>
+                
+                <div class="control-panel">
+                    <div id="q-fb" class="feedback-msg"></div>
+                    <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+                </div>
+                
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('audio1');
+            const speaker = document.getElementById('main-speaker');
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => { if(speaker) speaker.style.animation = 'none'; });
+                }
+            }
+        }
+
+        function playAudio() {
+            const audio = document.getElementById('audio1');
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            const s = document.getElementById('audio1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function toggleOption(id) {
+            if(isCompleted) return;
+            playSfx('click');
+            const row = document.getElementById(`opt-${id}`);
+            row.classList.toggle('selected');
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            const options = document.querySelectorAll('.opt-row');
+            const selectedOptions = document.querySelectorAll('.opt-row.selected');
+            
+            if(selectedOptions.length === 0) {
+                showToast("Lütfen en az bir şık işaretleyiniz.", "toast-warning");
+                return;
+            }
+            
+            let allCorrect = true;
+            let wrongSelected = [];
+            
+            options.forEach(opt => {
+                const isSelected = opt.classList.contains('selected');
+                const isAns = opt.getAttribute('data-ans').toLowerCase().trim() === 'true';
+                
+                // Hata tespiti
+                if ((isAns && !isSelected) || (!isAns && isSelected)) {
+                    allCorrect = false;
+                    if(isSelected) wrongSelected.push(opt);
+                }
+            });
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+            fbBox.className = "feedback-msg"; 
+            
+            if(allCorrect) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+                
+                options.forEach(opt => {
+                    if (opt.classList.contains('selected')) {
+                        opt.classList.remove('selected');
+                        opt.classList.add('is-correct');
+                    } else {
+                        opt.classList.add('disabled');
+                    }
+                });
+                
+                fbBox.innerHTML = `TEBRİKLER! <br><span style="font-weight:600; font-size:11.5px; display:block; margin-top:2px;">{{BASARI_GERI_BILDIRIM_METNI}}</span>`;
+                fbBox.classList.add('fb-success');
+                
+                btnCheck.innerText = "TAMAMLANDI ✓";
+                btnCheck.classList.add('completed');
+                
+                showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                setVar('{{STORYLINE_VAR_TAMAMLANDI}}', true); 
+                
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+                
+                if(attempts === 1) {
+                    fbBox.innerHTML = `{{HATA_GERI_BILDIRIM_METNI}}`;
+                    fbBox.classList.add('fb-error');
+                    
+                    wrongSelected.forEach(opt => {
+                        opt.classList.add('is-incorrect');
+                        setTimeout(() => { 
+                            opt.classList.remove('is-incorrect', 'selected'); 
+                        }, 1200);
+                    });
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 4000);
+                } else {
+                    // OTOMATİK ÇÖZÜM
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Doğru seçenekler işaretleniyor...`;
+                    fbBox.classList.add('fb-error');
+                    
+                    options.forEach(opt => {
+                        opt.classList.remove('selected', 'is-incorrect');
+                        opt.classList.add('disabled');
+                    });
+                    
+                    let delayCount = 1;
+                    options.forEach((opt) => {
+                        if(opt.getAttribute('data-ans').toLowerCase().trim() === 'true') {
+                            setTimeout(() => {
+                                opt.classList.remove('disabled');
+                                opt.classList.add('is-correct');
+                                playSfx('click');
+                            }, delayCount * 500);
+                            delayCount++;
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve('{{STORYLINE_VAR_INCELEME_BITTI}}'); 
+                    }, (delayCount * 500) + 1000);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); 
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            const icon = toast.querySelector('svg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            if(typeCls === 'toast-error') {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>';
+                toast.style.backgroundColor = 'var(--error-red)';
+            } else if (typeCls === 'toast-warning') {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                toast.style.backgroundColor = 'var(--warning-orange)';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                toast.style.backgroundColor = 'var(--success-green)';
+            }
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { parent.GetPlayer().SetVar(n, v); console.log(`Storyline Variable Set: ${n} = ${v}`); } 
+            catch(e) { console.log(`(Local) Storyline Variable: ${n} = ${v}`); } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { applyScale(); init(); };
+    </script>
+</body>
+</html>

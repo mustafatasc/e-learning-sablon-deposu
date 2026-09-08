@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aynı Düzlemdeki Üç Doğrunun Durumları</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            /* Matematik Teması: Krem zemin, Kırmızı vurgular */
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08); 
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --hover-red: #DC2626;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            
+            --success-green: #10B981;
+            
+            /* Çizgi Renkleri */
+            --l-blue: #0ea5e9;
+            --l-pink: #ec4899;
+            --l-green: #10b981;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .sub-instruction { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-top: 4px; }
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: row; flex: 1; padding: 10px 40px 25px 40px; gap: 25px;
+            height: calc(540px - 85px); z-index: 10;
+        }
+
+        /* SOL PANEL: MENÜ LİSTESİ */
+        .left-panel {
+            width: 320px; display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .menu-list {
+            display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; padding-right: 5px;
+        }
+
+        .menu-item {
+            background: white; border: 2px solid #E2E8F0; border-radius: 12px;
+            padding: 10px 14px; font-size: 13px; font-weight: 800; color: var(--text-muted);
+            cursor: pointer; transition: all 0.2s; 
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); line-height: 1.3;
+        }
+
+        .menu-text-wrap {
+            display: flex; align-items: center; gap: 10px; flex: 1;
+        }
+
+        .menu-item:hover { border-color: var(--primary-red); color: var(--text-dark); transform: translateY(-2px); }
+        .menu-item:active { transform: translateY(1px); }
+
+        .menu-item.active {
+            border-color: var(--primary-red); background: var(--light-red); color: var(--primary-red);
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.15); transform: translateX(5px);
+        }
+
+        .menu-item.visited .item-icon { background: var(--success-green); color: white; border-color: var(--success-green); }
+        .menu-item.visited .item-icon::after { content: '✓'; }
+
+        .item-icon {
+            width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbd5e1;
+            display: flex; align-items: center; justify-content: center; font-size: 11px;
+            font-weight: 900; flex-shrink: 0; color: transparent; transition: 0.3s;
+        }
+
+        .menu-item.active .item-icon { border-color: var(--primary-red); }
+
+        /* Audio Butonu Stilleri */
+        .audio-btn {
+            width: 34px; height: 34px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: #f1f5f9; color: var(--text-muted);
+            transition: all 0.3s; cursor: pointer; flex-shrink: 0;
+            border: 2px solid transparent;
+        }
+        .audio-btn:hover { background: #e2e8f0; color: var(--text-dark); transform: scale(1.1);}
+        
+        .menu-item.active .audio-btn { background: white; color: var(--primary-red); border-color: var(--primary-red);}
+        
+        .audio-btn.playing {
+            background: var(--primary-red) !important; color: white !important;
+            animation: pulseAudio 1.5s infinite; border-color: transparent !important;
+        }
+
+        @keyframes pulseAudio {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .btn-complete {
+            background: var(--primary-red); color: white; width: 100%; height: 50px;
+            font-size: 15px; font-weight: 800; border-radius: 12px; display: none;
+            align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-complete:hover { background: var(--hover-red); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-complete.done { background: var(--success-green); box-shadow: none; pointer-events: none; transform: none;}
+
+        /* SAĞ PANEL: İÇERİK GÖSTERİMİ */
+        .right-panel {
+            flex: 1; background: white; border: 3px solid rgba(185, 28, 28, 0.15); border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 20px 25px; display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+
+        .content-scene {
+            display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease-out;
+        }
+        .content-scene.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .scene-title {
+            font-size: 17px; font-weight: 900; color: var(--primary-dark); margin-bottom: 12px;
+            text-align: center; line-height: 1.4;
+        }
+
+        .scene-drawing {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;
+            margin-bottom: 12px; position: relative; min-height: 200px;
+        }
+
+        .scene-desc {
+            background: var(--light-red); padding: 12px 20px; border-radius: 12px;
+            font-size: 14px; font-weight: 700; color: var(--primary-red);
+            border-left: 5px solid var(--primary-red); text-align: center;
+            line-height: 1.5; margin-top: auto;
+        }
+
+        /* SVG Çizim Stilleri */
+        .math-svg { width: 100%; height: 100%; max-height: 240px; }
+        .m-line { stroke-width: 4; stroke-linecap: round; }
+        .m-line-blue { stroke: var(--l-blue); }
+        .m-line-pink { stroke: var(--l-pink); }
+        .m-line-green { stroke: var(--l-green); }
+        .m-text { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 18px; fill: var(--text-dark); }
+        .m-dot { fill: var(--text-dark); }
+
+        /* Toast Bildirimleri */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--success-green); color: white; font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Evrensel SVG Ok Şablonları (Markers) -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+        <defs>
+            <marker id="a-blue" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="20" markerHeight="20" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#0ea5e9" />
+            </marker>
+            <marker id="a-pink" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="20" markerHeight="20" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#ec4899" />
+            </marker>
+            <marker id="a-green" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="20" markerHeight="20" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981" />
+            </marker>
+            <marker id="a-dark" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="20" markerHeight="20" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#1E293B" />
+            </marker>
+        </defs>
+    </svg>
+
+    <!-- Yönerge Ses Dosyaları -->
+    <audio id="ses1" src="ses1.mp3" preload="auto"></audio>
+    <audio id="ses2" src="ses2.mp3" preload="auto"></audio>
+    <audio id="ses3" src="ses3.mp3" preload="auto"></audio>
+    <audio id="ses4" src="ses4.mp3" preload="auto"></audio>
+    <audio id="ses5" src="ses5.mp3" preload="auto"></audio>
+    <audio id="ses6" src="ses6.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Tebrikler! Etkinliği tamamladınız.</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">AYNI DÜZLEMDEKİ ÜÇ DOĞRUNUN DURUMLARI</div>
+                <div class="sub-instruction">Sol taraftaki durumlara sırayla tıklayarak üç doğrunun birbirine göre nasıl konumlanabileceğini öğreniniz.</div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- SOL PANEL: MENÜ -->
+            <div class="left-panel">
+                <div class="menu-list">
+                    
+                    <div class="menu-item active visited" id="menu-1" onclick="showScene(1)">
+                        <div class="menu-text-wrap">
+                            <div class="item-icon"></div> 1. Bir Noktada Kesişenler
+                        </div>
+                        <div class="audio-btn" id="audio-btn-1" onclick="toggleAudio(event, 1)"></div>
+                    </div>
+                    
+                    <div class="menu-item" id="menu-2" onclick="showScene(2)">
+                        <div class="menu-text-wrap">
+                            <div class="item-icon"></div> 2. İki Paralel ve Bir Kesen
+                        </div>
+                        <div class="audio-btn" id="audio-btn-2" onclick="toggleAudio(event, 2)"></div>
+                    </div>
+                    
+                    <div class="menu-item" id="menu-3" onclick="showScene(3)">
+                        <div class="menu-text-wrap">
+                            <div class="item-icon"></div> 3. İkişer İkişer Kesişenler
+                        </div>
+                        <div class="audio-btn" id="audio-btn-3" onclick="toggleAudio(event, 3)"></div>
+                    </div>
+                    
+                    <div class="menu-item" id="menu-4" onclick="showScene(4)">
+                        <div class="menu-text-wrap">
+                            <div class="item-icon"></div> 4. Üç Paralel Doğru
+                        </div>
+                        <div class="audio-btn" id="audio-btn-4" onclick="toggleAudio(event, 4)"></div>
+                    </div>
+                    
+                    <div class="menu-item" id="menu-5" onclick="showScene(5)">
+                        <div class="menu-text-wrap">
+                            <div class="item-icon"></div> 5. Üç Çakışık Doğru
+                        </div>
+                        <div class="audio-btn" id="audio-btn-5" onclick="toggleAudio(event, 5)"></div>
+                    </div>
+                    
+                    <div class="menu-item" id="menu-6" onclick="showScene(6)">
+                        <div class="menu-text-wrap">
+                            <div class="item-icon"></div> 6. İki Çakışık ve Bir Kesen
+                        </div>
+                        <div class="audio-btn" id="audio-btn-6" onclick="toggleAudio(event, 6)"></div>
+                    </div>
+
+                </div>
+
+                <button id="btn-complete" class="btn-complete" onclick="completeModule()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+
+            <!-- SAĞ PANEL: İÇERİK -->
+            <div class="right-panel">
+                
+                <!-- SCENE 1 -->
+                <div class="content-scene active" id="scene-1">
+                    <div class="scene-title">Üç doğru bir noktada kesişebilir.</div>
+                    <div class="scene-drawing">
+                        <svg class="math-svg" viewBox="0 0 400 200">
+                            <!-- l (Pink) Yatay -->
+                            <line x1="80" y1="100" x2="320" y2="100" class="m-line m-line-pink" marker-start="url(#a-pink)" marker-end="url(#a-pink)"/>
+                            <text x="335" y="105" class="m-text" fill="var(--l-pink)">l</text>
+                            
+                            <!-- k (Green) Çapraz -->
+                            <line x1="120" y1="180" x2="280" y2="20" class="m-line m-line-green" marker-start="url(#a-green)" marker-end="url(#a-green)"/>
+                            <text x="290" y="25" class="m-text" fill="var(--l-green)">k</text>
+
+                            <!-- m (Blue) Çapraz -->
+                            <line x1="120" y1="20" x2="280" y2="180" class="m-line m-line-blue" marker-start="url(#a-blue)" marker-end="url(#a-blue)"/>
+                            <text x="290" y="185" class="m-text" fill="var(--l-blue)">m</text>
+
+                            <!-- Kesişim Noktası -->
+                            <circle cx="200" cy="100" r="5" class="m-dot"/>
+                            <text x="180" y="90" class="m-text">A</text>
+                        </svg>
+                    </div>
+                    <div class="scene-desc">
+                        k, l ve m doğruları A noktasında kesişmektedirler. (Noktadaş Doğrular)
+                    </div>
+                </div>
+
+                <!-- SCENE 2 -->
+                <div class="content-scene" id="scene-2">
+                    <div class="scene-title">İki doğru birbirine paralel iken üçüncü doğru bu paralel doğruları kesebilir.</div>
+                    <div class="scene-drawing">
+                        <svg class="math-svg" viewBox="0 0 400 200">
+                            <!-- l (Blue) Yatay 1 -->
+                            <line x1="80" y1="60" x2="320" y2="60" class="m-line m-line-blue" marker-start="url(#a-blue)" marker-end="url(#a-blue)"/>
+                            <text x="335" y="65" class="m-text" fill="var(--l-blue)">l</text>
+                            
+                            <!-- m (Pink) Yatay 2 -->
+                            <line x1="80" y1="140" x2="320" y2="140" class="m-line m-line-pink" marker-start="url(#a-pink)" marker-end="url(#a-pink)"/>
+                            <text x="335" y="145" class="m-text" fill="var(--l-pink)">m</text>
+
+                            <!-- k (Green) Kesen Çapraz -->
+                            <line x1="140" y1="180" x2="260" y2="20" class="m-line m-line-green" marker-start="url(#a-green)" marker-end="url(#a-green)"/>
+                            <text x="270" y="25" class="m-text" fill="var(--l-green)">k</text>
+                        </svg>
+                    </div>
+                    <div class="scene-desc">
+                        l // m ve k doğrusu, l ve m doğrularını kesmektedir.
+                    </div>
+                </div>
+
+                <!-- SCENE 3 -->
+                <div class="content-scene" id="scene-3">
+                    <div class="scene-title">Doğrular birbirlerini ikişer ikişer kesebilir.</div>
+                    <div class="scene-drawing">
+                        <svg class="math-svg" viewBox="0 0 400 200">
+                            <!-- k (Blue) Çapraz Sol -->
+                            <line x1="120" y1="170" x2="240" y2="30" class="m-line m-line-blue" marker-start="url(#a-blue)" marker-end="url(#a-blue)"/>
+                            <text x="245" y="25" class="m-text" fill="var(--l-blue)">k</text>
+                            
+                            <!-- l (Green) Çapraz Sağ -->
+                            <line x1="280" y1="170" x2="160" y2="30" class="m-line m-line-green" marker-start="url(#a-green)" marker-end="url(#a-green)"/>
+                            <text x="145" y="25" class="m-text" fill="var(--l-green)">l</text>
+
+                            <!-- m (Pink) Yatay Alt -->
+                            <line x1="80" y1="140" x2="320" y2="140" class="m-line m-line-pink" marker-start="url(#a-pink)" marker-end="url(#a-pink)"/>
+                            <text x="335" y="145" class="m-text" fill="var(--l-pink)">m</text>
+
+                            <!-- Noktalar -->
+                            <circle cx="200" cy="76.67" r="5" class="m-dot"/>
+                            <text x="200" y="60" class="m-text" text-anchor="middle">A</text>
+                            
+                            <circle cx="145.71" cy="140" r="5" class="m-dot"/>
+                            <text x="135" y="130" class="m-text">B</text>
+                            
+                            <circle cx="254.29" cy="140" r="5" class="m-dot"/>
+                            <text x="265" y="130" class="m-text">C</text>
+                        </svg>
+                    </div>
+                    <div class="scene-desc">
+                        k ile l A'da, k ile m B'de, l ile m C noktasında ikişer ikişer kesişmektedir. Üçgen oluşur.
+                    </div>
+                </div>
+
+                <!-- SCENE 4 -->
+                <div class="content-scene" id="scene-4">
+                    <div class="scene-title">Üç doğru birbirine paralel olabilir.</div>
+                    <div class="scene-drawing">
+                        <svg class="math-svg" viewBox="0 0 400 200">
+                            <!-- k (Blue) -->
+                            <line x1="80" y1="60" x2="320" y2="60" class="m-line m-line-blue" marker-start="url(#a-blue)" marker-end="url(#a-blue)"/>
+                            <text x="335" y="65" class="m-text" fill="var(--l-blue)">k</text>
+                            
+                            <!-- l (Green) -->
+                            <line x1="80" y1="100" x2="320" y2="100" class="m-line m-line-green" marker-start="url(#a-green)" marker-end="url(#a-green)"/>
+                            <text x="335" y="105" class="m-text" fill="var(--l-green)">l</text>
+
+                            <!-- m (Pink) -->
+                            <line x1="80" y1="140" x2="320" y2="140" class="m-line m-line-pink" marker-start="url(#a-pink)" marker-end="url(#a-pink)"/>
+                            <text x="335" y="145" class="m-text" fill="var(--l-pink)">m</text>
+                        </svg>
+                    </div>
+                    <div class="scene-desc">
+                        Üçü de birbiriyle kesişmez. k // l // m
+                    </div>
+                </div>
+
+                <!-- SCENE 5 -->
+                <div class="content-scene" id="scene-5">
+                    <div class="scene-title">Üç doğru çakışık olabilir.</div>
+                    <div class="scene-drawing">
+                        <svg class="math-svg" viewBox="0 0 400 200">
+                            <!-- Çakışık Doğrular (Üst üste binen renkler ve farklı uzunluklar) -->
+                            <line x1="60" y1="100" x2="340" y2="100" stroke="#1E293B" stroke-width="8" stroke-linecap="round" marker-start="url(#a-dark)" marker-end="url(#a-dark)"/>
+                            <line x1="100" y1="100" x2="300" y2="100" class="m-line m-line-blue" stroke-width="5" marker-start="url(#a-blue)" marker-end="url(#a-blue)"/>
+                            <line x1="140" y1="100" x2="260" y2="100" class="m-line m-line-pink" stroke-width="2" marker-start="url(#a-pink)" marker-end="url(#a-pink)"/>
+
+                            <!-- Harfler -->
+                            <text x="80" y="80" class="m-text" fill="#1E293B">n</text>
+                            <text x="200" y="80" class="m-text" fill="var(--l-blue)" text-anchor="middle">m</text>
+                            <text x="310" y="80" class="m-text" fill="var(--l-pink)">d</text>
+                            
+                            <circle cx="80" cy="100" r="4" fill="#1E293B"/>
+                            <circle cx="200" cy="100" r="4" fill="var(--l-blue)"/>
+                            <circle cx="310" cy="100" r="4" fill="var(--l-pink)"/>
+                        </svg>
+                    </div>
+                    <div class="scene-desc">
+                        Tüm noktaları ortaktır. n, m ve d doğruları çakışıktır.
+                    </div>
+                </div>
+
+                <!-- SCENE 6 -->
+                <div class="content-scene" id="scene-6">
+                    <div class="scene-title">Doğrulardan ikisi çakışıkken diğeri bu doğruları kesebilir.</div>
+                    <div class="scene-drawing">
+                        <svg class="math-svg" viewBox="0 0 400 200">
+                            <!-- Çakışık d, e (Yatay) -->
+                            <line x1="70" y1="100" x2="330" y2="100" class="m-line m-line-pink" stroke-width="7" marker-start="url(#a-pink)" marker-end="url(#a-pink)"/>
+                            <line x1="110" y1="100" x2="290" y2="100" class="m-line m-line-blue" stroke-width="3" marker-start="url(#a-blue)" marker-end="url(#a-blue)"/>
+                            
+                            <text x="80" y="80" class="m-text" fill="var(--l-pink)">d</text>
+                            <text x="310" y="80" class="m-text" fill="var(--l-blue)">e</text>
+                            
+                            <!-- Kesen f (Yeşil) -->
+                            <line x1="140" y1="180" x2="260" y2="20" class="m-line m-line-green" marker-start="url(#a-green)" marker-end="url(#a-green)"/>
+                            <text x="270" y="25" class="m-text" fill="var(--l-green)">f</text>
+
+                            <!-- Kesişim Noktası -->
+                            <circle cx="200" cy="100" r="6" class="m-dot"/>
+                            <text x="212" y="115" class="m-text">K</text>
+                        </svg>
+                    </div>
+                    <div class="scene-desc">
+                        d ve e doğruları çakışıktır. f doğrusu ise d ve e doğrularını keser.
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        const TOTAL_SCENES = 6;
+        let visitedScenes = new Set();
+        let isCompleted = false;
+        let currentAudioId = null;
+
+        // Play/Pause İkonları
+        const svgPlay = `<svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+        const svgPause = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
+        function init() {
+            // Başlangıçta tüm ikonları Play yap
+            for(let i=1; i<=TOTAL_SCENES; i++) {
+                let btn = document.getElementById(`audio-btn-${i}`);
+                if(btn) btn.innerHTML = svgPlay;
+            }
+            
+            // İlk sahneyi otomatik aç ve sesini çal
+            visitedScenes.add(1);
+            // playSceneAudio tetikleyecek şekilde çalışır
+            playSceneAudio(1);
+        }
+
+        function playSceneAudio(id) {
+            // Önce Çalan Tüm Sesleri Durdur ve İkonları Sıfırla
+            for(let i=1; i<=TOTAL_SCENES; i++) {
+                let a = document.getElementById(`ses${i}`);
+                if(a) { a.pause(); a.currentTime = 0; }
+                
+                let btn = document.getElementById(`audio-btn-${i}`);
+                if(btn) {
+                    btn.classList.remove('playing');
+                    btn.innerHTML = svgPlay;
+                }
+            }
+
+            currentAudioId = id;
+            let targetAudio = document.getElementById(`ses${id}`);
+            let targetBtn = document.getElementById(`audio-btn-${id}`);
+            
+            if(targetAudio && !isCompleted) {
+                targetAudio.play().then(() => {
+                    if(targetBtn) {
+                        targetBtn.classList.add('playing');
+                        targetBtn.innerHTML = svgPause;
+                    }
+                }).catch(()=>{ console.log("Otomatik ses oynatımı engellendi."); });
+
+                // Ses Bittiğinde İkonu Sıfırla
+                targetAudio.onended = () => {
+                    if(targetBtn) {
+                        targetBtn.classList.remove('playing');
+                        targetBtn.innerHTML = svgPlay;
+                    }
+                };
+            }
+        }
+
+        // Hoparlöre tıklandığında çalışır
+        function toggleAudio(event, id) {
+            event.stopPropagation(); // Menü item click eventini engelle (showScene çalışmasın diye)
+            getAudioContext();
+            
+            let targetAudio = document.getElementById(`ses${id}`);
+            let targetBtn = document.getElementById(`audio-btn-${id}`);
+
+            if(currentAudioId === id) {
+                // Eğer zaten bu sahnedeysek ve sesi çalıyorsa durdur / duruyorsa çal
+                if(!targetAudio.paused) {
+                    targetAudio.pause();
+                    targetBtn.classList.remove('playing');
+                    targetBtn.innerHTML = svgPlay;
+                } else {
+                    targetAudio.play();
+                    targetBtn.classList.add('playing');
+                    targetBtn.innerHTML = svgPause;
+                }
+            } else {
+                // Başka bir sahnenin hoparlörüne tıklandıysa, o sahneye geçiş yap ve sesi çal
+                showScene(id);
+            }
+        }
+
+        // Menü Öğesine Tıklandığında Çalışır
+        function showScene(id) {
+            if(isCompleted) return;
+            getAudioContext();
+            playSfx('click');
+
+            // Menü Stilleri
+            for(let i=1; i<=TOTAL_SCENES; i++) {
+                document.getElementById(`menu-${i}`).classList.remove('active');
+                document.getElementById(`scene-${i}`).classList.remove('active');
+            }
+
+            document.getElementById(`menu-${id}`).classList.add('active', 'visited');
+            document.getElementById(`scene-${id}`).classList.add('active');
+
+            visitedScenes.add(id);
+            
+            // Sahneye girildiğinde sesi en baştan başlat
+            playSceneAudio(id);
+
+            checkProgress();
+        }
+
+        function checkProgress() {
+            if(visitedScenes.size === TOTAL_SCENES) {
+                const btn = document.getElementById('btn-complete');
+                btn.style.display = 'flex';
+            }
+        }
+
+        function completeModule() {
+            if(isCompleted) return;
+            isCompleted = true;
+            playSfx('success');
+
+            // Tüm sesleri sustur ve ikonları sıfırla
+            for(let i=1; i<=TOTAL_SCENES; i++) {
+                let el = document.getElementById(`ses${i}`);
+                if(el) { el.pause(); el.currentTime = 0; }
+                
+                let btn = document.getElementById(`audio-btn-${i}`);
+                if(btn) { btn.classList.remove('playing'); btn.innerHTML = svgPlay; }
+            }
+
+            const btn = document.getElementById('btn-complete');
+            btn.classList.add('done');
+            btn.innerText = 'TAMAMLANDI ✓';
+
+            showToast("Konu anlatımı başarıyla tamamlandı. ✓");
+            
+            // Storyline a27 değişkenini tetikle
+            setVar('a27', true);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { parent.GetPlayer().SetVar(n, v); console.log(`Storyline Variable Set: ${n} = ${v}`); } 
+            catch(e) { console.log(`(Local) Storyline Variable: ${n} = ${v}`); } 
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { window.dispatchEvent(new Event('resize')); init(); };
+    </script>
+</body>
+</html>

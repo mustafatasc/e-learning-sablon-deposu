@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Çokgen - Hazırlık Etkinliği</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            /* Matematik Teması: Krem zemin, Kırmızı vurgular */
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --hover-red: #DC2626;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            
+            --success-green: #10B981;
+            --accent-blue: #3B82F6;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 80px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .sub-instruction { font-size: 12.5px; font-weight: 600; color: #475569; margin-top: 2px; }
+        
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        /* --- İÇERİK --- */
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 5px 40px 15px 40px; gap: 15px;
+            height: calc(540px - 80px); z-index: 10; position: relative;
+        }
+
+        /* --- ANLATICI --- */
+        .narrator-box {
+            background: white; border-radius: 12px; padding: 10px 20px 10px 40px;
+            font-size: 12.5px; font-weight: 600; color: var(--text-dark);
+            border-left: 5px solid var(--primary-red); line-height: 1.5;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.05); position: relative;
+            width: 100%; flex-shrink: 0; display: flex; align-items: center; min-height: 70px;
+        }
+
+        .narrator-speaker {
+            position: absolute; top: 50%; left: -16px; transform: translateY(-50%);
+            width: 32px; height: 32px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3); cursor: pointer;
+            animation: pulsePlay 2s infinite;
+        }
+        @keyframes pulsePlay { 0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); } 70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); } 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); } }
+
+        /* --- GÖRSELLER ALANI (3 Kolon) --- */
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+            flex: 1; align-items: stretch; justify-content: center;
+        }
+
+        .item-card {
+            background: white; border: 3px solid #e2e8f0; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 12px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05); position: relative; overflow: hidden;
+        }
+
+        .item-card:hover { transform: translateY(-4px); border-color: var(--primary-soft); box-shadow: 0 12px 25px rgba(185, 28, 28, 0.1); }
+        .item-card:active { transform: translateY(0); }
+
+        .img-container {
+            width: 100%; height: 130px; background: #f8fafc; border-radius: 12px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            border: 1px solid #f1f5f9; position: relative;
+        }
+
+        /* SVG Sahneleri */
+        .base-svg { width: 85%; height: 85%; }
+        
+        /* Şekil Sınırlarını Vurgulama Animasyonu (Başlangıçta gizli) */
+        .shape-outline {
+            fill: none; stroke: var(--primary-red); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round;
+            stroke-dasharray: 600; stroke-dashoffset: 600; transition: stroke-dashoffset 1s ease-in-out;
+        }
+
+        .item-title {
+            font-size: 14px; font-weight: 900; color: var(--text-dark); text-align: center; line-height: 1.2; text-transform: uppercase;
+        }
+        
+        .item-desc {
+            font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-align: center; margin-top: 5px; opacity: 0; transition: 0.3s; line-height: 1.3;
+        }
+
+        /* Seçili/İncelenmiş Durum */
+        .item-card.viewed {
+            border-color: var(--primary-red); background: var(--light-red);
+        }
+        .item-card.viewed .shape-outline {
+            stroke-dashoffset: 0;
+        }
+        .item-card.viewed .item-desc {
+            opacity: 1;
+        }
+        .item-card.viewed .check-box {
+            background: var(--primary-red); border-color: var(--primary-red); color: white;
+        }
+
+        /* Checkbox Tasarımı */
+        .check-box {
+            position: absolute; top: 12px; right: 12px;
+            width: 24px; height: 24px; border: 2.5px solid #cbd5e1; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 900; color: transparent; transition: 0.3s;
+            background: white; z-index: 10;
+        }
+        .check-box::after { content: '✓'; }
+
+        /* --- KONTROL PANELI --- */
+        .control-panel {
+            display: flex; align-items: center; justify-content: center; height: 45px; margin-top: auto; flex-shrink: 0;
+        }
+
+        .btn-action {
+            background: var(--primary-red); color: white; width: 300px; height: 45px;
+            font-size: 14px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            display: none; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+
+        /* Toast Bildirimleri */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 13px;
+            padding: 10px 20px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Yönerge Ses Dosyası (ses1.mp3) - Otoplay Açık -->
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Tebrikler!</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">ÇOKGENLERE HAZIRLIK</div>
+                <div class="sub-instruction">Görsellere tıklayarak günlük hayattaki kapalı şekilleri inceleyiniz.</div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- ANLATICI KUTUSU -->
+            <div class="narrator-box">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <span>"Günlük hayatta gördüğümüz pencereler, çerçeveler, odaların tabanları veya bal petekleri belirli çizgilerle sınırlandırılmış <strong>kapalı şekillerdir.</strong> Bir şeklin sınırlarının kapalı olması geometride büyük önem taşır. Şimdi çokgen konusuna hazır olmak için birkaç örnek inceleyelim."</span>
+            </div>
+
+            <!-- GÖRSELLER (3 Kart) -->
+            <div class="gallery-grid">
+                
+                <!-- Kart 1: Pencere -->
+                <div class="item-card" id="card-1" onclick="viewCard(1)">
+                    <div class="check-box"></div>
+                    <div class="img-container">
+                        <!-- Pencere İllüstrasyonu (SVG) -->
+                        <svg class="base-svg" viewBox="0 0 100 100">
+                            <!-- Arka plan gökyüzü -->
+                            <rect x="10" y="10" width="80" height="80" fill="#bae6fd"/>
+                            <!-- Pencere Çerçevesi (Ahşap) -->
+                            <rect x="10" y="10" width="80" height="80" fill="none" stroke="#78350f" stroke-width="6"/>
+                            <!-- Pencere Bölmeleri -->
+                            <line x1="50" y1="10" x2="50" y2="90" stroke="#78350f" stroke-width="4"/>
+                            <line x1="10" y1="50" x2="90" y2="50" stroke="#78350f" stroke-width="4"/>
+                            <!-- Animasyonlu Çokgen Vurgusu (Kapalı Şekil) -->
+                            <rect x="10" y="10" width="80" height="80" class="shape-outline" />
+                        </svg>
+                    </div>
+                    <div class="item-title">Pencere</div>
+                    <div class="item-desc">Çizgilerle sınırlandırılmış kapalı bir şekildir. Dört kenarı vardır.</div>
+                </div>
+
+                <!-- Kart 2: Çerçeve -->
+                <div class="item-card" id="card-2" onclick="viewCard(2)">
+                    <div class="check-box"></div>
+                    <div class="img-container">
+                        <!-- Çerçeve İllüstrasyonu (SVG) -->
+                        <svg class="base-svg" viewBox="0 0 100 100">
+                            <!-- Dış Çerçeve -->
+                            <rect x="15" y="20" width="70" height="60" fill="#f1f5f9" stroke="#b45309" stroke-width="8"/>
+                            <!-- İç Resim Alanı (Dağ Manzarası) -->
+                            <polygon points="20,75 40,45 60,65 80,35 80,75" fill="#94a3b8"/>
+                            <circle cx="35" cy="35" r="6" fill="#fbbf24"/>
+                            <!-- Animasyonlu Çokgen Vurgusu (Kapalı Şekil) -->
+                            <rect x="15" y="20" width="70" height="60" class="shape-outline" />
+                        </svg>
+                    </div>
+                    <div class="item-title">Fotoğraf Çerçevesi</div>
+                    <div class="item-desc">Köşeleri ve kenarları olan kapalı bir geometrik modele örnektir.</div>
+                </div>
+
+                <!-- Kart 3: Bal Peteği (YENİ TASARIM) -->
+                <div class="item-card" id="card-3" onclick="viewCard(3)">
+                    <div class="check-box"></div>
+                    <div class="img-container">
+                        <!-- Bal Peteği Kovan İllüstrasyonu (SVG) -->
+                        <svg class="base-svg" viewBox="0 0 120 120">
+                            <defs>
+                                <!-- Tekil bir altıgen kalıbı (Merkezi 60,60, Yarıçapı~25) -->
+                                <polygon id="hex" points="60,35 81.65,47.5 81.65,72.5 60,85 38.35,72.5 38.35,47.5" fill="#fde047" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round"/>
+                            </defs>
+                            
+                            <!-- Etraftaki soluk petekler -->
+                            <use href="#hex" x="-43.3" y="0" opacity="0.5"/>
+                            <use href="#hex" x="43.3" y="0" opacity="0.5"/>
+                            <use href="#hex" x="-21.65" y="-37.5" opacity="0.5"/>
+                            <use href="#hex" x="21.65" y="-37.5" opacity="0.5"/>
+                            <use href="#hex" x="-21.65" y="37.5" opacity="0.5"/>
+                            <use href="#hex" x="21.65" y="37.5" opacity="0.5"/>
+                            
+                            <!-- Merkez Petek (Belirgin) -->
+                            <use href="#hex" x="0" y="0" stroke-width="3"/>
+
+                            <!-- Animasyonlu Çokgen Vurgusu (Merkez Altıgen) -->
+                            <polygon points="60,35 81.65,47.5 81.65,72.5 60,85 38.35,72.5 38.35,47.5" class="shape-outline" stroke-width="5" fill="none" />
+                        </svg>
+                    </div>
+                    <div class="item-title">Bal Peteği</div>
+                    <div class="item-desc">Doğadaki en kusursuz kapalı şekillerden (altıgen) biridir.</div>
+                </div>
+
+            </div>
+
+            <!-- KONTROL BUTONU -->
+            <div class="control-panel">
+                <button id="btn-complete" class="btn-action" onclick="completeActivity()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='draw') { 
+                    osc.type='sine'; osc.frequency.setValueAtTime(300, ctx.currentTime); 
+                    osc.frequency.linearRampToValueAtTime(600, ctx.currentTime+0.8); 
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.8); 
+                    osc.start(); osc.stop(ctx.currentTime+0.8); return;
+                }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let viewedCards = new Set();
+        const totalCards = 3;
+
+        function init() {
+            // Ses otomatik başlamayı dener, tarayıcı engellerse catch'e düşer.
+            playAudio('ses1');
+            const s1 = document.getElementById('ses1');
+            if(s1) {
+                s1.addEventListener('ended', () => {
+                    document.getElementById('main-speaker').style.animation = 'none';
+                });
+            }
+        }
+
+        function playAudio(id) {
+            const targetAudio = document.getElementById(id);
+            if(targetAudio) {
+                targetAudio.pause(); targetAudio.currentTime = 0; 
+                targetAudio.play().catch(()=>{
+                    console.log("Tarayıcı otomatik ses çalmayı engelledi. Kullanıcı etkileşimi bekleniyor.");
+                });
+            }
+            if(id === 'ses1') {
+                document.getElementById('main-speaker').style.animation = 'pulsePlay 2s infinite';
+            }
+        }
+
+        function viewCard(id) {
+            if(isCompleted) return;
+            getAudioContext();
+            
+            const card = document.getElementById(`card-${id}`);
+            
+            if(!card.classList.contains('viewed')) {
+                playSfx('draw'); // Çizim sesi
+                card.classList.add('viewed');
+                viewedCards.add(id);
+
+                checkProgress();
+            } else {
+                playSfx('click');
+            }
+        }
+
+        function checkProgress() {
+            if(viewedCards.size === totalCards) {
+                const btn = document.getElementById('btn-complete');
+                btn.style.display = 'flex';
+            }
+        }
+
+        function completeActivity() {
+            if(isCompleted) return;
+            isCompleted = true;
+            playSfx('success');
+
+            const btn = document.getElementById('btn-complete');
+            btn.classList.add('completed');
+            btn.innerHTML = 'TAMAMLANDI ✓';
+
+            showToast("Konuya harika bir başlangıç yaptınız! İlerleyebilirsiniz.", "toast-success");
+            
+            // STORYLINE DEĞİŞKENİNİ TETİKLE (cokgen1 = true)
+            setVar('cokgen1', true);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { 
+            window.dispatchEvent(new Event('resize')); 
+            init(); 
+        };
+    </script>
+</body>
+</html>

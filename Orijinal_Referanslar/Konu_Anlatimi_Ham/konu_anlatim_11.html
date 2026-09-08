@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Düzgün Çokgenler - Konu Anlatımı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --cyan-accent: #0ea5e9;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* */
+        .header {
+            padding: 15px 40px 0 40px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; gap: 15px; height: calc(540px - 75px);
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        /* --- BİLGİ KUTUSU --- */
+        .info-box {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            background: white; border-radius: 12px; padding: 15px 25px 15px 15px;
+            border-left: 5px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0; z-index: 10;
+        }
+
+        .narrator-speaker {
+            width: 36px; height: 36px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer; transition: transform 0.2s;
+        }
+        
+        .narrator-speaker:hover { transform: scale(1.1); }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .info-text {
+            font-size: 15px; line-height: 1.5; font-weight: 600; color: var(--text-dark);
+        }
+        
+        .info-text strong {
+            color: #1D4ED8; font-weight: 800;
+        }
+
+        /* */
+        /* --- KARTLAR (4 SÜTUNLU YAPI) --- */
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; flex: 1; min-height: 0;
+        }
+
+        .poly-card {
+            background: white; border: 2px solid #e2e8f0; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+            background-image: 
+                linear-gradient(#f1f5f9 1px, transparent 1px), 
+                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 15px 15px; background-position: center;
+        }
+        
+        .poly-card:hover {
+            border-color: #cbd5e1; box-shadow: 0 8px 20px rgba(0,0,0,0.06); transform: translateY(-3px);
+        }
+
+        .svg-container {
+            width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0;
+        }
+
+        .math-svg { width: 100%; height: 100%; max-height: 140px; }
+
+        .poly-name {
+            font-size: 14px; font-weight: 800; color: var(--primary-red); text-transform: uppercase;
+            background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 8px; margin-top: 5px;
+            border: 1px dashed #cbd5e1; width: 100%; text-align: center;
+        }
+
+        /* --- ALT PANEL VE BUTON --- */
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto;
+        }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 200px; height: 45px;
+            font-size: 14px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            opacity: 0; pointer-events: none; transform: translateY(15px);
+        }
+        
+        .btn-action.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white; background-color: var(--success-green);
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">DÜZGÜN ÇOKGENLER</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- -->
+            <div class="info-box">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="info-text">
+                    Tüm kenar uzunlukları ve iç açılarının ölçüleri birbirine eşit olan çokgenlere <strong>düzgün çokgen</strong> denir.<br>
+                    Aşağıdaki şekilleri incelediğimizde eşkenar üçgen, kare, düzgün beşgen ve düzgün altıgenin birer düzgün çokgen olduğunu görebiliriz.
+                </div>
+            </div>
+
+            <!-- -->
+            <div class="cards-grid">
+                
+                <!-- 1. EŞKENAR ÜÇGEN -->
+                <div class="poly-card">
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(80, 95)">
+                                <polygon points="0,-60 51.96,30 -51.96,30" fill="#f8fafc" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round" />
+                                
+                                <!-- Açılar -->
+                                <g transform="translate(0, -60) rotate(90)">
+                                    <path d="M 15,-8.66 A 17.32 17.32 0 0 1 15,8.66" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="32" y="0" font-family="Montserrat" font-size="12" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-90, 32, 0)">60°</text>
+                                </g>
+                                <g transform="translate(51.96, 30) rotate(210)">
+                                    <path d="M 15,-8.66 A 17.32 17.32 0 0 1 15,8.66" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="30" y="0" font-family="Montserrat" font-size="12" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-210, 30, 0)">60°</text>
+                                </g>
+                                <g transform="translate(-51.96, 30) rotate(-30)">
+                                    <path d="M 15,-8.66 A 17.32 17.32 0 0 1 15,8.66" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="30" y="0" font-family="Montserrat" font-size="12" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(30, 30, 0)">60°</text>
+                                </g>
+
+                                <!-- Kenar Eşitlik İşaretleri (Çift Çizik) -->
+                                <g transform="translate(25.98, -15) rotate(60)">
+                                    <line x1="-3" y1="-3" x2="3" y2="-3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="-3" y1="3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                                <g transform="translate(-25.98, -15) rotate(-60)">
+                                    <line x1="-3" y1="-3" x2="3" y2="-3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="-3" y1="3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                                <g transform="translate(0, 30)">
+                                    <line x1="-3" y1="-3" x2="-3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="3" y1="-3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="poly-name">Eşkenar Üçgen</div>
+                </div>
+
+                <!-- 2. KARE -->
+                <div class="poly-card">
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(80, 80)">
+                                <rect x="-45" y="-45" width="90" height="90" fill="#f8fafc" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round" />
+                                
+                                <!-- Dik Açı İşaretleri -->
+                                <polyline points="-45,-30 -30,-30 -30,-45" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                <circle cx="-37.5" cy="-37.5" r="1.5" fill="#ef4444"/>
+                                
+                                <polyline points="45,-30 30,-30 30,-45" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                <circle cx="37.5" cy="-37.5" r="1.5" fill="#ef4444"/>
+                                
+                                <polyline points="45,30 30,30 30,45" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                <circle cx="37.5" cy="37.5" r="1.5" fill="#ef4444"/>
+                                
+                                <polyline points="-45,30 -30,30 -30,45" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                <circle cx="-37.5" cy="37.5" r="1.5" fill="#ef4444"/>
+                                
+                                <!-- Kenar Eşitlik İşaretleri (Tek Çizik) -->
+                                <g transform="translate(0, -45)"><line x1="-3" y1="-5" x2="-3" y2="5" stroke="#1E293B" stroke-width="2"/></g>
+                                <g transform="translate(0, 45)"><line x1="-3" y1="-5" x2="-3" y2="5" stroke="#1E293B" stroke-width="2"/></g>
+                                <g transform="translate(45, 0)"><line x1="-5" y1="-3" x2="5" y2="-3" stroke="#1E293B" stroke-width="2"/></g>
+                                <g transform="translate(-45, 0)"><line x1="-5" y1="-3" x2="5" y2="-3" stroke="#1E293B" stroke-width="2"/></g>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="poly-name">Kare</div>
+                </div>
+
+                <!-- 3. DÜZGÜN BEŞGEN -->
+                <div class="poly-card">
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(80, 85)">
+                                <polygon points="0,-55 52.3,-17 32.3,44.5 -32.3,44.5 -52.3,-17" fill="#f8fafc" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round" />
+                                
+                                <!-- Açılar (108°) -->
+                                <g transform="translate(0, -55) rotate(90)">
+                                    <path d="M 8.82,-12.14 A 15 15 0 0 1 8.82,12.14" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="30" y="0" font-family="Montserrat" font-size="11" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-90, 30, 0)">108°</text>
+                                </g>
+                                <g transform="translate(52.3, -17) rotate(162)">
+                                    <path d="M 8.82,-12.14 A 15 15 0 0 1 8.82,12.14" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="28" y="0" font-family="Montserrat" font-size="11" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-162, 28, 0)">108°</text>
+                                </g>
+                                <g transform="translate(32.3, 44.5) rotate(234)">
+                                    <path d="M 8.82,-12.14 A 15 15 0 0 1 8.82,12.14" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="26" y="0" font-family="Montserrat" font-size="11" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-234, 26, 0)">108°</text>
+                                </g>
+                                <g transform="translate(-32.3, 44.5) rotate(306)">
+                                    <path d="M 8.82,-12.14 A 15 15 0 0 1 8.82,12.14" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="26" y="0" font-family="Montserrat" font-size="11" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-306, 26, 0)">108°</text>
+                                </g>
+                                <g transform="translate(-52.3, -17) rotate(18)">
+                                    <path d="M 8.82,-12.14 A 15 15 0 0 1 8.82,12.14" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="28" y="0" font-family="Montserrat" font-size="11" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-18, 28, 0)">108°</text>
+                                </g>
+
+                                <!-- Kenar Eşitlik İşaretleri (Tek Çizik) -->
+                                <g transform="translate(26.15, -36) rotate(36)"><line x1="-3" y1="-5" x2="-3" y2="5" stroke="#1E293B" stroke-width="2"/></g>
+                                <g transform="translate(42.3, 13.75) rotate(-36)"><line x1="-3" y1="-5" x2="-3" y2="5" stroke="#1E293B" stroke-width="2"/></g>
+                                <g transform="translate(0, 44.5)"><line x1="-3" y1="-5" x2="-3" y2="5" stroke="#1E293B" stroke-width="2"/></g>
+                                <g transform="translate(-42.3, 13.75) rotate(36)"><line x1="-3" y1="-5" x2="-3" y2="5" stroke="#1E293B" stroke-width="2"/></g>
+                                <g transform="translate(-26.15, -36) rotate(-36)"><line x1="-3" y1="-5" x2="-3" y2="5" stroke="#1E293B" stroke-width="2"/></g>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="poly-name">Düzgün Beşgen</div>
+                </div>
+
+                <!-- 4. DÜZGÜN ALTIGEN -->
+                <div class="poly-card">
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(80, 80)">
+                                <polygon points="0,-55 47.6,-27.5 47.6,27.5 0,55 -47.6,27.5 -47.6,-27.5" fill="#f8fafc" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round" />
+                                
+                                <!-- Açılar (120°) -->
+                                <g transform="translate(0, -55) rotate(90)">
+                                    <path d="M 6,-10.39 A 12 12 0 0 1 6,10.39" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="24" y="0" font-family="Montserrat" font-size="10" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-90, 24, 0)">120°</text>
+                                </g>
+                                <g transform="translate(47.6, -27.5) rotate(150)">
+                                    <path d="M 6,-10.39 A 12 12 0 0 1 6,10.39" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="24" y="0" font-family="Montserrat" font-size="10" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-150, 24, 0)">120°</text>
+                                </g>
+                                <g transform="translate(47.6, 27.5) rotate(210)">
+                                    <path d="M 6,-10.39 A 12 12 0 0 1 6,10.39" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="24" y="0" font-family="Montserrat" font-size="10" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-210, 24, 0)">120°</text>
+                                </g>
+                                <g transform="translate(0, 55) rotate(270)">
+                                    <path d="M 6,-10.39 A 12 12 0 0 1 6,10.39" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="24" y="0" font-family="Montserrat" font-size="10" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-270, 24, 0)">120°</text>
+                                </g>
+                                <g transform="translate(-47.6, 27.5) rotate(330)">
+                                    <path d="M 6,-10.39 A 12 12 0 0 1 6,10.39" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="24" y="0" font-family="Montserrat" font-size="10" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-330, 24, 0)">120°</text>
+                                </g>
+                                <g transform="translate(-47.6, -27.5) rotate(30)">
+                                    <path d="M 6,-10.39 A 12 12 0 0 1 6,10.39" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <text x="24" y="0" font-family="Montserrat" font-size="10" font-weight="bold" fill="#1E293B" text-anchor="middle" dominant-baseline="central" transform="rotate(-30, 24, 0)">120°</text>
+                                </g>
+
+                                <!-- Kenar Eşitlik İşaretleri (Çift Çizik) -->
+                                <g transform="translate(23.8, -41.25) rotate(30)">
+                                    <line x1="-3" y1="-3" x2="3" y2="-3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="-3" y1="3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                                <g transform="translate(47.6, 0)">
+                                    <line x1="-3" y1="-3" x2="-3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="3" y1="-3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                                <g transform="translate(23.8, 41.25) rotate(-30)">
+                                    <line x1="-3" y1="-3" x2="3" y2="-3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="-3" y1="3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                                <g transform="translate(-23.8, 41.25) rotate(30)">
+                                    <line x1="-3" y1="-3" x2="3" y2="-3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="-3" y1="3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                                <g transform="translate(-47.6, 0)">
+                                    <line x1="-3" y1="-3" x2="-3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="3" y1="-3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                                <g transform="translate(-23.8, -41.25) rotate(-30)">
+                                    <line x1="-3" y1="-3" x2="3" y2="-3" stroke="#1E293B" stroke-width="2"/>
+                                    <line x1="-3" y1="3" x2="3" y2="3" stroke="#1E293B" stroke-width="2"/>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="poly-name">Düzgün Altıgen</div>
+                </div>
+
+            </div>
+
+            <!-- -->
+            <!-- ALT PANEL -->
+            <div class="bottom-panel">
+                <button id="btn-complete" class="btn-action" onclick="completeTopic()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+        
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+
+                    // Ses bitince TAMAMLA butonunu göster
+                    const btnComplete = document.getElementById('btn-complete');
+                    if(btnComplete) btnComplete.classList.add('show-btn');
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+
+            // Ses çalışmazsa hata payı olarak 5 saniye sonra butonu göster
+            setTimeout(() => {
+                const btnComplete = document.getElementById('btn-complete');
+                if(btnComplete && !btnComplete.classList.contains('show-btn')) {
+                    btnComplete.classList.add('show-btn');
+                }
+            }, 5000);
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            
+            if(audio) {
+                audio.pause(); 
+                audio.currentTime = 0; 
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function completeTopic() {
+            playSfx('success');
+            const btn = document.getElementById('btn-complete');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            // w23 değişkenini tetikle
+            setVar('w23', true);
+            showToast("İncelemeyi tamamladınız. İlerleyebilirsiniz.");
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => {
+            init();
+        };
+
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        window.addEventListener('resize', applyScale);
+
+    </script>
+</body>
+</html>

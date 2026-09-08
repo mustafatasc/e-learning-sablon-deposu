@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Etkinlik: Çokgenlerde Toplam Köşegen Sayısı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+            --cyan-accent: #0ea5e9;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+            touch-action: none;
+        }
+
+        /* Number Input Oklarını Gizleme */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 10px 40px; gap: 10px; height: calc(540px - 75px);
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        /* --- YÖNERGE KUTUSU --- */
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            background: white; border-radius: 12px; padding: 8px 20px 8px 15px;
+            border-left: 5px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0; z-index: 10;
+        }
+
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .instruction-text-sub {
+            font-size: 14.5px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        /* --- ORTA PANEL --- */
+        .main-activity-area {
+            display: flex; gap: 20px; flex: 1; min-height: 0; align-items: stretch;
+        }
+
+        /* SOL: TABLO */
+        .table-panel {
+            flex: 1.2; display: flex; flex-direction: column;
+            background: white; border: 2px solid #e2e8f0; border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); overflow: hidden;
+        }
+
+        .t-header {
+            display: flex; background: var(--primary-red); color: white; font-weight: 800; font-size: 15px;
+        }
+        .th-col { flex: 1; padding: 12px; text-align: center; border-right: 2px solid rgba(255,255,255,0.2); }
+        .th-col:last-child { border-right: none; }
+
+        .t-body {
+            display: flex; flex-direction: column; flex: 1; justify-content: space-evenly; padding: 10px 0;
+        }
+
+        .t-row {
+            display: flex; align-items: center; padding: 8px 15px; border-bottom: 1px dashed #cbd5e1;
+            transition: background-color 0.3s;
+        }
+        .t-row:last-child { border-bottom: none; }
+
+        .td-name {
+            flex: 1; font-size: 18px; font-weight: 800; color: var(--text-dark); text-align: center;
+            font-family: 'Times New Roman', Times, serif; font-style: italic;
+        }
+
+        .td-input {
+            flex: 1; display: flex; justify-content: center; align-items: center; position: relative;
+        }
+
+        .num-input {
+            width: 70px; height: 40px; border-radius: 10px; font-weight: 900; font-size: 20px;
+            border: 2px solid #cbd5e1; background: #f8fafc; color: #1D4ED8; text-align: center;
+            outline: none; transition: 0.2s; font-family: 'Montserrat', sans-serif;
+        }
+        .num-input:focus { border-color: #1D4ED8; background: #eff6ff; box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1); }
+
+        /* Satır Animasyonları */
+        .t-row.is-correct { background-color: #ecfdf5;}
+        .t-row.is-correct .num-input { border-color: var(--success-green); color: var(--success-green); background: white; pointer-events: none;}
+        
+        .t-row.is-incorrect { background-color: #fef2f2; animation: shake 0.4s ease-in-out;}
+        .t-row.is-incorrect .num-input { border-color: var(--error-red); color: var(--error-red); }
+
+        /* SAĞ: ÇİZİM GÖSTERİMİ */
+        .visual-panel {
+            flex: 1.5; background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 10px; position: relative; overflow: hidden;
+            background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+        }
+
+        .math-svg { width: 100%; height: 100%; }
+
+        .poly-shape { fill: transparent; stroke: #1E293B; stroke-width: 3; stroke-linejoin: round; transition: all 0.5s;}
+        .poly-point { fill: #1E293B; }
+        
+        .diag-line {
+            fill: none; stroke-width: 2; stroke-dasharray: 500; stroke-dashoffset: 500;
+        }
+        
+        /* Çizim Animasyonu (CSS Class ile tetiklenecek) */
+        .animate-draw {
+            animation: drawLine 0.6s ease-in-out forwards;
+        }
+
+        @keyframes drawLine {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Seçili Satır Vurgusu */
+        .t-row.active-row {
+            background-color: #e0e7ff;
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* --- ALT PANEL: KONTROL VE GERİ BİLDİRİM --- */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto;
+        }
+
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 10px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 240px; height: 45px;
+            font-size: 14px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto;
+        }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-warning { background-color: var(--warning-orange) !important; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">KÖŞEGEN SAYISI ETKİNLİĞİ</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text-sub" onclick="playAudio('ses1')" style="cursor: pointer;">
+                    Aşağıda isimleri verilen çokgenlerin toplam köşegen sayılarını boşluklara yazınız.
+                </div>
+            </div>
+
+            <!-- ORTA PANEL -->
+            <div class="main-activity-area">
+                
+                <!-- SOL: TABLO -->
+                <div class="table-panel">
+                    <div class="t-header">
+                        <div class="th-col">Çokgen</div>
+                        <div class="th-col">Köşegen Sayısı</div>
+                    </div>
+                    <div class="t-body">
+                        
+                        <div class="t-row" id="row-3" onclick="focusRow(3)" style="cursor: pointer;">
+                            <div class="td-name">Üçgen</div>
+                            <div class="td-input"><input type="number" id="inp-3" class="num-input" maxlength="2" onfocus="focusRow(3)"></div>
+                        </div>
+
+                        <div class="t-row" id="row-4" onclick="focusRow(4)" style="cursor: pointer;">
+                            <div class="td-name">Dörtgen</div>
+                            <div class="td-input"><input type="number" id="inp-4" class="num-input" maxlength="2" onfocus="focusRow(4)"></div>
+                        </div>
+
+                        <div class="t-row" id="row-5" onclick="focusRow(5)" style="cursor: pointer;">
+                            <div class="td-name">Beşgen</div>
+                            <div class="td-input"><input type="number" id="inp-5" class="num-input" maxlength="2" onfocus="focusRow(5)"></div>
+                        </div>
+
+                        <div class="t-row" id="row-6" onclick="focusRow(6)" style="cursor: pointer;">
+                            <div class="td-name">Altıgen</div>
+                            <div class="td-input"><input type="number" id="inp-6" class="num-input" maxlength="2" onfocus="focusRow(6)"></div>
+                        </div>
+
+                        <div class="t-row" id="row-8" onclick="focusRow(8)" style="cursor: pointer;">
+                            <div class="td-name">Sekizgen</div>
+                            <div class="td-input"><input type="number" id="inp-8" class="num-input" maxlength="2" onfocus="focusRow(8)"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SAĞ: ÇİZİM GÖSTERİMİ -->
+                <div class="visual-panel">
+                    <svg class="math-svg" id="draw-svg" viewBox="-150 -150 300 300" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Çokgen Yolu Buraya Eklenecek -->
+                        <polygon id="poly-shape" class="poly-shape" points=""></polygon>
+                        <!-- Köşegen Çizgileri Buraya Gelecek -->
+                        <g id="diagonals-group"></g>
+                        <!-- Noktalar Buraya Gelecek -->
+                        <g id="points-group"></g>
+                        <!-- Merkezdeki Sayı -->
+                        <text id="center-number" x="0" y="0" font-family="Montserrat" font-size="60" font-weight="900" fill="var(--primary-red)" text-anchor="middle" dominant-baseline="central" opacity="0"></text>
+                    </svg>
+                </div>
+
+            </div>
+
+            <!-- ALT PANEL: KONTROL VE GERİ BİLDİRİM -->
+            <div class="bottom-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                else if(type==='line') { 
+                    osc.type='sine'; osc.frequency.setValueAtTime(600, ctx.currentTime); osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime+0.4); 
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.4); 
+                    osc.start(); osc.stop(ctx.currentTime+0.4); return;
+                }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+        let currentRow = null;
+        
+        // Çokgen Verileri: { kenar: [dogru_cevap, cizim_yaricap] }
+        const polyData = {
+            3: { ans: 0, r: 100 },
+            4: { ans: 2, r: 100 },
+            5: { ans: 5, r: 100 },
+            6: { ans: 9, r: 100 },
+            8: { ans: 20, r: 100 }
+        };
+
+        // Köşegen Renkleri Paleti
+        const lineColors = [
+            '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', 
+            '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#6366f1',
+            '#d946ef', '#0ea5e9', '#84cc16', '#eab308', '#64748b',
+            '#b91c1c', '#1d4ed8', '#047857', '#b45309', '#4c1d95'
+        ];
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+
+            // İlk satıra odaklan
+            focusRow(3);
+
+            // Inputlarda Enter tuşu kontrolü ve maksimum uzunluk
+            Object.keys(polyData).forEach(k => {
+                const input = document.getElementById(`inp-${k}`);
+                input.addEventListener('keypress', function(e) {
+                    if(e.key === 'Enter') checkAnswers();
+                });
+                input.addEventListener('input', function() {
+                    if (this.value.length > 2) this.value = this.value.slice(0,2);
+                });
+            });
+        }
+
+        // Seçilen satırın çokgenini çizme
+        function focusRow(n) {
+            if (isCompleted || currentRow === n) return;
+            currentRow = n;
+            
+            // Satır vurgusunu değiştir
+            document.querySelectorAll('.t-row').forEach(row => row.classList.remove('active-row'));
+            document.getElementById(`row-${n}`).classList.add('active-row');
+
+            drawPolygon(n);
+        }
+
+        // n kenarlı düzgün çokgeni oluşturur
+        function drawPolygon(n) {
+            const poly = document.getElementById('poly-shape');
+            const pointsGroup = document.getElementById('points-group');
+            const diagGroup = document.getElementById('diagonals-group');
+            const centerText = document.getElementById('center-number');
+            
+            // Temizle
+            diagGroup.innerHTML = '';
+            pointsGroup.innerHTML = '';
+            centerText.style.opacity = '0';
+            
+            const r = polyData[n].r;
+            let pointsStr = "";
+            let coords = [];
+
+            // Tepe noktasından (yukarıdan) başlamak için -PI/2 ofset
+            const offset = -Math.PI / 2; 
+
+            for (let i = 0; i < n; i++) {
+                let angle = offset + (i * 2 * Math.PI / n);
+                let x = r * Math.cos(angle);
+                let y = r * Math.sin(angle);
+                coords.push({x: x, y: y});
+                pointsStr += `${x},${y} `;
+                
+                // Köşe noktasını çiz
+                let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', '4');
+                circle.setAttribute('class', 'poly-point');
+                pointsGroup.appendChild(circle);
+            }
+
+            poly.setAttribute('points', pointsStr.trim());
+            
+            // Bu koordinatları globalde tutalım, animasyon için gerekecek
+            polyData[n].coords = coords;
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            let allFilled = true;
+            let allCorrect = true;
+            let wrongRows = [];
+
+            // Tüm inputları kontrol et
+            Object.keys(polyData).forEach(k => {
+                let val = document.getElementById(`inp-${k}`).value.trim();
+                if(val === '') {
+                    allFilled = false;
+                } else {
+                    if (parseInt(val) !== polyData[k].ans) {
+                        allCorrect = false;
+                        wrongRows.push(k);
+                    }
+                }
+            });
+
+            if(!allFilled) {
+                showToast("Lütfen tüm boşlukları doldurunuz.", "toast-warning");
+                playSfx('error');
+                return;
+            }
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+            fbBox.className = "feedback-msg"; // Reset
+
+            if(allCorrect) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+                
+                // Active row highlight'ı kaldır
+                document.querySelectorAll('.t-row').forEach(row => row.classList.remove('active-row'));
+
+                Object.keys(polyData).forEach(k => {
+                    document.getElementById(`row-${k}`).classList.add('is-correct');
+                });
+                
+                if(attempts === 0) {
+                    fbBox.innerHTML = `DOĞRU! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:4px;">Harika! Çokgenlerin köşegen sayılarını doğru hesapladınız. Tüm çizimleri izleyebilirsiniz.</span>`;
+                    fbBox.classList.add('fb-success');
+                    
+                    btnCheck.innerText = "ÇİZİMLERİ İZLE (Animasyon)";
+                    btnCheck.style.backgroundColor = "var(--cyan-accent)";
+                    btnCheck.setAttribute('onclick', 'playAllAnimations()'); // Yeni işlev
+                    
+                    showToast("Harika! Tüm çizimleri sağdaki ekranda sırayla izleyebilirsiniz.", "toast-success");
+                    // DİKKAT: Burada w24 true YAPIYORDUK, ARTIK YAPMIYORUZ!
+                    // w24 "TAMAMLA" butonuna basınca true olacak (finishActivity).
+                } else {
+                    // İKİNCİ DENEMEDE KENDİSİ DÜZELTTİ İSE
+                    playAllAnimationsAuto(); 
+                }
+
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+
+                if(attempts === 1) {
+                    // 1. HATA
+                    fbBox.innerHTML = `Hatalı hesaplamalarınız var. Unutmayın: n kenarlı bir çokgenin bir köşesinden (n-3) tane köşegen çizilebilir. Toplam formül: [n * (n-3)] / 2`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Yanlış olan satırları titret ve temizle
+                    wrongRows.forEach(k => {
+                        const rowEl = document.getElementById(`row-${k}`);
+                        rowEl.classList.add('is-incorrect');
+                        
+                        setTimeout(() => { 
+                            rowEl.classList.remove('is-incorrect'); 
+                            document.getElementById(`inp-${k}`).value = ''; 
+                        }, 1200);
+                    });
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 5000);
+
+                } else {
+                    // 2. HATA - OTOMATİK ÇÖZÜM
+                    isCompleted = true;
+                    
+                    // Active row highlight'ı kaldır
+                    document.querySelectorAll('.t-row').forEach(row => row.classList.remove('active-row'));
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Doğru cevaplar otomatik olarak yazılıyor...`;
+                    fbBox.classList.add('fb-error');
+
+                    Object.keys(polyData).forEach((k, index) => {
+                        document.getElementById(`row-${k}`).classList.remove('is-incorrect');
+                        
+                        setTimeout(() => {
+                            document.getElementById(`inp-${k}`).value = polyData[k].ans;
+                            document.getElementById(`row-${k}`).classList.add('is-correct');
+                            playSfx('click');
+                        }, (index + 1) * 300);
+                    });
+
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        playAllAnimationsAuto();
+                    }, Object.keys(polyData).length * 300 + 1000);
+                }
+            }
+        }
+
+        // Öğrenci kendisi doğru bulduğunda butona basarak izler
+        async function playAllAnimations() {
+            const btn = document.getElementById('btn-check');
+            btn.classList.add('timer-active');
+            btn.innerText = "ÇİZİLİYOR...";
+            
+            await animateSequence();
+            
+            // Animasyon bittiğinde TAMAMLA butonu aktif olur.
+            btn.innerText = "TAMAMLA";
+            btn.classList.remove('timer-active');
+            btn.style.backgroundColor = "var(--success-green)"; // Yeşil kalmaya devam etsin
+            btn.setAttribute('onclick', 'finishActivity()');
+            
+            showToast("Çizimler tamamlandı. Bitirmek için TAMAMLA butonuna basınız.", "toast-success");
+        }
+
+        // TAMAMLA butonuna basıldığında w24 aktarımı yapılır
+        function finishActivity() {
+            const btn = document.getElementById('btn-check');
+            btn.innerText = "TAMAMLANDI ✓";
+            btn.classList.add('completed'); // Artık tıklanamaz
+            
+            setVar('w24', true); // İLK DENEME DOĞRU: w24 ŞİMDİ TRUE OLDU
+            showToast("Etkinlik tamamlandı. İlerleyebilirsiniz.", "toast-success");
+        }
+
+        // Hata sonrası veya kendi çözüp animasyon izleme işlemi (w25 akışı)
+        async function playAllAnimationsAuto() {
+            const fbBox = document.getElementById('q-fb');
+            fbBox.className = "feedback-msg fb-success";
+            fbBox.innerHTML = `DOĞRU ÇİZİMLER GÖSTERİLİYOR...`;
+            fbBox.style.display = 'block';
+
+            await animateSequence();
+
+            fbBox.style.display = 'none';
+            
+            const btn = document.getElementById('btn-check');
+            btn.innerText = "TAMAMLA";
+            btn.classList.remove('timer-active');
+            btn.style.backgroundColor = "var(--success-green)";
+            btn.setAttribute('onclick', 'finishActivityAuto()');
+            
+            showToast("İnceleme tamamlandı. Bitirmek için TAMAMLA butonuna basınız.", "toast-success");
+        }
+
+        // Hatalı/Otomatik çözüm sonrası TAMAMLA butonuna basıldığında w25 aktarımı yapılır
+        function finishActivityAuto() {
+            const btn = document.getElementById('btn-check');
+            btn.innerText = "TAMAMLANDI ✓";
+            btn.classList.add('completed');
+            
+            setVar('w25', true); // OTOMATİK ÇÖZÜM SONRASI: w25 ŞİMDİ TRUE OLDU
+            showToast("İnceleme tamamlandı. İlerleyebilirsiniz.", "toast-success");
+        }
+
+        // Tüm çokgenlerin köşegenlerini sırayla çizdiren Asenkron Fonksiyon
+        async function animateSequence() {
+            const keys = Object.keys(polyData);
+            for (let i = 0; i < keys.length; i++) {
+                let k = keys[i];
+                // İlgili satırı seçili yap
+                document.querySelectorAll('.t-row').forEach(row => row.classList.remove('active-row'));
+                document.getElementById(`row-${k}`).classList.add('active-row');
+                
+                // Çokgeni Çiz
+                drawPolygon(k);
+                
+                // Bekle ve Köşegenleri Anime Et
+                await new Promise(r => setTimeout(r, 500));
+                await drawDiagonalsAnimated(k);
+                
+                // Bitince sayıyı merkezde göster ve bekle
+                const centerText = document.getElementById('center-number');
+                centerText.textContent = polyData[k].ans;
+                centerText.style.opacity = '1';
+                
+                await new Promise(r => setTimeout(r, 1500)); // Sonucu ekranda 1.5 sn tut
+            }
+            // En son satır vurgusunu kaldır
+            document.querySelectorAll('.t-row').forEach(row => row.classList.remove('active-row'));
+        }
+
+        // Bir çokgenin köşegenlerini sırayla çizen asenkron fonksiyon
+        async function drawDiagonalsAnimated(n) {
+            getAudioContext();
+            const diagGroup = document.getElementById('diagonals-group');
+            diagGroup.innerHTML = '';
+            
+            const coords = polyData[n].coords;
+            let colorIndex = 0;
+            let drawCount = 0;
+
+            // Her köşeden diğer komşu olmayan köşelere çizgi çeker
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 2; j < n; j++) {
+                    // Son köşe ile ilk köşe arasındaki çizgi kenardır, atla
+                    if (i === 0 && j === n - 1) continue;
+
+                    let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', coords[i].x);
+                    line.setAttribute('y1', coords[i].y);
+                    line.setAttribute('x2', coords[j].x);
+                    line.setAttribute('y2', coords[j].y);
+                    line.setAttribute('stroke', lineColors[colorIndex % lineColors.length]);
+                    line.setAttribute('class', 'diag-line animate-draw');
+                    
+                    diagGroup.appendChild(line);
+                    
+                    playSfx('line');
+                    
+                    colorIndex++;
+                    drawCount++;
+                    
+                    // Her bir köşegen çizimi arasında kısa bir bekleme (Animasyonun görülmesi için)
+                    await new Promise(r => setTimeout(r, 400));
+                }
+            }
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { init(); };
+    </script>
+</body>
+</html>

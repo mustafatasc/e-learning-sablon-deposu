@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Etkinlik: Açıları Ölçelim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+            --cyan-accent: #0ea5e9;
+            --pink-accent: #ec4899;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+            touch-action: none; /* Mobilde kaymayı önler */
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 10px 40px; gap: 8px; height: calc(540px - 75px);
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        /* --- YÖNERGE KUTUSU --- */
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            background: white; border-radius: 12px; padding: 8px 20px 8px 15px;
+            border-left: 5px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0; z-index: 10;
+        }
+
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .instruction-text-sub {
+            font-size: 14.5px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        /* --- ORTA PANEL: ETKİNLİK ALANI --- */
+        .main-activity-area {
+            position: relative; flex: 1; min-height: 0; 
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 15px;
+            padding: 5px 0;
+        }
+
+        /* Açı Kartları */
+        .angle-card {
+            background: white; border: 2px solid #e2e8f0; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02); position: relative; overflow: hidden;
+            background-image: 
+                linear-gradient(#f1f5f9 1px, transparent 1px), 
+                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 20px 20px; background-position: center;
+            padding: 8px 10px; height: 100%;
+        }
+
+        .svg-container {
+            width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0;
+        }
+
+        .math-svg { width: 100%; height: 100%; max-height: 105px; }
+
+        /* Girdi Alanı */
+        .input-wrapper {
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px;
+            background: rgba(248, 250, 252, 0.8); padding: 4px 15px; border-radius: 10px; border: 1px dashed #cbd5e1;
+            z-index: 10; flex-shrink: 0; width: 140px;
+        }
+        
+        .num-input {
+            width: 60px; height: 34px; border-radius: 8px; font-weight: 900; font-size: 16px;
+            border: 2px solid #cbd5e1; background: white; color: #1D4ED8; text-align: center;
+            outline: none; transition: 0.2s; font-family: 'Montserrat', sans-serif;
+        }
+        
+        .num-input:focus { border-color: #1D4ED8; box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1); }
+        .unit-label { font-size: 14px; font-weight: 800; color: #64748B; }
+
+        /* İnteraktif Açıölçer (Sürüklenebilir) */
+        #protractor {
+            position: absolute; top: 160px; left: 50%; transform: translateX(-50%);
+            width: 260px; height: 130px; cursor: grab; z-index: 100;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+        }
+
+        #protractor:active { cursor: grabbing; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.25)); }
+
+        /* Hata / Doğru Animasyonları */
+        .angle-card.is-correct { border-color: var(--success-green); background-color: #ecfdf5;}
+        .angle-card.is-correct .num-input { border-color: var(--success-green); color: var(--success-green); pointer-events: none;}
+        
+        .angle-card.is-incorrect { border-color: var(--error-red); background-color: #fef2f2; animation: shake 0.4s ease-in-out;}
+        .angle-card.is-incorrect .num-input { border-color: var(--error-red); color: var(--error-red); }
+
+        /* --- ALT PANEL: KONTROL --- */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto; z-index: 20;
+        }
+
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 10px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 240px; height: 45px;
+            font-size: 14px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto;
+        }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-warning { background-color: var(--warning-orange) !important; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">AÇI ÖLÇME ETKİNLİĞİ</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text-sub">
+                    Aşağıda verilen açıları, ekrandaki <strong>açıölçeri sürükleyerek</strong> ölçünüz ve sonuçları altlarındaki kutucuklara yazınız.
+                </div>
+            </div>
+
+            <!-- ORTA PANEL -->
+            <div class="main-activity-area">
+                
+                <!-- KART 1: 45 Derece -->
+                <div class="angle-card" id="card-1">
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Defs direkt SVG içine gömüldü (Oklar kesin görünür) -->
+                            <defs>
+                                <marker id="arr-dark-1" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                                </marker>
+                            </defs>
+                            <!-- Yatay Kol (Sağa) -->
+                            <line x1="60" y1="90" x2="160" y2="90" stroke="#1E293B" stroke-width="3.5" marker-end="url(#arr-dark-1)"/>
+                            <!-- Eğik Kol (45 derece yukarı sağ) -> dx: 80*cos(45)=56.5, dy: 80*sin(-45)=-56.5 -->
+                            <line x1="60" y1="90" x2="116.5" y2="33.5" stroke="#1E293B" stroke-width="3.5" marker-end="url(#arr-dark-1)"/>
+                            <!-- Açı Yayı -->
+                            <path d="M 90 90 A 30 30 0 0 0 81.2 68.8" fill="none" stroke="var(--pink-accent)" stroke-width="2.5"/>
+                            <circle cx="60" cy="90" r="4" fill="#1E293B"/>
+                        </svg>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-1" class="num-input" min="0" max="360" placeholder="?">
+                        <span class="unit-label">°</span>
+                    </div>
+                </div>
+
+                <!-- KART 2: 120 Derece -->
+                <div class="angle-card" id="card-2">
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-dark-2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                                </marker>
+                            </defs>
+                            <!-- Yatay Kol (Sağa) -->
+                            <line x1="100" y1="90" x2="190" y2="90" stroke="#1E293B" stroke-width="3.5" marker-end="url(#arr-dark-2)"/>
+                            <!-- Eğik Kol (120 derece yukarı sol) -> dx: 80*cos(120)=-40, dy: 80*sin(-120)=-69.2 -->
+                            <line x1="100" y1="90" x2="60" y2="20.8" stroke="#1E293B" stroke-width="3.5" marker-end="url(#arr-dark-2)"/>
+                            <!-- Açı Yayı -->
+                            <path d="M 130 90 A 30 30 0 0 0 85 64" fill="none" stroke="var(--pink-accent)" stroke-width="2.5"/>
+                            <circle cx="100" cy="90" r="4" fill="#1E293B"/>
+                        </svg>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-2" class="num-input" min="0" max="360" placeholder="?">
+                        <span class="unit-label">°</span>
+                    </div>
+                </div>
+
+                <!-- KART 3: 60 Derece -->
+                <div class="angle-card" id="card-3">
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-dark-3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                                </marker>
+                            </defs>
+                            <!-- Yatay Kol (Sağa) -->
+                            <line x1="60" y1="90" x2="160" y2="90" stroke="#1E293B" stroke-width="3.5" marker-end="url(#arr-dark-3)"/>
+                            <!-- Eğik Kol (60 derece yukarı sağ) -> dx: 80*cos(60)=40, dy: 80*sin(-60)=-69.2 -->
+                            <line x1="60" y1="90" x2="100" y2="20.8" stroke="#1E293B" stroke-width="3.5" marker-end="url(#arr-dark-3)"/>
+                            <!-- Açı Yayı -->
+                            <path d="M 90 90 A 30 30 0 0 0 75 64" fill="none" stroke="var(--pink-accent)" stroke-width="2.5"/>
+                            <circle cx="60" cy="90" r="4" fill="#1E293B"/>
+                        </svg>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-3" class="num-input" min="0" max="360" placeholder="?">
+                        <span class="unit-label">°</span>
+                    </div>
+                </div>
+
+                <!-- KART 4: 150 Derece -->
+                <div class="angle-card" id="card-4">
+                    <div class="svg-container">
+                        <svg class="math-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arr-dark-4" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                                </marker>
+                            </defs>
+                            <!-- Yatay Kol (Sağa) -->
+                            <line x1="120" y1="90" x2="190" y2="90" stroke="#1E293B" stroke-width="3.5" marker-end="url(#arr-dark-4)"/>
+                            <!-- Eğik Kol (150 derece yukarı sol) -> dx: 80*cos(150)=-69.2, dy: 80*sin(-150)=-40 -->
+                            <line x1="120" y1="90" x2="50.8" y2="50" stroke="#1E293B" stroke-width="3.5" marker-end="url(#arr-dark-4)"/>
+                            <!-- Açı Yayı -->
+                            <path d="M 150 90 A 30 30 0 0 0 94 75" fill="none" stroke="var(--pink-accent)" stroke-width="2.5"/>
+                            <circle cx="120" cy="90" r="4" fill="#1E293B"/>
+                        </svg>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-4" class="num-input" min="0" max="360" placeholder="?">
+                        <span class="unit-label">°</span>
+                    </div>
+                </div>
+
+                <!-- İNTERAKTİF SÜRÜKLENEBİLİR AÇIÖLÇER -->
+                <div id="protractor">
+                    <svg width="100%" height="100%" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="translate(120, 110)">
+                            <!-- Açıölçer Zemin (Cam Hissi) -->
+                            <path d="M -110 0 A 110 110 0 0 1 110 0 Z" fill="rgba(244, 114, 182, 0.25)" stroke="#db2777" stroke-width="2"/>
+                            <!-- İç Yaylar -->
+                            <path d="M -70 0 A 70 70 0 0 1 70 0" fill="none" stroke="#f472b6" stroke-width="1.5"/>
+                            <!-- Taban Çizgisi -->
+                            <line x1="-110" y1="0" x2="110" y2="0" stroke="#db2777" stroke-width="2"/>
+                            
+                            <!-- Merkez Noktası (Kırmızı Artı) -->
+                            <circle cx="0" cy="0" r="4" fill="none" stroke="#b91c1c" stroke-width="1.5"/>
+                            <line x1="0" y1="-8" x2="0" y2="8" stroke="#b91c1c" stroke-width="1.5"/>
+                            <line x1="-8" y1="0" x2="8" y2="0" stroke="#b91c1c" stroke-width="1.5"/>
+
+                            <!-- Ara Çizikler (Her 5 Derece İçin) -->
+                            <g stroke="#be185d" stroke-width="1.5">
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-5)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-15)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-25)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-35)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-45)"/> <!-- 45 Derece Çizgisi -->
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-55)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-65)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-75)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-85)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-95)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-105)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-115)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-125)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-135)"/> <!-- 135 Derece Çizgisi -->
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-145)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-155)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-165)"/>
+                                <line x1="105" y1="0" x2="110" y2="0" transform="rotate(-175)"/>
+                            </g>
+
+                            <!-- Ara Çizikler (Her 10 Derece İçin, Eksikler Tamamlandı) -->
+                            <g stroke="#9d174d" stroke-width="2">
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(0)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-10)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-20)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-30)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-40)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-50)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-60)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-70)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-80)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-90)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-100)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-110)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-120)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-130)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-140)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-150)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-160)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-170)"/>
+                                <line x1="100" y1="0" x2="110" y2="0" transform="rotate(-180)"/>
+                            </g>
+
+                            <!-- TÜM SAYILAR (0'dan 180'e Onar Onar, milimetrik hizalı) -->
+                            <g font-family="Montserrat" font-size="9" font-weight="900" fill="#831843" text-anchor="middle" stroke="none">
+                                <text x="88" y="3">0</text>
+                                <text x="86.6" y="-11.3">10</text>
+                                <text x="82.7" y="-26.1">20</text>
+                                <text x="76.2" y="-40">30</text>
+                                <text x="67.4" y="-52.6">40</text>
+                                <text x="56.5" y="-63.4">50</text>
+                                <text x="44" y="-72.2">60</text>
+                                <text x="30.1" y="-78.7">70</text>
+                                <text x="15.3" y="-82.7">80</text>
+                                <text x="0" y="-84">90</text>
+                                <text x="-15.3" y="-82.7">100</text>
+                                <text x="-30.1" y="-78.7">110</text>
+                                <text x="-44" y="-72.2">120</text>
+                                <text x="-56.5" y="-63.4">130</text>
+                                <text x="-67.4" y="-52.6">140</text>
+                                <text x="-76.2" y="-40">150</text>
+                                <text x="-82.7" y="-26.1">160</text>
+                                <text x="-86.6" y="-11.3">170</text>
+                                <text x="-88" y="3">180</text>
+                            </g>
+
+                        </g>
+                    </svg>
+                </div>
+
+            </div>
+
+            <!-- ALT PANEL: KONTROL VE GERİ BİLDİRİM -->
+            <div class="bottom-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+        
+        // Doğru Cevaplar
+        const correctAnswers = { 1: 45, 2: 120, 3: 60, 4: 150 };
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+
+            // Input Event Listener
+            document.querySelectorAll('.num-input').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if(e.key === 'Enter') checkAnswers();
+                });
+            });
+
+            initDraggable();
+        }
+
+        // --- SÜRÜKLE BIRAK (AÇIÖLÇER) MANTIĞI ---
+        function initDraggable() {
+            const protractor = document.getElementById('protractor');
+            let isDragging = false;
+            let startX, startY;
+            let currentX = 0, currentY = 0; // Başlangıç transformu
+
+            protractor.addEventListener('pointerdown', (e) => {
+                if(isCompleted) return;
+                isDragging = true;
+                protractor.setPointerCapture(e.pointerId);
+                
+                let sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+                startX = (e.clientX / sc) - currentX;
+                startY = (e.clientY / sc) - currentY;
+                
+                protractor.style.cursor = 'grabbing';
+                playSfx('click');
+            });
+
+            protractor.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                let sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+                
+                currentX = (e.clientX / sc) - startX;
+                currentY = (e.clientY / sc) - startY;
+                
+                // CSS'de zaten translateX(-50%) var. Üzerine ekliyoruz.
+                protractor.style.transform = `translateX(-50%) translate(${currentX}px, ${currentY}px)`;
+            });
+
+            protractor.addEventListener('pointerup', (e) => {
+                isDragging = false;
+                protractor.releasePointerCapture(e.pointerId);
+                protractor.style.cursor = 'grab';
+            });
+        }
+
+        // --- KONTROL MANTIĞI ---
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            let allAnswered = true;
+            let allCorrect = true;
+            let wrongRows = [];
+
+            for(let i=1; i<=4; i++) {
+                let val = document.getElementById(`input-${i}`).value.trim();
+                if(val === '') {
+                    allAnswered = false;
+                } else if (parseInt(val) !== correctAnswers[i]) {
+                    allCorrect = false;
+                    wrongRows.push(i);
+                }
+            }
+
+            if(!allAnswered) {
+                showToast("Lütfen tüm ölçümleri tamamlayınız.", "toast-warning");
+                return;
+            }
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+            fbBox.className = "feedback-msg"; // Reset
+
+            if(allCorrect) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+
+                // Açıölçeri gizle
+                document.getElementById('protractor').style.display = 'none';
+
+                for(let i=1; i<=4; i++) {
+                    document.getElementById(`card-${i}`).classList.add('is-correct');
+                }
+                
+                if(attempts === 0) {
+                    fbBox.innerHTML = `DOĞRU! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:4px;">Harika! Açıölçeri kullanarak tüm açıları hatasız ölçtünüz.</span>`;
+                    fbBox.classList.add('fb-success');
+                    
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("Etkinlik başarıyla tamamlandı.", "toast-success");
+                    setVar('d12', true); // İLK DENEME BAŞARILI
+                } else {
+                    triggerTimerAutoSolve('d13'); 
+                }
+
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+
+                if(attempts === 1) {
+                    // 1. HATA
+                    fbBox.innerHTML = `Hatalı ölçümleriniz var. Açıölçerin merkezini açının köşesine tam oturtup, taban çizgisini sıfıra hizalamayı unutmayın.`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Yanlış olanları titret ve temizle
+                    wrongRows.forEach(r => {
+                        const cardEl = document.getElementById(`card-${r}`);
+                        cardEl.classList.add('is-incorrect');
+                        
+                        setTimeout(() => { 
+                            cardEl.classList.remove('is-incorrect'); 
+                            document.getElementById(`input-${r}`).value = ''; 
+                        }, 1200);
+                    });
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 4000);
+
+                } else {
+                    // 2. HATA - OTOMATİK ÇÖZÜM
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Doğru cevaplar yerleştiriliyor...`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Açıölçeri gizle
+                    document.getElementById('protractor').style.transition = 'opacity 0.5s';
+                    document.getElementById('protractor').style.opacity = '0';
+
+                    for(let i=1; i<=4; i++) {
+                        document.getElementById(`card-${i}`).classList.remove('is-incorrect');
+                        document.getElementById(`input-${i}`).disabled = true;
+                        
+                        setTimeout(() => {
+                            document.getElementById(`input-${i}`).value = correctAnswers[i];
+                            document.getElementById(`card-${i}`).classList.add('is-correct');
+                            playSfx('click');
+                        }, i * 600);
+                    }
+
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve('d13'); // HATA SONRASI BAŞARI
+                    }, 3000);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); // Değişkeni tetikle (d13)
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { init(); };
+
+    </script>
+</body>
+</html>

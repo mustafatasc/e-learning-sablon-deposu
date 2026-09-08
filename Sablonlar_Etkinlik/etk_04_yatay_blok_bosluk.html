@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            --primary-main: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.06);
+            
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none; touch-action: none;
+        }
+        #scale-container {
+            width: 960px; height: 540px;
+            background-color: var(--bg-cream); 
+            background-image: linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-main);
+        }
+        
+        .header {
+            padding: 15px 30px 0 30px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; flex: 1;
+            background: white; border-radius: 12px; padding: 8px 15px;
+            border-left: 5px solid #1D4ED8; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); margin-top: 2px;
+        }
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--primary-main); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer; transition: 0.2s;
+        }
+        .narrator-speaker:hover { transform: scale(1.1); }
+        .instruction-text-sub { font-size: 13.5px; line-height: 1.4; font-weight: 700; cursor: pointer;}
+        .logo-right-container { width: 70px; height: 70px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -5px; }
+        
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 30px 15px 30px; gap: 10px; height: calc(540px - 75px);
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        .word-bank-panel {
+            background: white; border: 2px solid #cbd5e1; border-radius: 12px;
+            padding: 10px 15px; display: flex; flex-direction: column; gap: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02); flex-shrink: 0;
+        }
+        .bank-title { font-size: 12px; font-weight: 900; color: #1D4ED8; text-transform: uppercase; text-align: center; letter-spacing: 0.5px;}
+        .words-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; position: relative;}
+        
+        .pool-slot { width: 110px; height: 32px; position: relative; }
+
+        .draggable-card {
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+            background: white; border: 2px solid #cbd5e1; border-radius: 8px;
+            font-size: 13px; font-weight: 800; color: var(--text-dark);
+            display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 4px;
+            cursor: grab; touch-action: none; user-select: none; box-sizing: border-box;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05); z-index: 10; line-height: 1.1;
+        }
+        .draggable-card:hover { border-color: var(--primary-main); box-shadow: 0 5px 12px rgba(185, 28, 28, 0.15); z-index: 20;}
+        
+        /* ÖNEMLİ: Z-index 1000 ve Transform Scale */
+        .draggable-card.dragging { cursor: grabbing; transform: scale(1.05); box-shadow: 0 10px 25px rgba(0,0,0,0.25); z-index: 1000 !important; transition: none !important;}
+        
+        .draggable-card.correct-state { border-color: var(--success-green) !important; background: #ecfdf5 !important; color: #065f46 !important; pointer-events: none; box-shadow: none !important; }
+        .draggable-card.incorrect-state { border-color: var(--error-red) !important; background: #fef2f2 !important; color: var(--error-red) !important; }
+        .draggable-card.disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; border-color: #cbd5e1 !important; background: #f1f5f9 !important; box-shadow: none !important; text-decoration: line-through;}
+
+        .questions-grid {
+            flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; gap: 8px; min-height: 0; overflow: hidden;
+        }
+        .question-card {
+            background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 15px;
+            display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.3s ease;
+        }
+        .q-header { font-size: 15px; font-weight: 900; color: var(--primary-main); flex-shrink: 0; font-family: 'Times New Roman', Times, serif; font-style: italic;}
+        .q-body {
+            font-size: 14.5px; font-weight: 600; color: var(--text-dark); line-height: 1.6;
+            display: flex; align-items: center; flex-wrap: wrap; gap: 4px; flex: 1;
+        }
+        
+        .drop-zone {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 110px; height: 32px; border: 2px dashed #94a3b8; 
+            background: #f8fafc; border-radius: 8px; padding: 0;
+            position: relative; vertical-align: middle;
+            margin: 0 4px; box-sizing: border-box; cursor: pointer;
+        }
+        .drop-zone.active-hover { background: #eff6ff; border-color: #3b82f6; border-style: solid; }
+        
+        .drop-zone .draggable-card {
+            width: 100% !important; height: 100% !important; border-radius: 8px !important; 
+            margin: 0 !important; position: absolute !important; left: 0 !important; top: 0 !important;
+        }
+
+        .question-card.is-correct { border-color: var(--success-green); background-color: #ecfdf5;}
+        .question-card.is-correct .q-header { color: #059669; }
+        .question-card.is-correct .drop-zone { background: transparent; border-color: transparent; }
+        
+        .question-card.is-incorrect { border-color: var(--error-red); background-color: #fef2f2;}
+        .question-card.is-incorrect .q-header { color: #b91c1c; }
+
+        .result-table-panel {
+            position: absolute; inset: 0; background: white; border-radius: 20px; z-index: 1000;
+            display: none; flex-direction: column; padding: 25px 40px; box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .rt-header {
+            background: var(--primary-main); color: white; padding: 12px 20px; border-radius: 12px 12px 0 0;
+            font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 10px;
+        }
+        .rt-body {
+            border: 2px solid var(--primary-main); border-top: none; border-radius: 0 0 12px 12px;
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+        }
+        .rt-row { display: flex; border-bottom: 1px solid #e2e8f0; font-size: 13.5px; font-weight: 600; }
+        .rt-row:nth-child(even) { background: #f8fafc; }
+        .rt-row:last-child { border-bottom: none; }
+        .rt-row.celdirici { background: #fef2f2; color: #991b1b; } 
+        .rt-col-1 { width: 50px; padding: 10px; border-right: 1px solid #e2e8f0; font-weight: 800; display: flex; justify-content: center; align-items: center;}
+        .rt-col-2 { width: 150px; padding: 10px 15px; border-right: 1px solid #e2e8f0; font-weight: 800; color: var(--primary-main); display: flex; align-items: center;}
+        .rt-col-3 { flex: 1; padding: 10px 15px; color: var(--text-dark); display: flex; align-items: center;}
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; height: 50px; flex-shrink: 0; z-index: 20;
+        }
+        .btn-action {
+            background: var(--primary-main); color: white; min-width: 220px; height: 45px;
+            font-size: 15px; font-weight: 900; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-action:disabled { opacity: 0.5; pointer-events: none; box-shadow: none; cursor: not-allowed; }
+        .btn-action:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none; opacity: 1;}
+        
+        .btn-finish-table {
+            background: var(--primary-main); color: white; padding: 12px 30px; border-radius: 12px; font-weight: 900; font-size: 15px;
+            margin-top: 15px; align-self: flex-end; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3); border: none; letter-spacing: 1px;
+        }
+        .btn-finish-table:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-finish-table.done { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        
+        #toast-msg {
+            position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px; padding: 12px 24px; border-radius: 12px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; 
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 3000; color: white; background-color: var(--text-dark);
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-error { background-color: var(--error-red) !important; }
+    </style>
+</head>
+<body>
+    
+    <audio id="audio1" src="{{SES_1_URL}}" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg id="toast-icon" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('audio1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text-sub" onclick="playAudio('audio1')">
+                    {{ANA_YONERGE_METNI_ORN_Cümlelerdeki_boşlukları_doldurunuz}}
+                </div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="word-bank-panel">
+                <div class="bank-title">KELİME HAVUZU</div>
+                <div class="words-container" id="word-bank">
+                    <div class="pool-slot"><div class="draggable-card" data-val="{{CEVAP_1}}">{{KELIME_1}}</div></div>
+                    <div class="pool-slot"><div class="draggable-card" data-val="{{CEVAP_2}}">{{KELIME_2}}</div></div>
+                    <div class="pool-slot"><div class="draggable-card" data-val="{{CEVAP_3}}">{{KELIME_3}}</div></div>
+                    <div class="pool-slot"><div class="draggable-card celdirici-kart" data-val="yanlis1">{{CELDIRICI_1}}</div></div>
+                    <div class="pool-slot"><div class="draggable-card celdirici-kart" data-val="yanlis2">{{CELDIRICI_2}}</div></div>
+                </div>
+            </div>
+
+            <div class="questions-grid">
+                <div class="question-card">
+                    <div class="q-header">a)</div>
+                    <div class="q-body">
+                        {{CUMLE_1_BASI}}
+                        <div class="drop-zone" style="width: {{BOSLUK_1_GENISLIK}}px;" data-ans="{{CEVAP_1}}"></div>
+                        {{CUMLE_1_SONU}}
+                    </div>
+                </div>
+                <div class="question-card">
+                    <div class="q-header">b)</div>
+                    <div class="q-body">
+                        {{CUMLE_2_BASI}}
+                        <div class="drop-zone" style="width: {{BOSLUK_2_GENISLIK}}px;" data-ans="{{CEVAP_2}}"></div>
+                        {{CUMLE_2_SONU}}
+                    </div>
+                </div>
+                <div class="question-card">
+                    <div class="q-header">c)</div>
+                    <div class="q-body">
+                        {{CUMLE_3_BASI}}
+                        <div class="drop-zone" style="width: {{BOSLUK_3_GENISLIK}}px;" data-ans="{{CEVAP_3}}"></div>
+                        {{CUMLE_3_SONU}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-panel">
+                <button id="btn-c" class="btn-action" disabled onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+            
+            <div id="result-table-panel" class="result-table-panel">
+                <div class="rt-header">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Doğru Cevaplar ve Çeldiriciler
+                </div>
+                <div class="rt-body">
+                    <div class="rt-row bg-slate-100 font-bold text-slate-700" style="background: #e2e8f0;">
+                        <div class="rt-col-1">Harf</div>
+                        <div class="rt-col-2">Cevap</div>
+                        <div class="rt-col-3">Açıklama / Sebep</div>
+                    </div>
+                    <div class="rt-row">
+                        <div class="rt-col-1">a</div><div class="rt-col-2">{{KELIME_1}}</div><div class="rt-col-3">{{ACIKLAMA_1}}</div>
+                    </div>
+                    <div class="rt-row">
+                        <div class="rt-col-1">b</div><div class="rt-col-2">{{KELIME_2}}</div><div class="rt-col-3">{{ACIKLAMA_2}}</div>
+                    </div>
+                    <div class="rt-row">
+                        <div class="rt-col-1">c</div><div class="rt-col-2">{{KELIME_3}}</div><div class="rt-col-3">{{ACIKLAMA_3}}</div>
+                    </div>
+                    <div class="rt-row celdirici">
+                        <div class="rt-col-1">⚠</div><div class="rt-col-2" style="text-decoration: line-through;">{{CELDIRICI_1}}, {{CELDIRICI_2}}</div><div class="rt-col-3">{{CELDIRICI_ACIKLAMA}}</div>
+                    </div>
+                </div>
+                <button id="btn-finish" class="btn-finish-table" onclick="finishActivity()">
+                    ETKİNLİĞİ BİTİR ✓
+                </button>
+            </div>
+            
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        let isCompleted = false;
+        let attempts = 0;
+        let isChecking = false; 
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); 
+                osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='jump') { osc.type='sine'; osc.frequency.setValueAtTime(150, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime+0.15); }
+                else if(type==='correct') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('audio1');
+            const speaker = document.getElementById('main-speaker');
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(e => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+        
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        /* --- SIFIR HATA SÜRÜKLEME MOTORU (DOM Değişikliği Yok) --- */
+        let activeDrag = null, pointerId = null;
+        let startDragX = 0, startDragY = 0, cardStartX = 0, cardStartY = 0;
+        let selCard = null, done = false, preventClick = false;
+
+        function init() {
+            document.querySelectorAll('.pool-slot').forEach((slot, idx) => { if(!slot.id) slot.id = 'pool-slot-' + idx; });
+            document.querySelectorAll('.drop-zone').forEach((zone, idx) => { if(!zone.id) zone.id = 'drop-zone-' + idx; });
+            document.querySelectorAll('.draggable-card').forEach((c, idx) => { 
+                if(!c.id) c.id = 'card-' + idx; 
+                c.addEventListener('pointerdown', down);
+            });
+            
+            shufflePool();
+            
+            document.querySelectorAll('.drop-zone').forEach(z => {
+                z.addEventListener('click', onDropZoneClick);
+            });
+            
+            const audio = document.getElementById('audio1');
+            if(audio) {
+                audio.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function shufflePool() {
+            const container = document.getElementById('word-bank');
+            const slots = Array.from(container.children);
+            for (let i = slots.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                container.insertBefore(slots[j], slots[i].nextSibling);
+            }
+        }
+
+        function down(e) {
+            if(done || activeDrag || isChecking) return; 
+            if(e.button !== 0 && e.type !== 'touchstart') return; 
+            if(selCard) { selCard.classList.remove('selected'); selCard=null; }
+            
+            activeDrag = e.currentTarget;
+            pointerId = e.pointerId;
+            activeDrag.setPointerCapture(pointerId);
+            
+            // Animasyonları kes
+            activeDrag.style.transition = 'none'; 
+            activeDrag.classList.add('dragging');
+            
+            startDragX = e.clientX;
+            startDragY = e.clientY;
+            
+            // Kartın bulunduğu noktanın transform değerini al
+            const matrix = new DOMMatrixReadOnly(window.getComputedStyle(activeDrag).transform);
+            cardStartX = matrix.m41;
+            cardStartY = matrix.m42;
+            
+            preventClick = false;
+            
+            window.addEventListener('pointermove', move);
+            window.addEventListener('pointerup', up);
+            window.addEventListener('pointercancel', up);
+            
+            playSfx('click');
+        }
+
+        function move(e) {
+            if(!activeDrag || e.pointerId !== pointerId) return;
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const dx = (e.clientX - startDragX) / scale;
+            const dy = (e.clientY - startDragY) / scale;
+            
+            if(Math.abs(dx) > 3 || Math.abs(dy) > 3) preventClick = true;
+            
+            // Sadece görsel olarak kaydırıyoruz, HTML içinde yeri değişmiyor
+            activeDrag.style.transform = `translate(${cardStartX + dx}px, ${cardStartY + dy}px)`;
+            
+            document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('active-hover'));
+            activeDrag.style.visibility = 'hidden';
+            let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+            activeDrag.style.visibility = 'visible';
+            if(elemBelow) {
+                let dz = elemBelow.closest('.drop-zone');
+                if(dz) dz.classList.add('active-hover');
+            }
+        }
+
+        function up(e) {
+            if(!activeDrag || e.pointerId !== pointerId) return;
+            
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+            window.removeEventListener('pointercancel', up);
+            try { activeDrag.releasePointerCapture(pointerId); } catch(err) {}
+            
+            activeDrag.classList.remove('dragging');
+            document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('active-hover'));
+            
+            activeDrag.style.visibility = 'hidden';
+            let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+            activeDrag.style.visibility = 'visible';
+            
+            let dropzone = elemBelow ? elemBelow.closest('.drop-zone') : null;
+            let bank = elemBelow ? elemBelow.closest('#word-bank') : null;
+            
+            if (dropzone) {
+                virtualDock(activeDrag, dropzone);
+            } else if (bank) {
+                virtualBack(activeDrag);
+            } else {
+                virtualBack(activeDrag); 
+            }
+
+            if(preventClick) setTimeout(() => { preventClick = false; }, 50);
+            
+            activeDrag = null; pointerId = null; refreshUI();
+        }
+
+        function virtualDock(c, z, duration = '0.3s') {
+            const oldCardId = z.getAttribute('data-card');
+            if (oldCardId && oldCardId !== c.id) {
+                virtualBack(document.getElementById(oldCardId));
+            }
+            
+            const oldZoneId = c.getAttribute('data-zone');
+            if (oldZoneId) {
+                const oldZ = document.getElementById(oldZoneId);
+                oldZ.removeAttribute('data-card');
+                const row = oldZ.closest('.question-card');
+                if(row) row.classList.remove('is-incorrect', 'is-correct');
+            }
+            
+            const oldRect = c.getBoundingClientRect();
+            z.appendChild(c);
+            
+            c.setAttribute('data-zone', z.id);
+            z.setAttribute('data-card', c.id);
+            
+            c.style.position = 'absolute'; 
+            c.style.left = '0'; 
+            c.style.top = '0';
+            c.style.width = '100%'; 
+            c.style.height = '100%'; 
+            c.style.margin = '0';
+            
+            const newRect = c.getBoundingClientRect();
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const dx = (oldRect.left - newRect.left) / scale;
+            const dy = (oldRect.top - newRect.top) / scale;
+
+            c.style.transition = 'none';
+            c.style.transform = `translate(${dx}px, ${dy}px)`;
+            void c.offsetWidth; 
+            
+            c.style.transition = `transform ${duration} cubic-bezier(0.2, 0, 0.2, 1)`;
+            c.style.transform = 'translate(0px, 0px)';
+            
+            playSfx('jump');
+        }
+
+        function virtualBack(c) {
+            const oldZId = c.getAttribute('data-zone');
+            if(oldZId) {
+                const oldZ = document.getElementById(oldZId);
+                if(oldZ) {
+                    oldZ.removeAttribute('data-card');
+                    const row = oldZ.closest('.question-card');
+                    if(row) row.classList.remove('is-incorrect', 'is-correct');
+                }
+            }
+            c.removeAttribute('data-zone');
+
+            const oldRect = c.getBoundingClientRect();
+
+            let emptySlot = Array.from(document.querySelectorAll('.pool-slot')).find(s => s.children.length === 0);
+            if(emptySlot) {
+                emptySlot.appendChild(c);
+            }
+
+            c.style.position = 'absolute'; 
+            c.style.left = '0'; 
+            c.style.top = '0';
+            c.style.width = '100%'; 
+            c.style.height = '100%'; 
+            c.style.margin = '0';
+
+            const newRect = c.getBoundingClientRect();
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+
+            const dx = (oldRect.left - newRect.left) / scale;
+            const dy = (oldRect.top - newRect.top) / scale;
+
+            c.style.transition = 'none';
+            c.style.transform = `translate(${dx}px, ${dy}px)`;
+
+            void c.offsetWidth;
+
+            c.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)';
+            c.style.transform = 'translate(0px, 0px)';
+
+            playSfx('click');
+        }
+
+        function onCardClick(e) {
+            if(done || preventClick || isChecking) return; 
+            const c = e.currentTarget;
+            if(c.getAttribute('data-zone')) { virtualBack(c); refreshUI(); return; }
+            if(selCard) selCard.classList.remove('selected');
+            if(selCard === c) { selCard = null; } 
+            else { selCard = c; selCard.classList.add('selected'); playSfx('click'); }
+        }
+
+        function onDropZoneClick(e) {
+            if(done || !selCard || isChecking) return; 
+            virtualDock(selCard, e.currentTarget); 
+            selCard.classList.remove('selected'); selCard = null; refreshUI();
+        }
+
+        function refreshUI() {
+            const zones = document.querySelectorAll('.drop-zone');
+            const allFilled = Array.from(zones).every(z => z.getAttribute('data-card'));
+            const btn = document.getElementById('btn-c');
+            if (allFilled) { btn.disabled = false; } else { btn.disabled = true; }
+        }
+
+        function checkAnswers() {
+            if(done || isChecking) return;
+            isChecking = true; 
+            
+            let correctCount = 0;
+            const zones = document.querySelectorAll('.drop-zone');
+            
+            zones.forEach(z => {
+                const cardId = z.getAttribute('data-card');
+                const row = z.closest('.question-card');
+                
+                if(cardId) {
+                    const c = document.getElementById(cardId);
+                    const targetAnswers = z.getAttribute('data-ans').split('|');
+                    
+                    if(targetAnswers.includes(c.getAttribute('data-val'))) {
+                        correctCount++;
+                        c.className = "draggable-card correct-state"; 
+                        if(row) row.classList.add('is-correct');
+                    } else {
+                        c.className = "draggable-card incorrect-state";
+                        if(row) row.classList.add('is-incorrect');
+                    }
+                }
+            });
+            
+            const btnCheck = document.getElementById('btn-c');
+            
+            if(correctCount === zones.length) {
+                // BAŞARILI
+                done = true;
+                isChecking = false; 
+                document.querySelectorAll('.celdirici-kart').forEach(el => el.classList.add('disabled'));
+                
+                btnCheck.innerHTML = `NOTLARI İNCELE <svg class="w-5 h-5 inline-block ml-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>`;
+                btnCheck.className = "btn-action completed-state";
+                btnCheck.style.backgroundColor = "#1D4ED8"; 
+                btnCheck.disabled = false;
+                btnCheck.setAttribute('onclick', 'showResultTable()');
+                
+                showToast("Harika! Tüm soruları doğru cevapladınız.", "toast-success");
+                playSfx('success');
+                setVar('{{STORYLINE_DEGISKENI_BURAYA_ORN_w41}}', true); 
+            } else {
+                // HATA
+                attempts++;
+                playSfx('error');
+                if(attempts === 1) {
+                    showToast('Bazı cevaplar hatalı. Lütfen kırmızı satırları düzeltin.', 'toast-error');
+                    
+                    setTimeout(() => {
+                        zones.forEach(z => {
+                            const cardId = z.getAttribute('data-card');
+                            if(cardId) {
+                                const c = document.getElementById(cardId);
+                                const targetAnswers = z.getAttribute('data-ans').split('|');
+                                if(!targetAnswers.includes(c.getAttribute('data-val'))) {
+                                    virtualBack(c); 
+                                    c.className="draggable-card"; 
+                                }
+                            }
+                        });
+                        refreshUI(); 
+                    }, 1500);
+                    
+                    setTimeout(() => { isChecking = false; }, 2000);
+                    
+                } else {
+                    // OTOMATİK ÇÖZÜM
+                    done = true;
+                    btnCheck.style.display = 'none';
+                    solveAll();
+                }
+            }
+        }
+
+        function solveAll() {
+            const zones = document.querySelectorAll('.drop-zone');
+            const cards = document.querySelectorAll('.draggable-card');
+            if(selCard) { selCard.classList.remove('selected'); selCard = null; }
+            
+            // Yanlışları havuza gönder
+            zones.forEach(z => {
+                const cardId = z.getAttribute('data-card');
+                if(cardId) {
+                    const c = document.getElementById(cardId);
+                    const targetAnswers = z.getAttribute('data-ans').split('|');
+                    if(!targetAnswers.includes(c.getAttribute('data-val'))) {
+                        virtualBack(c);
+                        c.classList.remove('incorrect-state');
+                    } else {
+                        c.classList.add('correct-state');
+                        c.setAttribute('data-locked', 'true');
+                        const row = z.closest('.question-card');
+                        if(row) row.classList.add('is-correct');
+                    }
+                }
+            });
+            
+            document.body.offsetHeight; 
+            
+            let delay = 0;
+            zones.forEach((z) => {
+                if(!z.getAttribute('data-card')) {
+                    const targetVals = z.getAttribute('data-ans').split('|');
+                    const correctCard = Array.from(cards).find(c => targetVals.includes(c.getAttribute('data-val')) && !c.hasAttribute('data-locked'));
+                    const row = z.closest('.question-card');
+                    
+                    if(correctCard) {
+                        correctCard.setAttribute('data-locked', 'true'); 
+                        setTimeout(() => { 
+                            virtualDock(correctCard, z, '0.5s'); 
+                            correctCard.className = "draggable-card correct-state"; 
+                            if(row) row.classList.add('is-correct');
+                        }, delay); 
+                        delay += 400; 
+                    }
+                }
+            });
+            
+            showToast('Hakkınız bitti. Doğru cevaplar yerleştiriliyor...', 'toast-error');
+            
+            setTimeout(() => {
+                document.querySelectorAll('.celdirici-kart').forEach(el => el.classList.add('disabled')); 
+                triggerTimerAutoSolve(); 
+            }, delay + 1000); 
+        }
+
+        function triggerTimerAutoSolve() {
+            const btnCheck = document.getElementById('btn-c');
+            btnCheck.style.display = 'flex'; 
+            btnCheck.disabled = false;
+            btnCheck.className = 'btn-action timer-active'; 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerHTML = `NOTLARI İNCELE <svg class="w-5 h-5 inline-block ml-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>`;
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed-state');
+                    btnCheck.style.backgroundColor = "#1D4ED8"; 
+                    btnCheck.setAttribute('onclick', 'showResultTable()');
+                    
+                    showToast("İnceleme tamamlandı, notları görüntüleyebilirsiniz.", "toast-success");
+                    setVar('{{STORYLINE_DEGISKENI_BURAYA_ORN_w41}}', true); 
+                }
+            }, 1000);
+        }
+
+        function showResultTable() {
+            playSfx('click');
+            const tablePanel = document.getElementById('result-table-panel');
+            tablePanel.style.display = 'flex';
+        }
+
+        function finishActivity() {
+            playSfx('success');
+            const btnFinish = document.getElementById('btn-finish');
+            btnFinish.innerText = "TAMAMLANDI ✓";
+            btnFinish.classList.add('done');
+            showToast("Etkinlik tamamlandı. İlerleyebilirsiniz.", "toast-success");
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; toast.classList.add('show');
+            if(typeCls === 'toast-error') {
+                toast.classList.add('toast-error');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>';
+                icon.classList.remove('text-emerald-400');
+                icon.classList.add('text-red-400');
+            } else {
+                toast.classList.add('toast-success');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                icon.classList.remove('text-red-400');
+                icon.classList.add('text-emerald-400');
+            }
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+        
+        function setVar(n, v) { 
+            try { parent.GetPlayer().SetVar(n, v); console.log(`Storyline Set: ${n} = ${v}`); } 
+            catch(e) { console.log(`(Lokal) Storyline Set: ${n} = ${v}`); } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { window.dispatchEvent(new Event('resize')); init(); };
+    </script>
+</body>
+</html>

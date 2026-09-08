@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{SAYFA_BASLIGI}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08); 
+            
+            --primary-main: #B91C1C; 
+            --primary-dark: #7F1D1D;
+            --primary-soft: #FCA5A5;
+            --text-dark: #1E293B;
+            --text-blue: #2563eb;
+            
+            --select-blue: #3B82F6;
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+        }
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+        
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-main);
+        }
+        #scale-container::before {
+            content: ''; position: absolute; top: -20%; left: -20%; width: 150%; height: 150%;
+            background: radial-gradient(circle, rgba(185, 28, 28, 0.08) 0%, transparent 60%);
+            z-index: 0; pointer-events: none;
+        }
+        
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; flex: 1;
+            background: white; border-radius: 12px; padding: 10px 20px 10px 15px;
+            border-left: 5px solid var(--select-blue);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0;
+        }
+        .narrator-speaker {
+            width: 34px; height: 34px; background: var(--primary-main); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+        .instruction-text {
+            font-size: 15px; line-height: 1.4; font-weight: 700; color: var(--text-dark); cursor: pointer; transition: color 0.2s;
+        }
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+        
+        /* --- CONTENT --- */
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; gap: 12px; height: calc(540px - 85px);
+            z-index: 10;
+        }
+        
+        /* --- ORTA PANEL: IZGARA KARTLARI --- */
+        .grid-container {
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr));
+            gap: 15px; flex: 1; min-height: 0; margin-top: 5px;
+        }
+        
+        .opt-card {
+            background: white; border: 3px solid #e2e8f0; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            cursor: pointer; transition: all 0.2s; position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); padding: 12px; min-width: 0; min-height: 0;
+            background-image: 
+                linear-gradient(#f1f5f9 1px, transparent 1px), 
+                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 15px 15px; background-position: center;
+        }
+        .opt-card:hover {
+            border-color: var(--primary-main); transform: translateY(-3px); box-shadow: 0 8px 15px rgba(185, 28, 28, 0.1);
+        }
+        .opt-card:active { transform: translateY(1px); }
+        
+        .q-label {
+            position: absolute; top: 10px; left: 15px; font-size: 16px; font-weight: 900; color: var(--primary-main); z-index: 5;
+        }
+        
+        .svg-container {
+            width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: hidden; position: relative;
+            margin-top: 15px;
+        }
+        
+        .svg-target {
+            width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; 
+            pointer-events: none; word-break: break-all; font-size: 10px; color: #94a3b8; text-align: center;
+        }
+        .svg-target > * {
+            max-width: 100% !important; max-height: 100px !important; object-fit: contain !important;
+        }
+        
+        /* Checkbox Stili */
+        .check-box {
+            width: 32px; height: 32px; border: 3px solid #cbd5e1; border-radius: 8px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; background: white;
+            color: transparent; transition: 0.2s; margin-top: 5px; z-index: 5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 22px; font-weight: 900;
+        }
+        
+        /* Seçili Durum */
+        .opt-card.selected {
+            border-color: var(--select-blue); background-color: #eff6ff;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+        }
+        .opt-card.selected .check-box {
+            background: var(--select-blue); border-color: var(--select-blue); color: white;
+        }
+        .opt-card.selected .check-box::after { content: '✓'; }
+        
+        /* Doğru / Yanlış Animasyonları ve "POP" Efekti */
+        .opt-card.is-correct { 
+            border-color: var(--success-green) !important; 
+            background-color: #ecfdf5 !important; 
+            background-image: none !important; 
+            pointer-events: none;
+            animation: popCorrect 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 1 !important; /* Disabled sınıfının şeffaflığını ezer */
+        }
+        .opt-card.is-correct .check-box { background: var(--success-green) !important; border-color: var(--success-green) !important; color: white !important;}
+        .opt-card.is-correct .check-box::after { content: '✓'; }
+        
+        .opt-card.is-incorrect { 
+            border-color: var(--error-red) !important; 
+            background-color: #fef2f2 !important; 
+            background-image: none !important;
+            animation: shake 0.4s ease-in-out;
+        }
+        .opt-card.is-incorrect .check-box { background: var(--error-red) !important; border-color: var(--error-red) !important; color: white !important;}
+        .opt-card.is-incorrect .check-box::after { content: '✗'; }
+        
+        .opt-card.disabled { pointer-events: none; opacity: 0.6; }
+
+        @keyframes popCorrect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); }
+            100% { transform: scale(1); }
+        }
+        
+        /* --- ALT PANEL: KONTROL VE GERİ BİLDİRİM --- */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto;
+        }
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 12px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+        
+        .btn-action {
+            background: var(--primary-main); color: white; min-width: 240px; height: 45px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-warning { background-color: var(--warning-orange) !important; }
+    </style>
+</head>
+<body>
+    <audio id="ses1" src="{{SES_DOSYASI_URL}}" preload="auto"></audio>
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Tebrikler!</span>
+        </div>
+        
+        <header class="header">
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text" onclick="playAudio('ses1')">
+                    {{ANA_YONERGE_METNI_ORN_Dogru_Olanlari_Isaretleyiniz}}
+                </div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- ORTA PANEL: IZGARA KARTLARI -->
+            <!-- Test için data-ans değerleri manuel olarak true/false ayarlandı -->
+            <div class="grid-container">
+                
+                <div class="opt-card" id="card-1" data-ans="true" onclick="toggleOpt('1')">
+                    <div class="q-label">{{KART_1_BASLIK_ORN_a}}</div>
+                    <div class="svg-container">
+                        <div class="svg-target">
+                            {{KART_1_GORSEL_VEYA_SVG_KODU}}
+                        </div>
+                    </div>
+                    <div class="check-box"></div>
+                </div>
+                
+                <div class="opt-card" id="card-2" data-ans="false" onclick="toggleOpt('2')">
+                    <div class="q-label">{{KART_2_BASLIK_ORN_b}}</div>
+                    <div class="svg-container">
+                        <div class="svg-target">
+                            {{KART_2_GORSEL_VEYA_SVG_KODU}}
+                        </div>
+                    </div>
+                    <div class="check-box"></div>
+                </div>
+                
+                <div class="opt-card" id="card-3" data-ans="true" onclick="toggleOpt('3')">
+                    <div class="q-label">{{KART_3_BASLIK_ORN_c}}</div>
+                    <div class="svg-container">
+                        <div class="svg-target">
+                            {{KART_3_GORSEL_VEYA_SVG_KODU}}
+                        </div>
+                    </div>
+                    <div class="check-box"></div>
+                </div>
+                
+                <div class="opt-card" id="card-4" data-ans="false" onclick="toggleOpt('4')">
+                    <div class="q-label">{{KART_4_BASLIK_ORN_d}}</div>
+                    <div class="svg-container">
+                        <div class="svg-target">
+                            {{KART_4_GORSEL_VEYA_SVG_KODU}}
+                        </div>
+                    </div>
+                    <div class="check-box"></div>
+                </div>
+                
+                <div class="opt-card" id="card-5" data-ans="true" onclick="toggleOpt('5')">
+                    <div class="q-label">{{KART_5_BASLIK_ORN_e}}</div>
+                    <div class="svg-container">
+                        <div class="svg-target">
+                            {{KART_5_GORSEL_VEYA_SVG_KODU}}
+                        </div>
+                    </div>
+                    <div class="check-box"></div>
+                </div>
+                
+                <div class="opt-card" id="card-6" data-ans="false" onclick="toggleOpt('6')">
+                    <div class="q-label">{{KART_6_BASLIK_ORN_f}}</div>
+                    <div class="svg-container">
+                        <div class="svg-target">
+                            {{KART_6_GORSEL_VEYA_SVG_KODU}}
+                        </div>
+                    </div>
+                    <div class="check-box"></div>
+                </div>
+                
+            </div>
+            
+            <!-- ALT PANEL: KONTROL VE GERİ BİLDİRİM -->
+            <div class="bottom-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+            
+        </main>
+    </div>
+    
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+        
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => { if(speaker) speaker.style.animation = 'none'; });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function toggleOpt(id) {
+            if (isCompleted) return;
+            playSfx('click');
+            const card = document.getElementById(`card-${id}`);
+            card.classList.toggle('selected');
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            const cards = document.querySelectorAll('.opt-card');
+            const selectedCards = document.querySelectorAll('.opt-card.selected');
+            
+            if(selectedCards.length === 0) {
+                showToast("Lütfen en az bir seçenek işaretleyiniz.", "toast-warning");
+                return;
+            }
+            
+            let allCorrect = true;
+            let wrongSelected = [];
+            
+            cards.forEach(card => {
+                const isSelected = card.classList.contains('selected');
+                const isAns = card.getAttribute('data-ans').toLowerCase().trim() === 'true';
+                
+                // Seçilmesi gerekirken seçilmeyen veya seçilmemesi gerekirken seçilen varsa HATA
+                if ((isAns && !isSelected) || (!isAns && isSelected)) {
+                    allCorrect = false;
+                    if(isSelected) wrongSelected.push(card);
+                }
+            });
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+            fbBox.className = "feedback-msg"; 
+            
+            if(allCorrect) {
+                isCompleted = true;
+                playSfx('success');
+                
+                cards.forEach(card => {
+                    if (card.classList.contains('selected')) {
+                        card.classList.remove('selected');
+                        card.classList.add('is-correct');
+                    } else {
+                        card.classList.add('disabled');
+                    }
+                });
+                
+                fbBox.innerHTML = `TEBRİKLER! <br><span style="font-weight:600; font-size:11.5px; display:block; margin-top:2px;">{{BASARI_GERI_BILDIRIM_METNI}}</span>`;
+                fbBox.classList.add('fb-success');
+                
+                btnCheck.innerText = "TAMAMLANDI ✓";
+                btnCheck.classList.add('completed');
+                
+                showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                setVar('{{STORYLINE_VAR_TAMAMLANDI}}', true); 
+                
+            } else {
+                attempts++;
+                playSfx('error');
+                if(attempts === 1) {
+                    fbBox.innerHTML = `{{HATA_GERI_BILDIRIM_METNI}}`;
+                    fbBox.classList.add('fb-error');
+                    
+                    wrongSelected.forEach(card => {
+                        card.classList.add('is-incorrect');
+                        setTimeout(() => { 
+                            card.classList.remove('is-incorrect', 'selected'); 
+                        }, 1200);
+                    });
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 4000);
+                } else {
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Doğru şekiller otomatik olarak işaretleniyor...`;
+                    fbBox.classList.add('fb-error');
+                    
+                    cards.forEach(card => {
+                        card.classList.remove('selected', 'is-incorrect');
+                        card.classList.add('disabled');
+                    });
+                    
+                    let delayCount = 1;
+                    cards.forEach((card) => {
+                        if(card.getAttribute('data-ans').toLowerCase().trim() === 'true') {
+                            setTimeout(() => {
+                                card.classList.remove('disabled');
+                                card.classList.add('is-correct');
+                                playSfx('click');
+                            }, delayCount * 600);
+                            delayCount++;
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve('{{STORYLINE_VAR_INCELEME_BITTI}}'); 
+                    }, (delayCount * 600) + 500);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); 
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { applyScale(); init(); };
+    </script>
+</body>
+</html>

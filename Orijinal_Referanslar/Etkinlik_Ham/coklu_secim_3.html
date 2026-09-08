@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Çember - Hazırlık Etkinliği</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            /* Matematik Teması: Krem zemin, Kırmızı vurgular */
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --hover-red: #DC2626;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 90px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 0.5px;}
+        .sub-instruction { font-size: 13px; font-weight: 600; color: #475569; margin-top: 4px; }
+        
+        .logo-right-container { width: 85px; height: 85px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        /* --- İÇERİK --- */
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 5px 40px 20px 40px; gap: 15px;
+            height: calc(540px - 90px); z-index: 10; position: relative;
+        }
+
+        /* --- ANLATICI --- */
+        .narrator-box {
+            background: white; border-radius: 12px; padding: 12px 20px 12px 40px;
+            font-size: 13.5px; font-weight: 600; color: var(--text-dark);
+            border-left: 5px solid var(--primary-red); line-height: 1.5;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.05); position: relative;
+            width: 100%; flex-shrink: 0; display: flex; align-items: center;
+        }
+
+        .narrator-speaker {
+            position: absolute; top: 50%; left: -16px; transform: translateY(-50%);
+            width: 32px; height: 32px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3); cursor: pointer;
+            animation: pulsePlay 2s infinite;
+        }
+        @keyframes pulsePlay { 0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); } 70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); } 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); } }
+
+        /* --- GÖRSELLER ALANI (2x2 GRID) --- */
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+            flex: 1; align-items: center; justify-content: center;
+        }
+
+        .item-card {
+            background: white; border: 2.5px solid #e2e8f0; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 15px; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); height: 230px; position: relative;
+        }
+
+        .item-card:hover { transform: translateY(-4px); border-color: var(--primary-red); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.1); }
+        .item-card:active { transform: translateY(0); }
+
+        .img-container {
+            width: 100%; flex: 1; background: #f8fafc; border-radius: 12px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            border: 1px solid #f1f5f9; position: relative;
+        }
+        
+        .img-container img {
+            width: 100%; height: 100%; object-fit: contain; padding: 10px;
+        }
+
+        .item-title {
+            font-size: 13px; font-weight: 800; color: var(--text-dark); text-align: center; margin-bottom: 10px; line-height: 1.2;
+        }
+
+        /* Checkbox Tasarımı */
+        .check-box {
+            width: 32px; height: 32px; border: 2.5px solid #cbd5e1; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 900; color: transparent; transition: 0.2s;
+            background: white;
+        }
+
+        /* Seçili Durum */
+        .item-card.selected {
+            border-color: var(--primary-red); background: var(--light-red);
+        }
+        .item-card.selected .check-box {
+            background: var(--primary-red); border-color: var(--primary-red); color: white;
+        }
+
+        /* Hata / Doğru Durumları (Kontrol Sonrası) */
+        .item-card.is-correct { border-color: var(--success-green); background: #ecfdf5; pointer-events: none; }
+        .item-card.is-correct .check-box { background: var(--success-green); border-color: var(--success-green); color: white; content: '✓'; }
+
+        .item-card.is-incorrect { border-color: var(--error-red); background: #fef2f2; animation: shake 0.4s ease-in-out; }
+        .item-card.is-incorrect .check-box { background: var(--error-red); border-color: var(--error-red); color: white; content: '✗'; }
+
+        .item-card.disabled { pointer-events: none; opacity: 0.8; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* --- KONTROL PANELI --- */
+        .control-panel {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; margin-top: 5px; height: 50px; position: relative;
+        }
+
+        .feedback-msg {
+            position: absolute; top: -45px; font-size: 12px; font-weight: 800; text-align: center; padding: 8px 15px; border-radius: 8px;
+            display: none; line-height: 1.4; min-width: 300px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-red); color: white; width: 280px; height: 46px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+        }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-red); color: white; font-weight: 800; font-size: 13px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Başlangıç Ses Dosyası (ses1.mp3) -->
+    <audio id="ses1" src="ses1.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">HAZIRLIK ETKİNLİĞİ</div>
+                <div class="sub-instruction">Aşağıda verilen nesnelerden "bir çember ifade edenlerin" (içi boş olanların) altındaki kutucuğu işaretleyiniz.</div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- ANLATICI KUTUSU -->
+            <div class="narrator-box">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <span>"Şimdi çember konusuna hazır olmak için birkaç örnek çözelim. Acaba hangileri çember, hangileri daire?"</span>
+            </div>
+
+            <!-- GÖRSELLER (4 Kart) -->
+            <div class="gallery-grid">
+                
+                <!-- Kart 1: Yüzük (Çember - Doğru) -->
+                <div class="item-card" id="card-1" onclick="toggleCard(1)">
+                    <div class="img-container">
+                        <!-- Yüzük görseli r2.png -->
+                        <img src="r2.png" alt="Alyans Yüzük" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:40px; color:#cbd5e1;\'>💍</span>';">
+                    </div>
+                    <div class="item-title">Alyans Yüzük</div>
+                    <div class="check-box">✓</div>
+                </div>
+
+                <!-- Kart 2: Para (Daire - Yanlış) -->
+                <div class="item-card" id="card-2" onclick="toggleCard(2)">
+                    <div class="img-container">
+                        <!-- Para görseli r3.png -->
+                        <img src="r3.png" alt="Madeni Para" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:40px; color:#cbd5e1;\'>🪙</span>';">
+                    </div>
+                    <div class="item-title">Madeni Para</div>
+                    <div class="check-box">✓</div>
+                </div>
+
+                <!-- Kart 3: Hulahop (Çember - Doğru) -->
+                <div class="item-card" id="card-3" onclick="toggleCard(3)">
+                    <div class="img-container">
+                        <!-- Hulahop görseli r4.png -->
+                        <img src="r4.png" alt="Hulahop" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:40px; color:#cbd5e1;\'>⭕</span>';">
+                    </div>
+                    <div class="item-title">Hulahop</div>
+                    <div class="check-box">✓</div>
+                </div>
+
+                <!-- Kart 4: Saat (Daire - Yanlış) -->
+                <div class="item-card" id="card-4" onclick="toggleCard(4)">
+                    <div class="img-container">
+                        <!-- Saat görseli r5.png -->
+                        <img src="r5.png" alt="Duvar Saati" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:40px; color:#cbd5e1;\'>🕒</span>';">
+                    </div>
+                    <div class="item-title">Duvar Saati</div>
+                    <div class="check-box">✓</div>
+                </div>
+
+            </div>
+
+            <!-- KONTROL BUTONU VE GERİ BİLDİRİM -->
+            <div class="control-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+
+        function init() {
+            playAudio('ses1');
+            const s1 = document.getElementById('ses1');
+            if(s1) {
+                s1.addEventListener('ended', () => {
+                    document.getElementById('main-speaker').style.animation = 'none';
+                });
+            }
+        }
+
+        function playAudio(id) {
+            const targetAudio = document.getElementById(id);
+            if(targetAudio) {
+                targetAudio.pause(); targetAudio.currentTime = 0; targetAudio.play().catch(()=>{});
+            }
+            if(id === 'ses1') {
+                document.getElementById('main-speaker').style.animation = 'pulsePlay 2s infinite';
+            }
+        }
+
+        function toggleCard(id) {
+            if(isCompleted) return;
+            getAudioContext();
+            playSfx('click');
+            
+            const card = document.getElementById(`card-${id}`);
+            card.classList.toggle('selected');
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            // Kartları DOM'dan alıyoruz
+            const c1 = document.getElementById('card-1'); // Yüzük (Çember - Doğru)
+            const c2 = document.getElementById('card-2'); // Para (Daire - Yanlış)
+            const c3 = document.getElementById('card-3'); // Hulahop (Çember - Doğru)
+            const c4 = document.getElementById('card-4'); // Saat (Daire - Yanlış)
+
+            const s1 = c1.classList.contains('selected');
+            const s2 = c2.classList.contains('selected');
+            const s3 = c3.classList.contains('selected');
+            const s4 = c4.classList.contains('selected');
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+
+            fbBox.className = "feedback-msg"; // Reset sınıfları
+
+            // Doğru koşul: 1 ve 3 seçili olmalı; 2 ve 4 seçili OLMAMALI.
+            if(s1 && !s2 && s3 && !s4) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+
+                c1.classList.add('is-correct');
+                c3.classList.add('is-correct');
+                
+                c2.classList.add('disabled');
+                c4.classList.add('disabled');
+                
+                if(attempts === 0) {
+                    // İLK DENEMEDE DOĞRU
+                    fbBox.innerHTML = `DOĞRU! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:2px;">Harika! Yüzük ve hulahop içi boş olduğu için çembere örnektir.</span>`;
+                    fbBox.classList.add('fb-success');
+                    
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                    setVar('w2', true); // İLK/İKİNCİ DENEME DOĞRU: w2 = true
+                } else {
+                    // İKİNCİ DENEMEDE DOĞRU
+                    fbBox.innerHTML = `DOĞRU! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:2px;">Harika! Yüzük ve hulahop içi boş olduğu için çembere örnektir.</span>`;
+                    fbBox.classList.add('fb-success');
+                    
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                    setVar('w2', true);
+                }
+
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+
+                if(attempts === 1) {
+                    // 1. HATA
+                    fbBox.innerHTML = `Eksik veya hatalı seçimleriniz var. Para ve saat içi dolu olduğu için "daire"dir. "Çember" olanları seçmelisiniz.`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Yanlış olan Para veya Saat seçiliyse titret ve seçimini kaldır
+                    if(s2) {
+                        c2.classList.add('is-incorrect');
+                        setTimeout(() => { c2.classList.remove('is-incorrect', 'selected'); }, 1500);
+                    }
+                    if(s4) {
+                        c4.classList.add('is-incorrect');
+                        setTimeout(() => { c4.classList.remove('is-incorrect', 'selected'); }, 1500);
+                    }
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 3500);
+
+                } else {
+                    // 2. HATA - OTOMATİK ÇÖZÜM VE SAYAÇ
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Çemberler (içi boş olanlar) işaretleniyor...`;
+                    fbBox.classList.add('fb-error');
+
+                    // Yanlışları temizle
+                    c1.classList.remove('selected', 'is-incorrect');
+                    c2.classList.remove('selected', 'is-incorrect');
+                    c3.classList.remove('selected', 'is-incorrect');
+                    c4.classList.remove('selected', 'is-incorrect');
+                    
+                    c2.classList.add('disabled');
+                    c4.classList.add('disabled');
+
+                    // Gecikmeli doğru cevap animasyonu
+                    setTimeout(() => { c1.classList.add('is-correct'); playSfx('click'); }, 500);
+                    setTimeout(() => { c3.classList.add('is-correct'); playSfx('click'); }, 1000);
+
+                    // Sayaç başlat
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve("w3"); // HATA SONRASI OTOMATİK ÇÖZÜM: w3 = true
+                    }, 2000);
+                }
+            }
+        }
+
+        // Sayaç fonksiyonu
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); // w3 değişkenini tetikle
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { 
+            window.dispatchEvent(new Event('resize')); 
+            init(); 
+        };
+    </script>
+</body>
+</html>

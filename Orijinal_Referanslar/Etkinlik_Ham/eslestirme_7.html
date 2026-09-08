@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Isı İletkeni ve Yalıtkanı - Gruplandırma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --cream-bg: #FCF9F2;
+            --paper-grid: rgba(5, 150, 105, 0.05); /* Zümrüt Yeşili Grid */
+            
+            /* Fen Bilimleri Renk Paleti (Zümrüt ve Nane Yeşili) */
+            --science-dark: #047857;     /* Emerald 700 */
+            --science-medium: #059669;   /* Emerald 600 */
+            --science-soft: #34D399;     /* Emerald 400 */
+            
+            --warm-grey: #475569;        /* Slate 600 */
+            --text-dark: #1E293B;        /* Slate 800 */
+            
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+        
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #020617; /* Dış zemin */
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden; font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--cream-bg);
+            background-image: linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            border-top: 6px solid var(--science-medium);
+        }
+
+        /* --- STREAMING_CHUNK: Styling the Header --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 95px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; display: flex; align-items: center; gap: 15px; }
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--science-medium); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+        }
+
+        .instruction-text { font-size: 14px; line-height: 1.4; font-weight: 700; color: var(--warm-grey); text-align: left; }
+        .logo-right-container { width: 85px; height: 85px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; margin-left: 20px; margin-top: -5px; }
+
+        .main-content { 
+            display: flex; flex: 1; padding: 5px 40px 20px 40px; gap: 25px; 
+            height: calc(540px - 95px); z-index: 10; box-sizing: border-box; min-height: 0;
+        }
+
+        /* --- STREAMING_CHUNK: Styling the Left Panel (Pool) --- */
+        /* Sol panel daraltıldı */
+        .left-panel { width: 250px !important; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+        .pool-title { font-size: 12px; font-weight: 800; color: var(--science-medium); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; letter-spacing: 0.5px; }
+        
+        .pool-area {
+            background: rgba(255, 255, 255, 0.6); border: 2px dashed #cbd5e1; border-radius: 16px;
+            padding: 15px; display: flex; flex-direction: column; gap: 12px; flex: 1; 
+            align-items: center; justify-content: center; overflow-y: auto;
+        }
+        
+        /* Kart boyutları dikey sütuna uygun ayarlandı */
+        .pool-slot { width: 160px; height: 42px; position: relative; flex-shrink: 0;}
+        
+        .draggable-card {
+            position: absolute; width: 100%; height: 100%; background: white;
+            border: 2px solid var(--science-medium); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800; cursor: grab; box-shadow: 0 3px 6px rgba(5, 150, 105, 0.15);
+            z-index: 100; touch-action: none; text-align: center; padding: 0 5px;
+            color: var(--science-dark); transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
+        }
+        
+        .draggable-card.dragging { cursor: grabbing; box-shadow: 5px 8px 20px rgba(0,0,0,0.2); z-index: 1000 !important; transition: none; transform: scale(1.05); }
+        .draggable-card.selected { border-color: var(--warning-orange); background: #fffbeb; color: #b45309; }
+        .draggable-card.correct { border-color: var(--success-green) !important; background: #d1fae5 !important; color: #065f46 !important; box-shadow: none; }
+        .draggable-card.incorrect { border-color: var(--error-red) !important; background: #fef2f2 !important; color: #991b1b !important; }
+        .draggable-card.disabled { cursor: not-allowed; pointer-events: none; }
+
+        /* --- STREAMING_CHUNK: Styling the Right Panel (Drop Zones) --- */
+        /* Sağ panel genişletildi */
+        .right-panel { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+        
+        .group-box {
+            flex: 1; min-height: 0; background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 18px;
+            display: flex; flex-direction: column; padding: 12px 15px;
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+        
+        .group-title { text-align: center; font-weight: 900; font-size: 14px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #f1f5f9; letter-spacing: 0.5px; }
+        .group-title.iletken { color: #DC2626; border-bottom-color: #FEE2E2; }
+        .group-title.yalitkan { color: #2563EB; border-bottom-color: #DBEAFE; }
+        
+        .drop-zone-container { flex: 1; position: relative; min-height: 0; }
+        
+        /* Her grup kutusunun arkasına dev ve tek bir gizli drop-zone koyuyoruz. */
+        .group-drop-area {
+            position: absolute; inset: 0; border: 2px dashed #cbd5e1; border-radius: 12px;
+            background: rgba(248, 250, 252, 0.4); transition: all 0.2s ease; z-index: 1;
+        }
+        .group-drop-area.active-hover { border-color: var(--science-medium); background: #d1fae5; }
+        
+        /* Eklenen kartlar bu container içinde grid/flex şeklinde dizilir. */
+        .card-container {
+             display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; 
+             z-index: 5; position: absolute; inset: 0; padding: 10px; overflow-y: auto;
+        }
+
+        /* Container içindeki slot (görsel olarak gizli, sadece yer tutucu) */
+        .placed-card-slot { width: 160px; height: 42px; position: relative; flex-shrink: 0; }
+
+        /* --- STREAMING_CHUNK: Styling the Controls & Feedback --- */
+        /* Kontrol paneli boyutları sabitlendi ki taşma yapmasın */
+        .control-panel { height: 50px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; position: relative; }
+        
+        .btn-check {
+            background: var(--science-medium); color: white; font-size: 15px; font-weight: 800;
+            height: 45px; border-radius: 12px; transition: 0.2s; cursor: pointer; display: none; width: 100%;
+            text-align: center; border: none; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); letter-spacing: 1px;
+        }
+        .btn-check:hover { background: var(--science-dark); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(5, 150, 105, 0.4); }
+        .btn-check:disabled { pointer-events: none; }
+        .btn-check.completed { background-color: var(--text-dark) !important; color: white !important; box-shadow: none !important; cursor: default; transform: none; }
+        .btn-check.timer { background-color: var(--warning-orange) !important; color: white !important; pointer-events: none; box-shadow: none; transform: none; }
+        
+        .feedback-msg { font-size: 11px; font-weight: 700; padding: 6px; border-radius: 8px; display: none; text-align: center; position: absolute; top: -35px; width: 100%;}
+        .fb-succ { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        .fb-err { background: #fef2f2; color: #991b1b; border: 1px solid #f87171; }
+
+        /* --- STREAMING_CHUNK: Toast Notification --- */
+        /* Kayma sorununu çözen düzeltilmiş CSS */
+        #toast {
+            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--science-dark); color: white; font-weight: 700; font-size: 13px;
+            padding: 10px 20px; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+    
+    <!-- Yönerge Ses Dosyası -->
+    <audio id="audio1" src="ses1.mp3" preload="auto"></audio>
+    
+    <div id="scale-container">
+        
+        <div id="toast">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <!-- --- STREAMING_CHUNK: Rendering the HTML Structure --- -->
+        <div class="header">
+            <div class="instruction-container">
+                <div id="speaker" class="narrator-speaker" onclick="playAudio()">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text" onclick="playAudio()" style="cursor: pointer;">
+                    Sol taraftaki madde kartlarını doğru gruba sürükleyiniz: "Isı İletkeni" ya da "Isı Yalıtkanı".
+                </div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none'">
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- HAVUZ SOLDA -->
+            <div class="left-panel">
+                <div class="pool-title">MADDELER</div>
+                <div class="pool-area" id="pool">
+                    <!-- Havuz Slotları -->
+                    <div class="pool-slot"><div id="c1" class="draggable-card" data-val="iletken" onclick="onCardClick(event)">Altın yüzük</div></div>
+                    <div class="pool-slot"><div id="c2" class="draggable-card" data-val="yalitkan" onclick="onCardClick(event)">Yün kazak</div></div>
+                    <div class="pool-slot"><div id="c3" class="draggable-card" data-val="iletken" onclick="onCardClick(event)">Gümüş kaşık</div></div>
+                    <div class="pool-slot"><div id="c4" class="draggable-card" data-val="yalitkan" onclick="onCardClick(event)">Pamuk bez</div></div>
+                    <div class="pool-slot"><div id="c5" class="draggable-card" data-val="iletken" onclick="onCardClick(event)">Bakır boru</div></div>
+                </div>
+            </div>
+
+            <!-- GRUPLAR VE KONTROL BUTONU SAĞDA -->
+            <div class="right-panel">
+                <div class="group-box" id="iletken-grup">
+                    <div class="group-title iletken">ISI İLETKENİ</div>
+                    <div class="drop-zone-container">
+                        <div class="group-drop-area" id="drop-iletken" data-group="iletken" onclick="onAreaClick(event)"></div>
+                        <div class="card-container" id="container-iletken"></div>
+                    </div>
+                </div>
+                <div class="group-box" id="yalitkan-grup">
+                    <div class="group-title yalitkan">ISI YALITKANI</div>
+                    <div class="drop-zone-container">
+                        <div class="group-drop-area" id="drop-yalitkan" data-group="yalitkan" onclick="onAreaClick(event)"></div>
+                        <div class="card-container" id="container-yalitkan"></div>
+                    </div>
+                </div>
+
+                <div class="control-panel">
+                    <div id="fb-msg" class="feedback-msg"></div>
+                    <button id="btn-check" class="btn-check" onclick="checkAns()">KONTROL ET</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- --- STREAMING_CHUNK: Initializing Interactivity & Drag Engine --- -->
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioCtx() {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                
+                if(type==='click'){ osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='jump'){ osc.type='sine'; osc.frequency.setValueAtTime(200, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime+0.15); }
+                else if(type==='correct'){ osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='err'){ osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                
+                gain.gain.setValueAtTime(0.1, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime+0.15);
+                osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let activeDrag = null, pointerId = null;
+        let startX = 0, startY = 0, cardX = 0, cardY = 0, selCard = null;
+        let preventClick = false, done = false, attempts = 0;
+
+        // Kartların orijinal havuz pozisyonlarını sakla
+        const origPositions = {};
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('audio1');
+            const speaker = document.getElementById('speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('pointerdown', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio() {
+            const audio = document.getElementById('audio1');
+            const speaker = document.getElementById('speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            // Kartları havuzda karıştır
+            const pool = document.getElementById('pool');
+            const slots = Array.from(pool.children);
+            for(let i = slots.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                pool.insertBefore(slots[j], slots[i].nextSibling);
+            }
+            
+            // Pointer Eventleri Tanımla
+            document.querySelectorAll('.draggable-card').forEach(c => {
+                c.addEventListener('pointerdown', down);
+                origPositions[c.id] = c.parentNode;
+            });
+
+            const audio1 = document.getElementById('audio1');
+            if(audio1) {
+                audio1.addEventListener('ended', () => {
+                    const speaker = document.getElementById('speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            window.addEventListener('pointerdown', forceAutoplay);
+        }
+
+        function down(e) {
+            if(done || activeDrag) return;
+            if(selCard) { selCard.classList.remove('selected'); selCard = null; }
+            
+            activeDrag = e.currentTarget;
+            pointerId = e.pointerId;
+            activeDrag.setPointerCapture(pointerId);
+            activeDrag.classList.add('dragging');
+            
+            startX = e.clientX; startY = e.clientY;
+            const matrix = new DOMMatrixReadOnly(window.getComputedStyle(activeDrag).transform);
+            cardX = matrix.m41; cardY = matrix.m42;
+            
+            activeDrag.addEventListener('pointermove', move);
+            activeDrag.addEventListener('pointerup', up);
+            activeDrag.addEventListener('pointercancel', up);
+            
+            playSfx('click');
+        }
+
+        function move(e) {
+            if(!activeDrag || e.pointerId !== pointerId) return;
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const dx = (e.clientX - startX) / scale;
+            const dy = (e.clientY - startY) / scale;
+            
+            if(Math.abs(dx) > 3 || Math.abs(dy) > 3) preventClick = true;
+            activeDrag.style.transform = `translate(${cardX + dx}px, ${cardY + dy}px)`;
+        }
+
+        function up(e) {
+            if(!activeDrag || e.pointerId !== pointerId) return;
+            activeDrag.removeEventListener('pointermove', move);
+            activeDrag.removeEventListener('pointerup', up);
+            activeDrag.removeEventListener('pointercancel', up);
+            activeDrag.releasePointerCapture(pointerId);
+            activeDrag.classList.remove('dragging');
+            
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            let bestArea = null, maxO = 0;
+            
+            document.querySelectorAll('.group-drop-area').forEach(area => {
+                const r1 = activeDrag.getBoundingClientRect(), r2 = area.getBoundingClientRect();
+                const ox = Math.max(0, Math.min(r1.right, r2.right) - Math.max(r1.left, r2.left));
+                const oy = Math.max(0, Math.min(r1.bottom, r2.bottom) - Math.max(r1.top, r2.top));
+                const overlap = (ox * oy) / (scale * scale);
+                if(overlap > 100 && overlap > maxO) { maxO = overlap; bestArea = area; }
+            });
+            
+            if(bestArea) {
+                dockToGroup(activeDrag, bestArea.dataset.group);
+            } else {
+                backToPool(activeDrag);
+            }
+            
+            if(preventClick) { setTimeout(()=>preventClick=false, 50); }
+            activeDrag = null; pointerId = null;
+            refreshUI();
+        }
+
+        // --- STREAMING_CHUNK: Handling Placement Logic ---
+        function dockToGroup(card, groupId, duration = '0.2s') {
+            const container = document.getElementById(`container-${groupId}`);
+            
+            if(card.parentNode.classList.contains('placed-card-slot')) {
+                const oldSlot = card.parentNode;
+                const oldContainer = oldSlot.parentNode;
+                oldContainer.removeChild(oldSlot);
+            } else {
+                origPositions[card.id].removeChild(card);
+            }
+
+            const newSlot = document.createElement('div');
+            newSlot.className = 'placed-card-slot';
+            newSlot.appendChild(card);
+            container.appendChild(newSlot);
+
+            card.style.transition = `transform ${duration} cubic-bezier(0.2, 0, 0.2, 1)`;
+            card.style.transform = 'translate(0px, 0px)';
+            
+            card.dataset.currentGroup = groupId;
+            playSfx('jump');
+        }
+
+        function backToPool(card) {
+            if(card.parentNode.classList.contains('placed-card-slot')) {
+                const slot = card.parentNode;
+                const container = slot.parentNode;
+                container.removeChild(slot);
+            }
+
+            origPositions[card.id].appendChild(card);
+            
+            card.removeAttribute('data-current-group');
+            card.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)';
+            card.style.transform = 'translate(0px, 0px)';
+        }
+
+        function onCardClick(e) {
+            if(done || preventClick) return;
+            const c = e.currentTarget;
+            
+            if(c.dataset.currentGroup) { 
+                backToPool(c); 
+                refreshUI(); 
+                return; 
+            }
+            
+            if(selCard) selCard.classList.remove('selected');
+            if(selCard === c) { selCard = null; } 
+            else { selCard = c; selCard.classList.add('selected'); playSfx('click'); }
+        }
+
+        function onAreaClick(e) {
+            if(done || !selCard) return;
+            const area = e.currentTarget;
+            dockToGroup(selCard, area.dataset.group);
+            selCard.classList.remove('selected');
+            selCard = null;
+            refreshUI();
+        }
+
+        function refreshUI() {
+            const placedCount = document.querySelectorAll('.draggable-card[data-current-group]').length;
+            const btn = document.getElementById('btn-check');
+            btn.style.display = placedCount === 5 ? 'block' : 'none';
+        }
+
+        // --- STREAMING_CHUNK: Evaluation and Solution Logic ---
+        function checkAns() {
+            if(done) return;
+            let isAllCorrect = true;
+            const cards = document.querySelectorAll('.draggable-card');
+            
+            cards.forEach(c => {
+                if(c.dataset.val === c.dataset.currentGroup) {
+                    c.classList.add('correct'); c.classList.remove('incorrect');
+                } else {
+                    c.classList.add('incorrect'); c.classList.remove('correct');
+                    isAllCorrect = false;
+                }
+            });
+            
+            if(isAllCorrect) {
+                done = true;
+                cards.forEach(c => c.classList.add('disabled'));
+                const btn = document.getElementById('btn-check');
+                btn.innerText = 'TAMAMLANDI ✓';
+                btn.className = 'btn-check completed';
+                btn.disabled = true;
+                
+                showMsg('Harika! Tüm maddeleri doğru gruplandırdınız.', 'fb-succ');
+                showToast('Tebrikler! Etkinliği tamamladınız.');
+                playSfx('correct');
+                setVar('c9', true);
+            } else {
+                attempts++;
+                playSfx('err');
+                if(attempts === 1) {
+                    showMsg('Bazı hatalar var. Kırmızı kartları tekrar düşünün.', 'fb-err');
+                    setTimeout(() => {
+                        cards.forEach(c => {
+                            if(c.classList.contains('incorrect')) { 
+                                backToPool(c); 
+                                c.classList.remove('incorrect'); 
+                            }
+                        });
+                        document.getElementById('fb-msg').style.display='none';
+                        refreshUI();
+                    }, 1500);
+                } else {
+                    done = true;
+                    document.getElementById('btn-check').style.display = 'none';
+                    solveAll();
+                }
+            }
+        }
+
+        function solveAll() {
+            const cards = document.querySelectorAll('.draggable-card');
+            
+            if(selCard) { selCard.classList.remove('selected'); selCard = null; }
+
+            cards.forEach(c => {
+                backToPool(c);
+                c.style.transition = 'none'; c.style.transform = 'translate(0px, 0px)';
+                c.className = 'draggable-card';
+            });
+            
+            document.body.offsetHeight; // Force reflow
+            
+            setTimeout(() => {
+                cards.forEach((c, index) => {
+                    const correctGroup = c.dataset.val;
+                    setTimeout(() => {
+                        dockToGroup(c, correctGroup, '1.5s');
+                        c.className = 'draggable-card correct disabled';
+                        setTimeout(()=>{ c.style.transform = 'translate(0,0)'; }, 50);
+                    }, index * 400);
+                });
+            }, 100);
+            
+            showMsg('Hakkınız bitti. Doğru gruplandırma yapılıyor...', 'fb-err');
+            setTimeout(() => {
+                document.getElementById('fb-msg').style.display='none';
+                triggerTimerAutoSolve('c10');
+            }, (5 * 400) + 1500);
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            const btn = document.getElementById('btn-check');
+            btn.style.display = 'block'; btn.disabled = false; btn.className = 'btn-check timer';
+            
+            let c = 10;
+            btn.innerText = `İNCELEME SÜRESİ: ${c}S`;
+            
+            const int = setInterval(()=>{
+                c--; btn.innerText = `İNCELEME SÜRESİ: ${c}S`;
+                if(c<=0) {
+                    clearInterval(int);
+                    btn.innerText = 'TAMAMLANDI ✓'; btn.className = 'btn-check completed'; btn.disabled = true;
+                    showToast('İnceleme tamamlandı, eğitim devam ediyor.');
+                    setVar(variableToSet, true);
+                }
+            }, 1000);
+        }
+
+        function showMsg(t, c) { const b = document.getElementById('fb-msg'); b.innerText = t; b.className = 'feedback-msg ' + c; b.style.display = 'block'; }
+        function showToast(m) { const t = document.getElementById('toast'); document.getElementById('toast-text').innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+        function setVar(n,v) { try{ parent.GetPlayer().SetVar(n,v); }catch(e){} }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { window.dispatchEvent(new Event('resize')); getAudioCtx(); init(); };
+    </script>
+</body>
+</html>

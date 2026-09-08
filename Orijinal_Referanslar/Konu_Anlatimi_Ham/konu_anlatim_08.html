@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yarıçap ve Çap Nedir?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --cream-bg: #FCF9F2;
+            --paper-grid: rgba(185, 28, 28, 0.08); /* Kırmızımsı matematik ızgarası (dış zemin) */
+            
+            /* Matematik Teması Kırmızı Palet */
+            --primary-main: #B91C1C;
+            --primary-dark: #7F1D1D;
+            --primary-soft: #FCA5A5;
+            --warm-grey: #334155;
+            --text-muted: #64748B;
+            
+            /* Başarı Renkleri */
+            --success-green: #10B981;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--warm-grey);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--cream-bg); 
+            background-image: linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-top: 6px solid var(--primary-main);
+        }
+
+        .header {
+            padding: 20px 40px 0 40px; height: 90px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-dark); text-align: left; text-transform: uppercase; letter-spacing: 0.5px;}
+        .logo-right-container { width: 85px; height: 85px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0px 40px 20px 40px; gap: 15px; height: calc(540px - 90px);
+            z-index: 10;
+        }
+
+        /* --- ÜST PANEL: BİLGİ KARTI --- */
+        .info-card {
+            background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 15px 25px 15px 45px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: row; align-items: center; gap: 20px;
+            flex-shrink: 0; position: relative; border-left: 6px solid var(--primary-main);
+            transition: all 0.4s ease;
+        }
+
+        /* Yeni Hoparlör Tasarımı (Hizalı) */
+        .speaker-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--primary-main); color: white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3);
+            cursor: pointer; transition: all 0.3s; flex-shrink: 0;
+        }
+        .speaker-btn:hover { transform: scale(1.08); }
+        .pulse-anim { animation: pulsePlay 2s infinite; }
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .info-left { flex: 1; }
+        .info-title { font-size: 19px; font-weight: 900; color: var(--primary-main); margin-bottom: 5px; transition: color 0.4s;}
+        .info-text { font-size: 15px; font-weight: 600; line-height: 1.5; color: #334155; }
+        .info-text strong { color: var(--primary-dark); font-weight: 800;}
+
+        .note-box {
+            background: #f8fafc; border-left: 5px solid #3b82f6; padding: 12px 15px; border-radius: 8px;
+            font-size: 13px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 12px;
+            width: 320px; flex-shrink: 0; transition: all 0.4s;
+        }
+        .note-icon { font-size: 24px; }
+
+        /* --- ALT BÖLÜM: ÇİZİM VE ANLATICI --- */
+        .lower-section {
+            display: flex; flex: 1; gap: 30px; min-height: 0;
+        }
+
+        /* SOL PANEL: ETKİLEŞİMLİ ÇİZİM (NOKTALI DÜZLEM) */
+        .left-panel { width: 440px !important; display: flex; flex-direction: column; }
+        
+        .drawing-container {
+            background: white; border: 3px solid rgba(185, 28, 28, 0.15); border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05); overflow: hidden; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            
+            /* Noktalı Kağıt Efekti */
+            background-image: radial-gradient(circle, rgba(185, 28, 28, 0.25) 2px, transparent 2px);
+            background-size: 25px 25px; 
+            background-position: center;
+        }
+
+        .math-svg { width: 100%; height: 100%; max-height: 280px;}
+        
+        .point-dot { fill: #1E293B; }
+        
+        /* Font Stilleri */
+        .math-text { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 20px; fill: #1E293B; }
+        .math-text-red { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 24px; fill: var(--primary-main); }
+        
+        /* Çember Yolu */
+        .circle-path {
+            fill: none; stroke: var(--primary-dark); stroke-width: 4;
+            stroke-dasharray: 630; /* 2 * PI * 100 ~ 628 */
+            stroke-dashoffset: 630; 
+            transform-origin: 150px 150px;
+            transform: rotate(-90deg); 
+        }
+
+        .draw-anim { animation: drawCircleAnim 2.5s linear forwards; }
+        @keyframes drawCircleAnim { to { stroke-dashoffset: 0; } }
+
+        /* Pergel (Compass) Animasyonu */
+        .compass-group {
+            transform-origin: 150px 150px;
+            transform: rotate(-90deg);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .compass-rotate {
+            animation: rotateCompassAnim 2.5s linear forwards;
+            opacity: 1;
+        }
+        @keyframes rotateCompassAnim {
+            from { transform: rotate(-90deg); }
+            to { transform: rotate(270deg); }
+        }
+
+        /* Yarıçap ve Çap Çizgileri */
+        .line-radius {
+            stroke: var(--primary-main); stroke-width: 3.5; stroke-linecap: round;
+            stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.8s ease-out;
+        }
+        .line-diameter-ext {
+            stroke: var(--primary-main); stroke-width: 3.5; stroke-linecap: round;
+            stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.8s ease-out;
+        }
+        .show-line { stroke-dashoffset: 0 !important; }
+
+        /* Etiketler ve Semboller */
+        .svg-elem { opacity: 0; transition: opacity 0.5s ease-in; }
+        .show-elem { opacity: 1 !important; }
+
+        /* SAĞ PANEL: ANLATIM VE BUTONLAR */
+        .right-panel {
+            flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 15px; padding-top: 5px;
+        }
+
+        .narrator-box {
+            background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 15px 20px;
+            font-size: 14.5px; font-weight: 600; color: var(--warm-grey);
+            border-left: 5px solid var(--primary-soft); line-height: 1.6;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.05); position: relative;
+            transition: all 0.4s ease; font-style: italic;
+        }
+
+        /* --- BUTONLAR --- */
+        .controls-area {
+            margin-top: auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px; min-height: 120px;
+        }
+
+        .btn-action {
+            background: var(--primary-main); color: white; height: 55px;
+            font-size: 15px; font-weight: 900; border-radius: 14px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        
+        .btn-complete {
+            background: var(--success-green); color: white; height: 55px;
+            font-size: 15px; font-weight: 900; border-radius: 14px;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            display: none; align-items: center; justify-content: center; gap: 8px; width: 100%;
+        }
+        .btn-complete:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .btn-complete.done { background: #475569; pointer-events: none; transform: none; box-shadow: none;}
+
+        .btn-row { display: flex; gap: 10px; width: 100%; }
+        .btn-secondary { background: var(--text-muted); flex: 0.45; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+        .btn-secondary:hover { background: #475569; }
+
+        /* Toast Bildirimleri */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; color: white !important;}
+
+    </style>
+</head>
+<body>
+
+    <!-- Yönerge Ses Dosyaları -->
+    <audio id="ses1" src="ses1.mp3" preload="auto"></audio>
+    <audio id="ses2" src="ses2.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Harika!</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">KONU ANLATIMI: YARIÇAP VE ÇAP</div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- ÜST PANEL: KONU ANLATIMI -->
+            <div id="top-card" class="info-card">
+                <!-- Yeni Tasarım Hoparlör Butonu -->
+                <div id="main-speaker" class="speaker-btn pulse-anim" onclick="toggleAudio()">
+                    <!-- Play İkonu (Çalmadığı zaman görünür) -->
+                    <svg id="icon-play" class="w-6 h-6 pl-0.5" style="display: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    <!-- Pause İkonu (Çalarken görünür) -->
+                    <svg id="icon-pause" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </div>
+
+                <div class="info-left">
+                    <div id="info-title" class="info-title">Yarıçap Nedir?</div>
+                    <div id="info-desc" class="info-text">
+                        Merkez ile çember üzerindeki herhangi bir noktayı birleştiren doğru parçasına <strong>yarıçap</strong> denir ve <strong>"r"</strong> harfi ile gösterilir.
+                    </div>
+                </div>
+                <div id="info-note" class="note-box">
+                    <div class="note-icon">📏</div>
+                    <div>Pergel ile çember çizilirken kolların uçları arasındaki mesafe çemberin yarıçap uzunluğuna eşittir.</div>
+                </div>
+            </div>
+
+            <!-- ALT PANEL: ÇİZİM VE ANLATICI -->
+            <div class="lower-section">
+                
+                <!-- SOL PANEL: ÇİZİM (NOKTALI DÜZLEM) -->
+                <div class="left-panel">
+                    <div class="drawing-container">
+                        <svg class="math-svg" viewBox="0 0 300 300">
+                            
+                            <!-- Çember Yolu -->
+                            <circle cx="150" cy="150" r="100" class="circle-path" id="animated-circle" />
+
+                            <!-- Çap Çizgisinin Sol Tarafı -->
+                            <line x1="50" y1="150" x2="150" y2="150" class="line-diameter-ext" id="line-dia" />
+                            
+                            <!-- Yarıçap Çizgisi -->
+                            <line x1="150" y1="150" x2="250" y2="150" class="line-radius" id="line-rad" />
+
+                            <!-- Merkez Noktası m (Çizgilerin Üstünde kalması için buraya alındı) -->
+                            <circle cx="150" cy="150" r="4.5" class="point-dot" id="center-m" />
+                            <!-- m harfi merkezin sol üst çaprazında -->
+                            <text x="145" y="140" class="math-text" text-anchor="end" id="text-m">m</text>
+
+                            <!-- Gerçekçi Pergel Grubu -->
+                            <g id="compass-group" class="compass-group">
+                                <rect x="146" y="-10" width="8" height="30" fill="#475569" rx="3" />
+                                <circle cx="150" cy="20" r="7" fill="#1e293b" />
+                                <line x1="150" y1="20" x2="150" y2="140" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>
+                                <line x1="150" y1="140" x2="150" y2="150" stroke="#475569" stroke-width="2" />
+                                <line x1="150" y1="20" x2="245" y2="135" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>
+                                <rect x="237" y="125" width="16" height="10" fill="#64748b" transform="rotate(-35 245 135)"/>
+                                <line x1="245" y1="135" x2="249" y2="145" stroke="#f59e0b" stroke-width="4" stroke-linecap="round" />
+                                <polygon points="247,145 251,145 250,150" fill="#1e293b" />
+                            </g>
+
+                            <!-- 'r' Yarıçap Etiketi -->
+                            <g id="label-r" class="svg-elem">
+                                <!-- r harfi sağ çizginin ortasında ve üstünde -->
+                                <text x="200" y="140" class="math-text-red" text-anchor="middle">r</text>
+                            </g>
+
+                            <!-- 'R' Çap Etiketi (|---| şeklinde) -->
+                            <g id="label-R" class="svg-elem">
+                                <!-- Sadece R harfi çizginin altında tam ortada -->
+                                <text x="150" y="180" class="math-text-red" text-anchor="middle">R</text>
+                            </g>
+
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- SAĞ PANEL: ANLATICI VE BUTONLAR -->
+                <div class="right-panel">
+                    
+                    <div id="narrator-box" class="narrator-box">
+                        "Pergel ile çember çizilirken, pergelin sivri ucunu merkeze (m) koyarız. Kolların uçları arasındaki mesafe çemberin <strong>yarıçapıdır!</strong> Çizimi görmek için butona tıkla."
+                    </div>
+
+                    <div class="controls-area">
+                        <!-- ADIM 1 (YARIÇAP) BUTONLARI -->
+                        <button id="btn-draw-rad" class="btn-action" onclick="startRadiusDraw()">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            PERGEL İLE ÇİZ
+                        </button>
+                        
+                        <button id="btn-next-step" class="btn-action" style="display: none; background: var(--warm-grey);" onclick="nextToDiameter()">
+                            ÇAPI ÖĞREN ➜
+                        </button>
+
+                        <!-- ADIM 2 (ÇAP) BUTONLARI -->
+                        <button id="btn-draw-dia" class="btn-action" style="display: none;" onclick="startDiameterDraw()">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16"/></svg>
+                            ÇAPI GÖSTER
+                        </button>
+                        
+                        <div class="btn-row" id="btn-row-dia" style="display: none;">
+                            <button id="btn-back-step" class="btn-action btn-secondary" onclick="backToRadius()">
+                                ⬅ YARIÇAP
+                            </button>
+                            <button id="btn-complete" class="btn-complete" onclick="completeModule()">
+                                TAMAMLA ✓
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='draw') { 
+                    osc.type='sine'; osc.frequency.setValueAtTime(300, ctx.currentTime); 
+                    osc.frequency.linearRampToValueAtTime(600, ctx.currentTime+2.5); 
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+2.5); 
+                    osc.start(); osc.stop(ctx.currentTime+2.5); return;
+                }
+                else if(type==='draw_short') { 
+                    osc.type='sine'; osc.frequency.setValueAtTime(400, ctx.currentTime); 
+                    osc.frequency.linearRampToValueAtTime(600, ctx.currentTime+0.8); 
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.8); 
+                    osc.start(); osc.stop(ctx.currentTime+0.8); return;
+                }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let currentStep = 1; // 1: Yarıçap, 2: Çap
+        let hasDrawnRadius = false;
+        let hasDrawnDiameter = false;
+
+        function init() {
+            playCurrentAudio();
+        }
+
+        function toggleAudio() {
+            let audioId = currentStep === 1 ? 'ses1' : 'ses2';
+            let targetAudio = document.getElementById(audioId);
+            
+            if(!targetAudio) return;
+
+            if(targetAudio.paused) {
+                targetAudio.play();
+                setSpeakerState(true);
+            } else {
+                targetAudio.pause();
+                setSpeakerState(false);
+            }
+        }
+
+        function playCurrentAudio() {
+            const id = currentStep === 1 ? 'ses1' : 'ses2';
+            
+            // Tüm sesleri durdur
+            ['ses1', 'ses2'].forEach(aid => {
+                const el = document.getElementById(aid);
+                if(el) { el.pause(); el.currentTime = 0; }
+            });
+
+            const targetAudio = document.getElementById(id);
+            if(targetAudio) {
+                targetAudio.play().then(() => {
+                    setSpeakerState(true);
+                }).catch(()=>{ console.log("Otomatik ses çalma engellendi."); });
+
+                targetAudio.onended = () => { 
+                    setSpeakerState(false);
+                };
+            }
+        }
+
+        function setSpeakerState(isPlaying) {
+            const speaker = document.getElementById('main-speaker');
+            const iconPlay = document.getElementById('icon-play');
+            const iconPause = document.getElementById('icon-pause');
+
+            if(isPlaying) {
+                speaker.classList.add('pulse-anim');
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            } else {
+                speaker.classList.remove('pulse-anim');
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            }
+        }
+
+        function updateUI() {
+            const topCard = document.getElementById('top-card');
+            const noteBox = document.getElementById('info-note');
+            const narrator = document.getElementById('narrator-box');
+            const speaker = document.getElementById('main-speaker');
+
+            if(currentStep === 1) {
+                // Tema: Kırmızı (Yarıçap)
+                topCard.style.borderLeftColor = "var(--primary-main)";
+                speaker.style.background = "var(--primary-main)";
+                document.getElementById('info-title').innerText = "Yarıçap Nedir?";
+                document.getElementById('info-title').style.color = "var(--primary-main)";
+                document.getElementById('info-desc').innerHTML = `Merkez ile çember üzerindeki herhangi bir noktayı birleştiren doğru parçasına <strong>yarıçap</strong> denir ve <strong>"r"</strong> harfi ile gösterilir.`;
+                noteBox.style.borderLeftColor = "#3b82f6";
+                noteBox.innerHTML = `<div class="note-icon">📏</div><div>Pergel ile çember çizilirken kolların uçları arasındaki mesafe çemberin yarıçap uzunluğuna eşittir.</div>`;
+                narrator.style.borderLeftColor = "var(--primary-soft)";
+                narrator.innerHTML = `"Pergel ile çember çizilirken, pergelin sivri ucunu merkeze (m) koyarız. Kolların uçları arasındaki mesafe çemberin <strong>yarıçapıdır!</strong> Çizimi görmek için butona tıkla."`;
+                
+                // Çizim Elemanlarını Gizle (Çapla ilgili olanlar)
+                document.getElementById('line-dia').classList.remove('show-line');
+                document.getElementById('label-R').classList.remove('show-elem');
+
+                // Buton Yönetimi
+                document.getElementById('btn-draw-dia').style.display = 'none';
+                document.getElementById('btn-row-dia').style.display = 'none';
+
+                if(!hasDrawnRadius) {
+                    document.getElementById('btn-draw-rad').style.display = 'flex';
+                    document.getElementById('btn-next-step').style.display = 'none';
+                } else {
+                    document.getElementById('btn-draw-rad').style.display = 'none';
+                    document.getElementById('btn-next-step').style.display = 'flex';
+                }
+
+            } else if(currentStep === 2) {
+                // Tema: Mavi (Çap)
+                topCard.style.borderLeftColor = "#0ea5e9";
+                speaker.style.background = "#0ea5e9";
+                document.getElementById('info-title').innerText = "Çap Nedir?";
+                document.getElementById('info-title').style.color = "#0369a1";
+                document.getElementById('info-desc').innerHTML = `Çemberin iki noktasını merkezden geçecek şekilde birleştiren doğru parçasına <strong>çap</strong> denir ve <strong>"R"</strong> harfi ile gösterilir.`;
+                noteBox.style.borderLeftColor = "#f59e0b";
+                noteBox.innerHTML = `<div class="note-icon">💡</div><div>Çemberde çap uzunluğu, yarıçap uzunluğunun <strong>iki katına</strong> eşittir <br> (R = 2r).</div>`;
+                narrator.style.borderLeftColor = "#0ea5e9";
+                narrator.innerHTML = `"Yarıçapı zıt yöne doğru uzatırsak, çemberi ikiye bölen en uzun çizgiyi elde ederiz. Buna çap diyoruz! Çapı görmek için butona tıkla."`;
+
+                // Buton Yönetimi
+                document.getElementById('btn-draw-rad').style.display = 'none';
+                document.getElementById('btn-next-step').style.display = 'none';
+
+                if(!hasDrawnDiameter) {
+                    document.getElementById('btn-draw-dia').style.display = 'flex';
+                    document.getElementById('btn-row-dia').style.display = 'none';
+                } else {
+                    document.getElementById('btn-draw-dia').style.display = 'none';
+                    document.getElementById('btn-row-dia').style.display = 'flex';
+                    document.getElementById('btn-complete').style.display = 'flex';
+                    
+                    // Zaten çizildiyse SVG'de göster
+                    document.getElementById('line-dia').classList.add('show-line');
+                    document.getElementById('label-R').classList.add('show-elem');
+                }
+            }
+        }
+
+        function startRadiusDraw() {
+            getAudioContext();
+            playSfx('click');
+            
+            document.getElementById('btn-draw-rad').style.display = 'none';
+            hasDrawnRadius = true;
+            
+            const compass = document.getElementById('compass-group');
+            const circle = document.getElementById('animated-circle');
+            
+            setTimeout(() => {
+                compass.classList.add('compass-rotate');
+                circle.classList.add('draw-anim');
+                playSfx('draw');
+
+                setTimeout(() => {
+                    compass.style.opacity = '0'; // Pergeli gizle
+                    
+                    setTimeout(() => {
+                        playSfx('draw_short');
+                        document.getElementById('line-rad').classList.add('show-line');
+                        document.getElementById('label-r').classList.add('show-elem');
+                        
+                        setTimeout(() => {
+                            document.getElementById('btn-next-step').style.display = 'flex';
+                        }, 500);
+
+                    }, 500);
+                }, 2600);
+            }, 300);
+        }
+
+        function nextToDiameter() {
+            playSfx('click');
+            currentStep = 2;
+            updateUI();
+            playCurrentAudio();
+        }
+
+        function backToRadius() {
+            playSfx('click');
+            currentStep = 1;
+            updateUI();
+            playCurrentAudio();
+        }
+
+        function startDiameterDraw() {
+            getAudioContext();
+            playSfx('click');
+            
+            document.getElementById('btn-draw-dia').style.display = 'none';
+            hasDrawnDiameter = true;
+            
+            playSfx('draw_short');
+            document.getElementById('line-dia').classList.add('show-line');
+            
+            setTimeout(() => {
+                document.getElementById('label-R').classList.add('show-elem');
+                
+                setTimeout(() => {
+                    document.getElementById('btn-row-dia').style.display = 'flex';
+                    document.getElementById('btn-complete').style.display = 'flex';
+                }, 500);
+            }, 800);
+        }
+
+        function completeModule() {
+            if(isCompleted) return;
+            isCompleted = true;
+            playSfx('success');
+
+            const btn = document.getElementById('btn-complete');
+            btn.classList.add('done');
+            btn.innerHTML = 'TAMAMLANDI ✓';
+
+            showToast("Konu anlatımı başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+            
+            setVar('w7', true);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        }
+
+        function setVar(n, v) { 
+            try { parent.GetPlayer().SetVar(n, v); console.log(`Storyline Variable Set: ${n} = ${v}`); } 
+            catch(e) { console.log(`(Local) Storyline Variable: ${n} = ${v}`); } 
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { 
+            window.dispatchEvent(new Event('resize')); 
+            init(); 
+        };
+    </script>
+</body>
+</html>
+```

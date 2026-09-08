@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Çokgenlerin Özellikleri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --cyan-accent: #0ea5e9;
+            --pink-accent: #ec4899;
+            --orange-accent: #f97316;
+            --green-accent: #4ade80;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 70px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+
+        .instruction-text-main { 
+            font-size: 18px; line-height: 1.4; font-weight: 900; 
+            color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;
+        }
+        
+        .logo-right-container { 
+            width: 70px; height: 70px; display: flex; justify-content: center; 
+            align-items: flex-start; flex-shrink: 0; margin-top: -10px; 
+        }
+
+        .content-wrapper {
+            display: flex; flex-direction: row; flex: 1; padding: 5px 30px 15px 30px; gap: 20px;
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        /* --- SOL PANEL (GÖRSEL) --- */
+        .left-panel {
+            flex: 0.85; background: white; border: 2px solid #e2e8f0; border-radius: 16px;
+            display: flex; justify-content: center; align-items: center; padding: 10px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.02); overflow: hidden;
+            background-image: linear-gradient(#f1f5f9 1px, transparent 1px), linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 20px 20px; background-position: center;
+        }
+
+        .math-svg { width: 100%; height: 100%; max-height: 100%; }
+
+        /* --- SAĞ PANEL (MADDELER) --- */
+        .right-panel {
+            flex: 1.15; display: flex; flex-direction: column; gap: 8px; justify-content: center;
+        }
+
+        .instruction-group {
+            display: flex; align-items: flex-start; gap: 12px; width: 100%;
+            background: white; border-radius: 12px; padding: 8px 12px;
+            border-left: 4px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s;
+        }
+
+        .instruction-group.active-item {
+            background-color: #eff6ff; border-left: 6px solid var(--primary-red); transform: translateX(5px);
+        }
+
+        .narrator-speaker {
+            width: 28px; height: 28px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer; transition: transform 0.2s;
+            margin-top: 2px;
+        }
+
+        .narrator-speaker:hover { transform: scale(1.1); }
+
+        @keyframes pulsePlaySmall {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.6); }
+            70% { box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .instruction-text-sub {
+            font-size: 13.5px; line-height: 1.4; font-weight: 600; color: var(--text-dark);
+        }
+        .instruction-text-sub strong {
+            color: var(--cyan-accent); font-weight: 800;
+        }
+
+        /* --- ALT PANEL VE BUTON --- */
+        .bottom-panel {
+            position: absolute; bottom: 20px; right: 40px;
+            display: flex; justify-content: flex-end; align-items: center; z-index: 50;
+        }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 180px; height: 45px;
+            font-size: 14px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;
+            opacity: 0; pointer-events: none; transform: translateY(15px);
+        }
+
+        .btn-action.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+
+        /* AÇI ŞAPKASI (MATEMATİKSEL GÖSTERİM) */
+        .angle-notation {
+            position: relative;
+            display: inline-block;
+            line-height: 1;
+            margin: 0 1px;
+        }
+        .angle-hat {
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+            height: 8px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 7 Farklı Ses Dosyası (Başlık + 6 Madde) -->
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+    <audio id="ses2" src="ses2.mp3" preload="auto"></audio>
+    <audio id="ses3" src="ses3.mp3" preload="auto"></audio>
+    <audio id="ses4" src="ses4.mp3" preload="auto"></audio>
+    <audio id="ses5" src="ses5.mp3" preload="auto"></audio>
+    <audio id="ses6" src="ses6.mp3" preload="auto"></audio>
+    <audio id="ses7" src="ses7.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <header class="header">
+            <div class="header-left">
+                <!-- Başlık Ses Butonu -->
+                <div id="btn-ses1" class="narrator-speaker" style="width: 36px; height: 36px; margin-top: 0;" onclick="playSectionAudio('ses1', 'btn-ses1')">
+                    <svg class="w-5 h-5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text-main" style="cursor: pointer;" onclick="playSectionAudio('ses1', 'btn-ses1')">ÇOKGENLERİN TEMEL ELEMANLARI</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- SOL PANEL: ÇİZİM -->
+            <div class="left-panel">
+                <svg class="math-svg" viewBox="20 40 330 290" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                        </marker>
+                        <marker id="arrow-cyan" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--cyan-accent)"/>
+                        </marker>
+                    </defs>
+
+                    <!-- Altıgenin Kenarları ve Uzantısı -->
+                    <!-- D, E, F, A, B, C noktaları -->
+                    <g stroke="var(--cyan-accent)" stroke-width="3" fill="none">
+                        <!-- AB uzantısı G'ye kadar -->
+                        <line x1="115" y1="270" x2="330" y2="270" marker-end="url(#arrow-cyan)"/>
+                        <!-- Diğer Kenarlar -->
+                        <polyline points="235,270 295,166 235,62 115,62 55,166 115,270" />
+                    </g>
+
+                    <!-- Köşegenler -->
+                    <!-- FD (Yeşil) -->
+                    <line x1="55" y1="166" x2="235" y2="62" stroke="var(--green-accent)" stroke-width="2.5" />
+                    <!-- FC (Pembe) -->
+                    <line x1="55" y1="166" x2="295" y2="166" stroke="var(--pink-accent)" stroke-width="2.5" />
+
+                    <!-- İç ve Dış Açılar B Noktasında -->
+                    <g fill="var(--orange-accent)">
+                        <path d="M 215 270 A 20 20 0 0 1 245 252.6 L 235 270 Z"/>
+                    </g>
+                    <g fill="var(--pink-accent)">
+                        <path d="M 245 252.6 A 20 20 0 0 1 255 270 L 235 270 Z"/>
+                    </g>
+
+                    <!-- Noktalar -->
+                    <g fill="#1E293B">
+                        <circle cx="320" cy="270" r="3"/> <!-- G noktası -->
+                    </g>
+
+                    <!-- Harfler -->
+                    <g font-family="Montserrat" font-size="14" font-weight="900" fill="#1E293B">
+                        <text x="105" y="295">A</text>
+                        <text x="230" y="295">B</text>
+                        <text x="303" y="170">C</text>
+                        <text x="230" y="52">D</text>
+                        <text x="105" y="52">E</text>
+                        <text x="40" y="170">F</text>
+                        <text x="315" y="295">G</text>
+                    </g>
+
+                    <!-- Etiketler ve Oklar -->
+                    <g font-family="Montserrat" font-size="13" font-weight="700" fill="#1E293B">
+                        <!-- köşe (F'ye bakan ok) -->
+                        <text x="25" y="200">köşe</text>
+                        <line x1="40" y1="185" x2="50" y2="175" stroke="#1E293B" stroke-width="1.5" marker-end="url(#arrow)"/>
+                        
+                        <!-- kenar -->
+                        <text x="275" y="105">kenar</text>
+
+                        <!-- Köşegen -->
+                        <text x="150" y="150">Köşegen</text>
+                        <path d="M 175 140 Q 200 120 215 95" stroke="#1E293B" stroke-width="1.5" stroke-dasharray="4" fill="none" marker-end="url(#arrow)"/>
+                        <path d="M 190 155 Q 210 160 220 165" stroke="#1E293B" stroke-width="1.5" stroke-dasharray="4" fill="none" marker-end="url(#arrow)"/>
+
+                        <!-- iç açı / dış açı -->
+                        <text x="160" y="260">iç açı</text>
+                        <text x="265" y="260">dış açı</text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- SAĞ PANEL: MADDELER -->
+            <div class="right-panel">
+                
+                <!-- Madde 1 -->
+                <div id="item-ses2" class="instruction-group">
+                    <div id="btn-ses2" class="narrator-speaker" onclick="playSectionAudio('ses2', 'btn-ses2', 'item-ses2')">
+                        <svg class="w-3.5 h-3.5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="instruction-text-sub" onclick="playSectionAudio('ses2', 'btn-ses2', 'item-ses2')" style="cursor: pointer;">
+                        Kenarların birleştiği noktalara <strong>köşe</strong> denir. A, B, C, D, E ve F noktaları çokgenin köşeleridir.
+                    </div>
+                </div>
+
+                <!-- Madde 2 -->
+                <div id="item-ses3" class="instruction-group">
+                    <div id="btn-ses3" class="narrator-speaker" onclick="playSectionAudio('ses3', 'btn-ses3', 'item-ses3')">
+                        <svg class="w-3.5 h-3.5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="instruction-text-sub" onclick="playSectionAudio('ses3', 'btn-ses3', 'item-ses3')" style="cursor: pointer;">
+                        Çokgenler isimlendirilirken ardışık köşe noktaları sırasıyla okunur. Yandaki şekli <strong>ABCDEF altıgeni</strong> olarak isimlendirebiliriz. İsimlendirmede hangi köşeden başlandığının önemi yoktur.
+                    </div>
+                </div>
+
+                <!-- Madde 3 -->
+                <div id="item-ses4" class="instruction-group">
+                    <div id="btn-ses4" class="narrator-speaker" onclick="playSectionAudio('ses4', 'btn-ses4', 'item-ses4')">
+                        <svg class="w-3.5 h-3.5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="instruction-text-sub" onclick="playSectionAudio('ses4', 'btn-ses4', 'item-ses4')" style="cursor: pointer;">
+                        Çokgenlerde komşu olmayan herhangi iki köşeyi birleştiren doğru parçasına <strong>köşegen</strong> denir. [FD], [FC] çokgenin köşegenlerinden bazılarıdır.
+                    </div>
+                </div>
+
+                <!-- Madde 4 -->
+                <div id="item-ses5" class="instruction-group">
+                    <div id="btn-ses5" class="narrator-speaker" onclick="playSectionAudio('ses5', 'btn-ses5', 'item-ses5')">
+                        <svg class="w-3.5 h-3.5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="instruction-text-sub" onclick="playSectionAudio('ses5', 'btn-ses5', 'item-ses5')" style="cursor: pointer;">
+                        Komşu iki kenarın oluşturduğu ve çokgenin içinde kalan açıya <strong>iç açı</strong> denir.
+                    </div>
+                </div>
+
+                <!-- Madde 5 -->
+                <div id="item-ses6" class="instruction-group">
+                    <div id="btn-ses6" class="narrator-speaker" onclick="playSectionAudio('ses6', 'btn-ses6', 'item-ses6')">
+                        <svg class="w-3.5 h-3.5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="instruction-text-sub" onclick="playSectionAudio('ses6', 'btn-ses6', 'item-ses6')" style="cursor: pointer;">
+                        İç açının komşu bütünleyenine <strong>dış açı</strong> denir.
+                    </div>
+                </div>
+
+                <!-- Madde 6 (Matematiksel açı notasyonları eklendi) -->
+                <div id="item-ses7" class="instruction-group">
+                    <div id="btn-ses7" class="narrator-speaker" onclick="playSectionAudio('ses7', 'btn-ses7', 'item-ses7')">
+                        <svg class="w-3.5 h-3.5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="instruction-text-sub" onclick="playSectionAudio('ses7', 'btn-ses7', 'item-ses7')" style="cursor: pointer;">
+                        Çokgenin herhangi bir köşesindeki iç açı ile dış açının ölçüleri toplamı 180°'dir. <br>
+                        <strong>
+                            m(<span class="angle-notation"><svg class="angle-hat" viewBox="0 0 22 8"><polyline points="1,7 11,1 21,7"/></svg>ABC</span>) + 
+                            m(<span class="angle-notation"><svg class="angle-hat" viewBox="0 0 22 8"><polyline points="1,7 11,1 21,7"/></svg>CBG</span>) = 180°
+                        </strong>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+        
+        <!-- ALT PANEL: BUTON -->
+        <div class="bottom-panel">
+            <button id="btn-next" class="btn-action" onclick="completeTopic()">
+                TAMAMLA ✓
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        let currentPlayingId = null;
+
+        const allAudioIds = ['ses1', 'ses2', 'ses3', 'ses4', 'ses5', 'ses6', 'ses7'];
+        const allBtnIds = ['btn-ses1', 'btn-ses2', 'btn-ses3', 'btn-ses4', 'btn-ses5', 'btn-ses6', 'btn-ses7'];
+        const allItemIds = [null, 'item-ses2', 'item-ses3', 'item-ses4', 'item-ses5', 'item-ses6', 'item-ses7'];
+
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        function clearActiveStyles() {
+            allItemIds.forEach(id => {
+                if (id) {
+                    let el = document.getElementById(id);
+                    if (el) el.classList.remove('active-item');
+                }
+            });
+        }
+
+        // Bireysel ve Zincirleme Çalma
+        function playSectionAudio(audioId, btnId, itemId = null) {
+            let targetAudio = document.getElementById(audioId);
+            let targetBtn = document.getElementById(btnId);
+            let targetItem = itemId ? document.getElementById(itemId) : null;
+
+            if (!targetAudio) return;
+
+            // Eğer aynı ses çalıyorsa durdur
+            if (currentPlayingId === audioId && !targetAudio.paused) {
+                targetAudio.pause();
+                if(targetBtn) targetBtn.style.animation = 'none';
+                if(targetItem) targetItem.classList.remove('active-item');
+                currentPlayingId = null;
+                isAudioPlaying = false;
+                return;
+            }
+
+            // Diğer tüm sesleri durdur
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                let b = document.getElementById(allBtnIds[index]);
+                if (a) { a.pause(); a.currentTime = 0; }
+                if (b) b.style.animation = 'none';
+            });
+            clearActiveStyles();
+
+            let playPromise = targetAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    currentPlayingId = audioId;
+                    if(targetBtn) targetBtn.style.animation = 'pulsePlaySmall 1.5s infinite';
+                    if(targetItem) targetItem.classList.add('active-item');
+                    isAudioPlaying = true;
+                }).catch(e => console.log("Otomatik oynatma engellendi."));
+            }
+            
+            targetAudio.onended = () => {
+                if(targetBtn) targetBtn.style.animation = 'none';
+                if(targetItem) targetItem.classList.remove('active-item');
+                currentPlayingId = null;
+                isAudioPlaying = false;
+                
+                // Sıradaki sesi otomatik başlat
+                let nextIdx = allAudioIds.indexOf(audioId) + 1;
+                if(nextIdx < allAudioIds.length) {
+                    setTimeout(() => {
+                        playSectionAudio(allAudioIds[nextIdx], allBtnIds[nextIdx], allItemIds[nextIdx]);
+                    }, 600); 
+                } else {
+                    // Son ses (ses7) bittiğinde İleri butonunu göster
+                    document.getElementById('btn-next').classList.add('show-btn');
+                }
+            };
+        }
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            playSectionAudio('ses1', 'btn-ses1');
+            window.removeEventListener('click', forceAutoplay);
+            window.removeEventListener('touchstart', forceAutoplay);
+        }
+        
+        function init() {
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+            
+            // Güvenlik: Ses sorunu olursa buton 15 saniye sonra kendiliğinden açılsın
+            setTimeout(() => { document.getElementById('btn-next').classList.add('show-btn'); }, 15000);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function completeTopic() {
+            // Çalan sesi durdur
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                if (a) { a.pause(); }
+            });
+            clearActiveStyles();
+            playSfx('success');
+            
+            const btn = document.getElementById('btn-next');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            // w31 değişkenini tetikle
+            setVar('w31', true);
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => { init(); };
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        window.addEventListener('resize', applyScale);
+
+    </script>
+</body>
+</html>

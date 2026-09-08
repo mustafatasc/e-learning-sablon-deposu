@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Madde ve Isı Kavram Haritası</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #F8FAFC;
+            --grid-line: rgba(22, 163, 74, 0.08); /* Fen teması YEŞİL grid */
+            
+            --primary-main: #16A34A; /* Green 600 */
+            --primary-dark: #14532D; /* Green 900 */
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #030712; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-main);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 30px 0 30px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; flex: 1;
+            background: white; border-radius: 12px; padding: 10px 20px;
+            border-left: 5px solid var(--primary-main);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0;
+        }
+
+        .instruction-text-main { 
+            font-size: 13px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px;}
+
+        /* --- KAVRAM HARİTASI ALANI (DİNAMİK YERLEŞİM) --- */
+        .content-wrapper {
+            flex: 1; position: relative; padding: 5px 20px 10px 20px; display: flex; flex-direction: column;
+        }
+
+        /* Merkezdeki örtüşmeyi gidermek için 12 hücreye tam oturtma */
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 Sütun */
+            grid-template-rows: repeat(3, 1fr);    /* 3 Satır */
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Nodes */
+        .node {
+            background: white; border: 2.5px solid #E2E8F0; border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center; overflow: hidden; padding: 0;
+        }
+
+        .node:hover:not(.revealed) {
+            transform: scale(1.03); border-color: var(--primary-main);
+        }
+
+        .node-title {
+            font-size: 11.5px; font-weight: 900; color: #475569; padding: 8px 5px; width: 100%;
+            transition: color 0.3s; line-height: 1.2;
+        }
+        
+        .node-content {
+            font-size: 10.5px; font-weight: 700; color: transparent; padding: 0 8px 8px 8px; height: 0; opacity: 0;
+            transition: all 0.3s ease; display: flex; align-items: flex-start; justify-content: center; line-height: 1.3;
+        }
+
+        /* Revealed State */
+        .node.revealed {
+            cursor: default; border-color: transparent;
+        }
+        .node.revealed .node-title {
+            color: white; border-bottom: 1px solid rgba(255,255,255,0.3); padding-top: 6px; padding-bottom: 4px; margin-bottom: 4px; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+        .node.revealed .node-content {
+            color: white; height: auto; opacity: 1; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+
+        /* --- ÖZEL KUTU RENKLERİ VE YERLEŞİM (Üst Üste Binmeyi Önleme) --- */
+        
+        /* Merkez Kutusu Düzeni */
+        #n-merkez { grid-column: 2; grid-row: 2; align-self: stretch; justify-self: stretch; justify-content: center; margin: 0;}
+        #n-merkez.revealed { background-color: #EAB308; }
+        #n-merkez .node-title { font-size: 14px; border-bottom: none; }
+        #n-merkez.revealed .node-title { color: #1E293B; text-shadow: none; border-bottom: 1px solid rgba(0,0,0,0.15); }
+        #n-merkez.revealed .node-content { color: #1E293B; text-shadow: none; font-size: 11px; }
+
+        /* Isı İletkeni (Sol Üst Köşe) */
+        #n-il-tan { grid-column: 1; grid-row: 1; }
+        #n-il-tan.revealed { background-color: #EF4444; } /* Kırmızı */
+        
+        #n-il-orn { grid-column: 2; grid-row: 1; }
+        #n-il-orn.revealed { background-color: #F97316; } /* Turuncu */
+        
+        #n-il-yas { grid-column: 3; grid-row: 1; }
+        #n-il-yas.revealed { background-color: #EA580C; } /* Koyu Turuncu */
+
+        /* Isı Yalıtımı (Sağ Sütun) */
+        #n-ya-tan { grid-column: 4; grid-row: 1; }
+        #n-ya-tan.revealed { background-color: #22C55E; } /* Yeşil */
+
+        #n-ya-fay { grid-column: 4; grid-row: 2; }
+        #n-ya-fay.revealed { background-color: #86EFAC; color: #064E3B;} /* Açık Yeşil */
+        #n-ya-fay.revealed .node-title { color: #064E3B; text-shadow: none; border-bottom-color: rgba(0,0,0,0.1); }
+        #n-ya-fay.revealed .node-content { color: #064E3B; text-shadow: none; }
+        
+        #n-ya-mal { grid-column: 4; grid-row: 3; }
+        #n-ya-mal.revealed { background-color: #15803D; } /* Koyu Yeşil */
+
+        /* Isı Yalıtkanı (Sol Sütun & Orta Alt) */
+        #n-yt-tan { grid-column: 1; grid-row: 2; }
+        #n-yt-tan.revealed { background-color: #2563EB; } /* Mavi */
+        
+        #n-yt-orn { grid-column: 1; grid-row: 3; }
+        #n-yt-orn.revealed { background-color: #38BDF8; color: #0F172A;} /* Açık Mavi */
+        #n-yt-orn.revealed .node-title { color: #0F172A; text-shadow: none; border-bottom-color: rgba(0,0,0,0.1); }
+        #n-yt-orn.revealed .node-content { color: #0F172A; text-shadow: none; }
+        
+        #n-yt-yas { grid-column: 2; grid-row: 3; }
+        #n-yt-yas.revealed { background-color: #67E8F9; color: #0F172A;} /* Gök Mavisi */
+        #n-yt-yas.revealed .node-title { color: #0F172A; text-shadow: none; border-bottom-color: rgba(0,0,0,0.1); }
+        #n-yt-yas.revealed .node-content { color: #0F172A; text-shadow: none; }
+
+        /* Tanecik ve Termos (Kalan Boşluklar) */
+        #n-termos { grid-column: 3; grid-row: 2; } 
+        #n-termos.revealed { background-color: #A855F7; } /* Mor */
+
+        #n-tanecik { grid-column: 3; grid-row: 3; }
+        #n-tanecik.revealed { background-color: #EC4899; } /* Pembe/Mor alternatifi */
+
+        /* --- ALT PANEL --- */
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; 
+            padding: 10px 40px; height: 60px; flex-shrink: 0; background: white;
+            border-top: 2px solid #E2E8F0; z-index: 20;
+        }
+
+        .btn-action {
+            background: var(--primary-main); color: white; border: none; min-width: 250px;
+            padding: 12px 24px; font-size: 15px; font-weight: 800; border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3); cursor: pointer; transition: all 0.2s;
+            display: none; letter-spacing: 1px;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(22, 163, 74, 0.4);}
+
+    </style>
+</head>
+<body>
+
+    <audio id="sfx-reveal" src="ses1.mp3" preload="auto"></audio> 
+
+    <div id="scale-container">
+
+        <header class="header">
+            <div class="instruction-group">
+                <div class="instruction-text-main">
+                    <span class="text-green-700 font-black mr-2">YÖNERGE:</span> 
+                    Ekranda bir "Madde ve Isı Dünyası" kavram haritası bulunmaktadır. Her bölgeye tıklayınız, o kavramın özellikleri ve günlük yaşam örnekleri belirir. Tüm haritayı renklendiriniz!
+                </div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            <div class="map-grid">
+
+                <!-- 1. ISI İLETKENİ GRUBU -->
+                <div class="node" id="n-il-tan" onclick="revealNode('n-il-tan')">
+                    <div class="node-title">ISI İLETKENİ - Tanım</div>
+                    <div class="node-content">Isıyı hızlı ve iyi ileten madde. Metaller bu gruba girer.</div>
+                </div>
+                <div class="node" id="n-il-orn" onclick="revealNode('n-il-orn')">
+                    <div class="node-title">ISI İLETKENİ - Örnekler</div>
+                    <div class="node-content">Demir • Bakır • Alüminyum • Altın • Gümüş • Çelik</div>
+                </div>
+                <div class="node" id="n-il-yas" onclick="revealNode('n-il-yas')">
+                    <div class="node-title">ISI İLETKENİ - Yaşam</div>
+                    <div class="node-content">Tencere tabanı (demir) • Çaydanlık gövdesi (çelik) • Ütü tabanı (metal)</div>
+                </div>
+
+                <!-- 2. ISI YALITIMI GRUBU -->
+                <div class="node" id="n-ya-tan" onclick="revealNode('n-ya-tan')">
+                    <div class="node-title">ISI YALITIMI - Tanım</div>
+                    <div class="node-content">İki madde arasındaki ısı akışını azaltmak için alınan önlemlerin tümü.</div>
+                </div>
+                <div class="node" id="n-ya-fay" onclick="revealNode('n-ya-fay')">
+                    <div class="node-title">ISI YALITIMI - Faydaları</div>
+                    <div class="node-content">Enerji tasarrufu • Isınma giderleri azalır • Çevre korunur • Bina ömrü uzar.</div>
+                </div>
+                <div class="node" id="n-ya-mal" onclick="revealNode('n-ya-mal')">
+                    <div class="node-title">ISI YALITIMI - Malzeme</div>
+                    <div class="node-content">Cam yünü (zor yanar) • Taş yünü (yanmaz) • Katran (çatı) • Plastik köpük.</div>
+                </div>
+
+                <!-- 3. ISI YALITKANI GRUBU -->
+                <div class="node" id="n-yt-tan" onclick="revealNode('n-yt-tan')">
+                    <div class="node-title">ISI YALITKANI - Tanım</div>
+                    <div class="node-content">Isıyı yavaş veya çok az ileten maddedir.</div>
+                </div>
+                <div class="node" id="n-yt-orn" onclick="revealNode('n-yt-orn')">
+                    <div class="node-title">ISI YALITKANI - Örnek</div>
+                    <div class="node-content">Yün • Plastik • Tahta • Saman • Pamuk • Elyaf • Cam Yünü</div>
+                </div>
+                <div class="node" id="n-yt-yas" onclick="revealNode('n-yt-yas')">
+                    <div class="node-title">ISI YALITKANI - Yaşam</div>
+                    <div class="node-content">Tava/Ütü/çaydanlık sapı (plastik) • Yün kazak • Termos dış yüzeyi</div>
+                </div>
+
+                <!-- 4. DİĞER KAVRAMLAR -->
+                <div class="node" id="n-termos" onclick="revealNode('n-termos')">
+                    <div class="node-title">GÜNLÜK YAŞAM - TERMOS</div>
+                    <div class="node-content">Vakumlu bölme sayesinde ısı aktarımı minimuma iner; içecek uzun süre sıcak kalır.</div>
+                </div>
+                <div class="node" id="n-tanecik" onclick="revealNode('n-tanecik')">
+                    <div class="node-title">TANECİK HAREKETİ</div>
+                    <div class="node-content">Madde ısı alınca hareket hızı artar; ısı verince hareket hızı azalır.</div>
+                </div>
+
+                <!-- 5. MERKEZ -->
+                <div class="node" id="n-merkez" onclick="revealNode('n-merkez')">
+                    <div class="node-title">MADDE VE ISI (MERKEZ)</div>
+                    <div class="node-content">Maddeleri ısı iletimi bakımından sınıflandırabilme ve yalıtım modeli oluşturabilme.</div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="bottom-panel">
+            <button id="btn-complete" class="btn-action" onclick="finishActivity()">
+                TAMAMLA VE İLERLE ➜
+            </button>
+        </footer>
+
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playPopSound() {
+            try {
+                const ctx = getAudioContext(); 
+                const osc = ctx.createOscillator(); 
+                const gain = ctx.createGain(); 
+                osc.connect(gain); 
+                gain.connect(ctx.destination);
+                osc.type = 'sine'; 
+                osc.frequency.setValueAtTime(400, ctx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.1); 
+                gain.gain.setValueAtTime(0.1, ctx.currentTime); 
+                gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.1); 
+                osc.start(); 
+                osc.stop(ctx.currentTime + 0.1);
+            } catch(e){}
+        }
+
+        function playSuccessSound() {
+            try {
+                const ctx = getAudioContext(); 
+                const osc = ctx.createOscillator(); 
+                const gain = ctx.createGain(); 
+                osc.connect(gain); 
+                gain.connect(ctx.destination);
+                osc.type = 'triangle'; 
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); 
+                gain.gain.setValueAtTime(0.1, ctx.currentTime); 
+                gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.3); 
+                osc.start(); 
+                osc.stop(ctx.currentTime + 0.3);
+            } catch(e){}
+        }
+
+        const totalNodes = 12;
+        let revealedNodes = 0;
+        let isAllRevealed = false;
+        let isActivityFinished = false;
+
+        function revealNode(nodeId) {
+            const node = document.getElementById(nodeId);
+            if (node.classList.contains('revealed')) return;
+
+            playPopSound();
+            node.classList.add('revealed');
+            revealedNodes++;
+
+            checkCompletion();
+        }
+
+        function checkCompletion() {
+            if (revealedNodes === totalNodes && !isAllRevealed) {
+                isAllRevealed = true;
+                
+                // Animasyonların bitmesini bekle ve doğrudan butonu göster, başarı sesini çal
+                setTimeout(() => {
+                    playSuccessSound();
+                    const btn = document.getElementById('btn-complete');
+                    btn.style.display = 'block';
+                    
+                    // Butonun yanıp sönerek dikkat çekmesini sağlayalım
+                    btn.style.animation = "pulseBtn 1.5s infinite";
+                }, 500); 
+            }
+        }
+
+        function finishActivity() {
+            if (isActivityFinished) return;
+            isActivityFinished = true;
+            
+            const btn = document.getElementById('btn-complete');
+            btn.innerText = "TAMAMLANDI ✓";
+            btn.style.backgroundColor = "var(--success-green)";
+            btn.style.pointerEvents = "none";
+            btn.style.animation = "none"; // Yanıp sönmeyi durdur
+            
+            setVar('c17', true); // Storyline değişkenini tetikle
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        window.addEventListener('resize', applyScale);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            applyScale(); 
+            // İlk açılışta Merkez düğümü otomatik aç
+            setTimeout(() => {
+                revealNode('n-merkez');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

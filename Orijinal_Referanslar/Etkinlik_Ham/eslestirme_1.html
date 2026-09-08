@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kenarlarına Göre Üçgenler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            /* Matematik Teması Renkleri */
+            --cream-bg: #FCF9F2;
+            --paper-grid: rgba(185, 28, 28, 0.08); /* Kırmızı Grid */
+            
+            --primary-main: #B91C1C; /* Kırmızı */
+            --primary-dark: #7F1D1D; /* Koyu Kırmızı */
+            --primary-soft: #FEF2F2; /* Açık Kırmızı / Pembe */
+            --warm-grey: #1E293B;
+            --drop-bg: #F8FAFC;
+            
+            /* Başarı / Hata Renkleri */
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--warm-grey);
+            user-select: none; -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--cream-bg); 
+            background-image: linear-gradient(var(--paper-grid) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--paper-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-top: 6px solid var(--primary-main);
+        }
+
+        /* Arka Plan Süsleri */
+        #scale-container::before {
+            content: ''; position: absolute; top: -20%; left: -20%; width: 150%; height: 150%;
+            background: radial-gradient(circle, rgba(185, 28, 28, 0.1) 0%, transparent 60%);
+            z-index: 0; pointer-events: none;
+        }
+
+        /* HEADER DÜZENLENDİ: Logo alanı büyütüldü */
+        .header {
+            padding: 15px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; flex: 1;
+            background: white; border-radius: 12px; padding: 10px 20px;
+            border-left: 5px solid var(--primary-main);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0;
+        }
+
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--primary-main); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .instruction-text-main { 
+            font-size: 13.5px; line-height: 1.3; font-weight: 700; color: var(--primary-dark);
+        }
+
+        /* LOGO BOYUTU STANDARDİZASYONU */
+        .logo-right-container { 
+            width: 85px; height: 85px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; 
+        }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 5px 30px; gap: 8px; 
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        .triangles-area {
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            grid-template-rows: repeat(2, 1fr); 
+            gap: 10px; flex: 1; min-height: 0;
+        }
+
+        /* Alt satırdaki 4 öğeyi ortala */
+        .tri-box:nth-child(6) { grid-column: 1; }
+        .tri-box:nth-child(7) { grid-column: 2; }
+        .tri-box:nth-child(8) { grid-column: 3; }
+        .tri-box:nth-child(9) { grid-column: 4; }
+
+        .tri-box {
+            background: white; border-radius: 12px; border: 2px solid #E2E8F0;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            position: relative; padding-bottom: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            background-image: linear-gradient(#f1f5f9 1px, transparent 1px), linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 15px 15px; background-position: center; min-height: 0; 
+            cursor: zoom-in;
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden; /* SVG TAŞMALARINI ÖNLEMEK İÇİN EKLENDİ */
+        }
+        
+        .tri-box:hover { border-color: var(--primary-main); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(185, 28, 28, 0.05); }
+
+        .zoom-hint-icon {
+            position: absolute; top: 4px; right: 4px; color: #94A3B8; opacity: 0.8; pointer-events: none;
+            background: white; border-radius: 50%; padding: 2px; z-index: 5; width: 18px; height: 18px;
+        }
+
+        .tri-svg-container {
+            flex: 1; width: 100%; display: flex; align-items: center; justify-content: center;
+            padding: 5px; min-height: 0; pointer-events: none; /* İçeriğe tıklanmasını engelle */
+        }
+        
+        /* ÖLÇEKLENDİRME DÜZELTİLDİ: scale(1.15) yerine %100 ve viewBox kullanımı */
+        .math-svg { width: 100%; height: 100%; object-fit: contain; }
+        .poly-shape { fill: #f0fdf4; stroke: #14532D; stroke-width: 3; stroke-linejoin: round;}
+        .svg-text { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; fill: #1E293B; user-select: none; }
+
+        .num-slot {
+            width: 32px; height: 32px; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 2px; z-index: 20; flex-shrink: 0;
+        }
+
+        .num-ghost {
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 900; color: #CBD5E1; 
+            border: 2px dashed #CBD5E1; border-radius: 8px; background: #F8FAFC; z-index: 1;
+        }
+
+        .num-token {
+            width: 32px; height: 32px; background: white; 
+            border: 2.5px solid #2563EB; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 900; color: #2563EB;
+            cursor: grab; transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: absolute; left: 0; top: 0;
+            touch-action: none; z-index: 100;
+        }
+
+        .num-token:active { cursor: grabbing; transform: scale(1.15); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .num-token.dragging { opacity: 0.95; z-index: 9999; position: absolute; pointer-events: none; margin:0;}
+        
+        .drop-zone .num-token { position: relative; margin: 3px; }
+        
+        .num-token.locked { pointer-events: none; border-color: var(--success-green); color: #065f46; background-color: #ecfdf5;}
+        .num-token.error-shake { border-color: var(--error-red); color: #991b1b; background-color: #fef2f2; animation: shake 0.4s ease-in-out; }
+
+        .drop-zones-area {
+            display: flex; gap: 15px; height: 110px; flex-shrink: 0; margin-top: 5px;
+        }
+
+        .drop-zone-wrapper {
+            flex: 1; display: flex; flex-direction: column;
+            background: white; border-radius: 12px; overflow: hidden;
+            border: 3px solid #E2E8F0; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            transition: all 0.2s;
+        }
+        .drop-zone-wrapper.drag-over { border-color: var(--primary-main); transform: scale(1.02); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.15);}
+
+        .drop-header {
+            background: #F1F5F9; padding: 6px; text-align: center;
+            font-size: 14px; font-weight: 800; color: var(--primary-dark); border-bottom: 2px solid #E2E8F0;
+        }
+
+        .drop-zone {
+            flex: 1; padding: 8px; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 5px;
+            background: var(--drop-bg); min-height: 0; overflow-y: auto;
+        }
+
+        .bottom-panel { display: flex; justify-content: space-between; align-items: center; height: 42px; flex-shrink: 0; margin-top: 5px; }
+
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 6px 15px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-main); color: white; min-width: 220px; height: 40px;
+            font-size: 14px; font-weight: 800; border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px; padding: 0 25px; margin-left: auto;
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action:disabled { background: #94A3B8; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* --- LIGHTBOX (BÜYÜTME) --- */
+        #lightbox-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85); z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+        #lightbox-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        #lightbox-content {
+            width: 70%; height: 70%; background: white; border-radius: 24px;
+            padding: 30px; position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background-image: linear-gradient(#f1f5f9 2px, transparent 2px), linear-gradient(90deg, #f1f5f9 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+        #lightbox-overlay.active #lightbox-content { transform: scale(1); }
+
+        /* ÇARPIYA TIKLANMAMASINI ÖNLEYEN KOD: pointer-events:none eklendi */
+        #lightbox-svg-target {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none;
+        }
+        
+        /* Büyüteçte daha büyük görünmesi için */
+        #lightbox-svg-target .math-svg {
+            transform: scale(1.3);
+        }
+        
+        .close-btn {
+            position: absolute; top: 15px; right: 20px; font-size: 36px; font-weight: 900;
+            color: #94A3B8; cursor: pointer; transition: color 0.2s; line-height: 1; z-index: 100;
+            pointer-events: auto; /* Tıklanabilir olmasını garantile */
+        }
+        .close-btn:hover { color: var(--error-red); }
+
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px; padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999; color: white; pointer-events: none;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-warning { background-color: var(--warning-orange) !important; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <!-- LIGHTBOX ARAYÜZÜ -->
+        <div id="lightbox-overlay" onclick="handleOverlayClick(event)">
+            <div id="lightbox-content">
+                <div class="close-btn" onclick="closeLightbox()">&times;</div>
+                <div id="lightbox-svg-target"></div>
+            </div>
+        </div>
+
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text-main">
+                    Aşağıda kenar uzunlukları verilen üçgenlerin numaralarını uygun bölmeye sürükleyerek sınıflandırınız.<br>
+                    <span style="color:var(--primary-main); font-weight: 800; font-size: 11px;">🔍 BÜYÜTMEK İÇİN ÜÇGENLERİN ÜZERİNE TIKLAYINIZ.</span>
+                </div>
+            </div>
+            <!-- LOGO BURADA -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="triangles-area" id="source-zone">
+                
+                <!-- 1: Eşkenar (7, 7, 7) -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="75,30 20,120 130,120" class="poly-shape"/>
+                            <text x="35" y="70" class="svg-text" text-anchor="end">7 cm</text>
+                            <text x="115" y="70" class="svg-text" text-anchor="start">7 cm</text>
+                            <text x="75" y="140" class="svg-text" text-anchor="middle">7 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-1">
+                        <div class="num-ghost">1</div>
+                        <div class="num-token source-token" data-type="eskenar" data-val="1">1</div>
+                    </div>
+                </div>
+
+                <!-- 2: Çeşitkenar (3, 4, 5) -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="40,30 40,110 110,110" class="poly-shape"/>
+                            <text x="35" y="75" class="svg-text" text-anchor="end">3 cm</text>
+                            <text x="85" y="65" class="svg-text" text-anchor="start">5 cm</text>
+                            <text x="75" y="130" class="svg-text" text-anchor="middle">4 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-2">
+                        <div class="num-ghost">2</div>
+                        <div class="num-token source-token" data-type="cesitkenar" data-val="2">2</div>
+                    </div>
+                </div>
+
+                <!-- 3: İkizkenar (3, 8, 8) -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="80,10 20,60 130,130" class="poly-shape"/>
+                            <text x="40" y="30" class="svg-text" text-anchor="end">3 cm</text>
+                            <text x="110" y="60" class="svg-text" text-anchor="start">8 cm</text>
+                            <text x="60" y="110" class="svg-text" text-anchor="end">8 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-3">
+                        <div class="num-ghost">3</div>
+                        <div class="num-token source-token" data-type="ikizkenar" data-val="3">3</div>
+                    </div>
+                </div>
+
+                <!-- 4: Çeşitkenar (5, 12, 13) -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="80,20 30,120 80,120" class="poly-shape"/>
+                            <text x="45" y="65" class="svg-text" text-anchor="end">13 cm</text>
+                            <text x="85" y="70" class="svg-text" text-anchor="start">12 cm</text>
+                            <text x="55" y="140" class="svg-text" text-anchor="middle">5 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-4">
+                        <div class="num-ghost">4</div>
+                        <div class="num-token source-token" data-type="cesitkenar" data-val="4">4</div>
+                    </div>
+                </div>
+
+                <!-- 5: İkizkenar (4, 7, 7) -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="75,20 40,120 110,120" class="poly-shape"/>
+                            <text x="50" y="70" class="svg-text" text-anchor="end">7 cm</text>
+                            <text x="100" y="70" class="svg-text" text-anchor="start">7 cm</text>
+                            <text x="75" y="140" class="svg-text" text-anchor="middle">4 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-5">
+                        <div class="num-ghost">5</div>
+                        <div class="num-token source-token" data-type="ikizkenar" data-val="5">5</div>
+                    </div>
+                </div>
+
+                <!-- 6: Çeşitkenar (4, 10, 12) - YAZI YERİ DÜZELTİLDİ -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="20,30 140,100 80,100" class="poly-shape"/>
+                            <!-- 10 cm yazısını daha aşağıya çektik -->
+                            <text x="40" y="80" class="svg-text" text-anchor="end">10 cm</text>
+                            <text x="85" y="60" class="svg-text" text-anchor="start">12 cm</text>
+                            <text x="110" y="120" class="svg-text" text-anchor="middle">4 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-6">
+                        <div class="num-ghost">6</div>
+                        <div class="num-token source-token" data-type="cesitkenar" data-val="6">6</div>
+                    </div>
+                </div>
+
+                <!-- 7: Eşkenar (4, 4, 4) - Ters -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="20,40 130,40 75,120" class="poly-shape"/>
+                            <text x="75" y="30" class="svg-text" text-anchor="middle">4 cm</text>
+                            <text x="35" y="90" class="svg-text" text-anchor="end">4 cm</text>
+                            <text x="115" y="90" class="svg-text" text-anchor="start">4 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-7">
+                        <div class="num-ghost">7</div>
+                        <div class="num-token source-token" data-type="eskenar" data-val="7">7</div>
+                    </div>
+                </div>
+
+                <!-- 8: Çeşitkenar (9, 12, 15) -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="10,120 140,30 140,120" class="poly-shape"/>
+                            <text x="65" y="65" class="svg-text" text-anchor="end">15 cm</text>
+                            <text x="145" y="80" class="svg-text" text-anchor="start">9 cm</text>
+                            <text x="75" y="140" class="svg-text" text-anchor="middle">12 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-8">
+                        <div class="num-ghost">8</div>
+                        <div class="num-token source-token" data-type="cesitkenar" data-val="8">8</div>
+                    </div>
+                </div>
+
+                <!-- 9: İkizkenar (2, 11, 11) - Çok İnce -->
+                <div class="tri-box" onclick="openLightbox(this, event)">
+                    <svg class="zoom-hint-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                    <div class="tri-svg-container">
+                        <svg class="math-svg" viewBox="0 0 150 150" preserveAspectRatio="xMidYMid meet">
+                            <polygon points="75,20 50,120 100,120" class="poly-shape"/>
+                            <text x="50" y="70" class="svg-text" text-anchor="end">11 cm</text>
+                            <text x="100" y="70" class="svg-text" text-anchor="start">11 cm</text>
+                            <text x="75" y="140" class="svg-text" text-anchor="middle">2 cm</text>
+                        </svg>
+                    </div>
+                    <div class="num-slot" id="slot-9">
+                        <div class="num-ghost">9</div>
+                        <div class="num-token source-token" data-type="ikizkenar" data-val="9">9</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="drop-zones-area">
+                <div class="drop-zone-wrapper" id="zone-cesitkenar-wrapper">
+                    <div class="drop-header">Çeşitkenar Üçgen</div>
+                    <div class="drop-zone" id="zone-cesitkenar" data-type="cesitkenar"></div>
+                </div>
+
+                <div class="drop-zone-wrapper" id="zone-ikizkenar-wrapper">
+                    <div class="drop-header">İkizkenar Üçgen</div>
+                    <div class="drop-zone" id="zone-ikizkenar" data-type="ikizkenar"></div>
+                </div>
+
+                <div class="drop-zone-wrapper" id="zone-eskenar-wrapper">
+                    <div class="drop-header">Eşkenar Üçgen</div>
+                    <div class="drop-zone" id="zone-eskenar" data-type="eskenar"></div>
+                </div>
+            </div>
+
+            <div class="bottom-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" onclick="checkAnswers()" disabled>KONTROL ET</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const dropZones = document.querySelectorAll('.drop-zone');
+        const btnCheck = document.getElementById('btn-check');
+        const scaleContainer = document.getElementById('scale-container');
+        
+        let draggedElement = null;
+        let initialParent = null;
+        let isCompleted = false;
+        let attempts = 0;
+
+        // --- BÜYÜTME (LIGHTBOX) KODLARI ---
+        function openLightbox(el, e) {
+            // Eğer sürüklenen nesneye (num-slot) tıklanmışsa büyütme
+            if (e.target.closest('.num-slot') || e.target.closest('.num-token')) return;
+            
+            const overlay = document.getElementById('lightbox-overlay');
+            const target = document.getElementById('lightbox-svg-target');
+            const svgContainer = el.querySelector('.tri-svg-container');
+            
+            if (svgContainer) {
+                target.innerHTML = svgContainer.innerHTML;
+                overlay.classList.add('active');
+                playSfx('click');
+            }
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox-overlay').classList.remove('active');
+            
+            // Animasyon süresi (0.3s) bittikten sonra içeriği temizle ki 
+            // kapatırken resim bir anda yok olmasın.
+            setTimeout(() => {
+                document.getElementById('lightbox-svg-target').innerHTML = '';
+            }, 300);
+        }
+
+        // Overlay'in boş kısmına tıklanınca da kapat
+        function handleOverlayClick(e) {
+            if (e.target.id === 'lightbox-overlay' || e.target.id === 'lightbox-content') {
+                closeLightbox();
+            }
+        }
+        // ---------------------------------
+
+        // Sürükle Bırak Mantığı
+        document.querySelectorAll('.source-token').forEach(element => {
+            element.addEventListener('mousedown', startDrag);
+            element.addEventListener('touchstart', startDrag, {passive: false});
+        });
+
+        function startDrag(e) {
+            if (isCompleted || this.classList.contains('locked')) return;
+            if (e.type === 'touchstart') e.preventDefault(); 
+            
+            draggedElement = this;
+            initialParent = this.parentElement;
+            
+            scaleContainer.appendChild(draggedElement);
+            draggedElement.classList.add('dragging');
+            
+            moveElement(e);
+
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('touchmove', onDrag, {passive: false});
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            
+            playSfx('click');
+        }
+
+        function onDrag(e) {
+            if (!draggedElement) return;
+            e.preventDefault(); 
+            moveElement(e);
+
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+            dropZones.forEach(zone => {
+                const zRect = zone.getBoundingClientRect();
+                const wrapper = zone.parentElement;
+                
+                if (clientX >= zRect.left && clientX <= zRect.right &&
+                    clientY >= zRect.top && clientY <= zRect.bottom) {
+                    wrapper.classList.add('drag-over');
+                } else {
+                    wrapper.classList.remove('drag-over');
+                }
+            });
+        }
+
+        function moveElement(e) {
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            const containerRect = scaleContainer.getBoundingClientRect();
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            
+            let relX = (clientX - containerRect.left) / sc;
+            let relY = (clientY - containerRect.top) / sc;
+            
+            draggedElement.style.left = (relX - draggedElement.offsetWidth / 2) + 'px';
+            draggedElement.style.top = (relY - draggedElement.offsetHeight / 2) + 'px';
+        }
+
+        function endDrag(e) {
+            if (!draggedElement) return;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchend', endDrag);
+
+            draggedElement.classList.remove('dragging');
+            draggedElement.style.position = ''; 
+            draggedElement.style.left = '';
+            draggedElement.style.top = '';
+
+            const clientX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
+            const clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
+
+            let droppedInZone = null;
+
+            dropZones.forEach(zone => {
+                const zRect = zone.getBoundingClientRect();
+                const wrapper = zone.parentElement;
+                wrapper.classList.remove('drag-over');
+
+                if (clientX >= zRect.left && clientX <= zRect.right &&
+                    clientY >= zRect.top && clientY <= zRect.bottom) {
+                    droppedInZone = zone;
+                }
+            });
+
+            if (droppedInZone) {
+                droppedInZone.appendChild(draggedElement);
+                playSfx('click');
+            } else {
+                initialParent.appendChild(draggedElement);
+            }
+
+            draggedElement = null;
+            checkIfAllPlaced();
+        }
+
+        function checkIfAllPlaced() {
+            const totalRequired = 9;
+            const placedTokens = document.querySelectorAll('.drop-zone .num-token');
+            
+            if (placedTokens.length === totalRequired) {
+                btnCheck.removeAttribute('disabled');
+            } else {
+                btnCheck.setAttribute('disabled', 'true');
+            }
+        }
+
+        function checkAnswers() {
+            if (isCompleted || btnCheck.disabled) return;
+
+            let allCorrect = true;
+            let wrongItems = [];
+            let correctItems = [];
+
+            const placedTokens = document.querySelectorAll('.drop-zone .num-token');
+
+            placedTokens.forEach(item => {
+                const parentZone = item.parentElement;
+                const expectedType = item.dataset.type;
+                
+                if (parentZone.dataset.type === expectedType) {
+                    correctItems.push(item);
+                } else {
+                    wrongItems.push(item);
+                    allCorrect = false;
+                }
+            });
+
+            const fbBox = document.getElementById('q-fb');
+            fbBox.className = "feedback-msg"; 
+            
+            if (allCorrect) {
+                isCompleted = true;
+                playSfx('success');
+                correctItems.forEach(item => item.classList.add('locked'));
+                
+                fbBox.innerHTML = `DOĞRU! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:4px;">Harika! Tüm üçgenleri kenar uzunluklarına göre doğru sınıflandırdınız.</span>`;
+                fbBox.classList.add('fb-success');
+                
+                btnCheck.innerText = "TAMAMLANDI ✓";
+                btnCheck.classList.add('completed');
+                
+                showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                setVar('b2', true); 
+
+            } else {
+                attempts++;
+                playSfx('error');
+                correctItems.forEach(item => item.classList.add('locked'));
+
+                if (attempts === 1) {
+                    fbBox.innerHTML = `Bazı numaraları yanlış kutuya yerleştirdiniz. Lütfen kenar uzunluklarını dikkatlice kontrol edip tekrar deneyiniz.`;
+                    fbBox.classList.add('fb-error');
+                    
+                    wrongItems.forEach(item => {
+                        item.classList.add('error-shake');
+                        setTimeout(() => { 
+                            item.classList.remove('error-shake');
+                            const sourceSlot = document.getElementById(`slot-${item.dataset.val}`);
+                            if(sourceSlot) sourceSlot.appendChild(item);
+                            checkIfAllPlaced(); 
+                        }, 600);
+                    });
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 5000);
+
+                } else {
+                    isCompleted = true;
+                    fbBox.innerHTML = `Hakkınız bitti. Numaralar doğru bölmelere otomatik taşınıyor...`;
+                    fbBox.classList.add('fb-error');
+                    btnCheck.setAttribute('disabled', 'true');
+
+                    wrongItems.forEach(item => {
+                        item.classList.add('error-shake');
+                    });
+                    
+                    // Otomatik Çözüm Animasyonu
+                    setTimeout(() => {
+                        wrongItems.forEach(item => {
+                            item.classList.remove('error-shake');
+                            const expectedType = item.dataset.type;
+                            const correctZone = document.getElementById(`zone-${expectedType}`);
+                            
+                            if(correctZone) {
+                                correctZone.appendChild(item);
+                            }
+                            item.classList.add('locked');
+                        });
+                        
+                        playSfx('success');
+
+                        setTimeout(() => {
+                            fbBox.style.display = 'none';
+                            triggerTimerAutoSolve('b3'); 
+                        }, 1500);
+
+                    }, 800);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            btnCheck.removeAttribute('disabled');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); 
+                }
+            }, 1000);
+        }
+
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => { if(speaker) speaker.style.animation = 'none'; });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { parent.GetPlayer().SetVar(n, v); console.log(`Storyline Variable Set: ${n} = ${v}`); } 
+            catch(e) { console.log(`(Local) Storyline Variable: ${n} = ${v}`); } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { 
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        };
+    </script>
+</body>
+</html>

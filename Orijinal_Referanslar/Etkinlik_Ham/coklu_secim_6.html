@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Etkinlik: Kesişim Noktaları</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; 
+            color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden; 
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 20px 40px; height: 100%;
+            z-index: 10; position: relative; gap: 15px;
+        }
+
+        /* --- ÜST YÖNERGE ALANI --- */
+        .top-header-area {
+            display: flex; justify-content: space-between; align-items: flex-start; width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; flex: 1;
+            background: white; border-radius: 12px; padding: 12px 20px 12px 15px;
+            border-left: 5px solid #1D4ED8;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 15px; /* Logoyla hizalamak için */
+        }
+
+        .instruction-text {
+            font-size: 16px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        .logo-right-container {
+            width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px;
+        }
+
+        /* Ses Butonu */
+        .narrator-speaker {
+            width: 38px; height: 38px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        /* --- ORTA ALAN: SVG KARELİ ZEMİN --- */
+        .svg-board {
+            flex: 1; background-color: white; border: 2px solid #cbd5e1; border-radius: 12px;
+            position: relative; overflow: hidden;
+            background-image: 
+                linear-gradient(#e2e8f0 1px, transparent 1px), 
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 25px 25px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* İnteraktif Nokta Stilleri */
+        .point-group {
+            cursor: pointer;
+        }
+        
+        .point-hitbox {
+            fill: transparent;
+        }
+
+        .point-dot {
+            fill: #1E293B;
+            transition: all 0.2s;
+        }
+
+        .point-ring {
+            fill: transparent;
+            stroke: transparent;
+            stroke-width: 3px;
+            transition: all 0.2s;
+        }
+
+        .point-group:hover .point-ring {
+            stroke: #cbd5e1;
+        }
+
+        /* Seçili Durum */
+        .point-group.selected .point-dot {
+            fill: var(--primary-red);
+        }
+        .point-group.selected .point-ring {
+            stroke: var(--primary-red);
+        }
+
+        /* Animasyon Durumları */
+        .point-group.is-correct .point-dot { fill: var(--success-green); }
+        .point-group.is-correct .point-ring { stroke: var(--success-green); }
+        
+        .point-group.is-incorrect { animation: shake 0.4s ease-in-out; }
+        .point-group.is-incorrect .point-dot { fill: var(--error-red); }
+        .point-group.is-incorrect .point-ring { stroke: var(--error-red); }
+
+        .point-group.disabled { pointer-events: none; }
+
+        /* Alt Panel (Geri Bildirim ve Buton) */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 50px;
+        }
+
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 12px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 200px; height: 50px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto;
+        }
+        
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-red); color: white; font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+
+    </style>
+</head>
+<body>
+
+    <div id="scale-container">
+        
+        <!-- Ses Dosyası -->
+        <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <main class="content-wrapper">
+            
+            <!-- ÜST YÖNERGE ALANI VE LOGO -->
+            <div class="top-header-area">
+                <div class="instruction-group">
+                    <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                        <svg class="w-5 h-5 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="instruction-text">
+                        Aşağıda kareli zeminde verilen kesişen doğruların kesişim noktalarına tıklayınız.
+                    </div>
+                </div>
+                <div class="logo-right-container">
+                    <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+                </div>
+            </div>
+
+            <!-- ORTA ALAN: SVG KARELİ ZEMİN -->
+            <div class="svg-board">
+                <svg width="100%" height="100%" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrow-start" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                            <path d="M 10 2 L 0 5 L 10 8 z" fill="#1E293B"/> 
+                        </marker>
+                        <marker id="arrow-end" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                            <path d="M 0 2 L 10 5 L 0 8 z" fill="#1E293B"/> 
+                        </marker>
+                    </defs>
+
+                    <!-- === SOL ŞEKİL (Çapraz Kesişen Doğrular) === -->
+                    <!-- Doğru d -->
+                    <line x1="100" y1="225" x2="400" y2="75" stroke="#1E293B" stroke-width="2.5" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+                    <!-- Doğru e -->
+                    <line x1="100" y1="75" x2="400" y2="225" stroke="#1E293B" stroke-width="2.5" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+                    
+                    <!-- Harfler -->
+                    <text x="410" y="70" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="20">d</text>
+                    <text x="410" y="240" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="20">e</text>
+
+                    <!-- İnteraktif Nokta: A -->
+                    <g class="point-group" id="pt-A" onclick="togglePt('A')">
+                        <circle cx="150" cy="200" r="24" class="point-hitbox" />
+                        <circle cx="150" cy="200" r="14" class="point-ring" />
+                        <circle cx="150" cy="200" r="5" class="point-dot" />
+                        <text x="145" y="230" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="18">A</text>
+                    </g>
+
+                    <!-- İnteraktif Nokta: B (Doğru Cevap) -->
+                    <g class="point-group" id="pt-B" onclick="togglePt('B')">
+                        <circle cx="250" cy="150" r="24" class="point-hitbox" />
+                        <circle cx="250" cy="150" r="14" class="point-ring" />
+                        <circle cx="250" cy="150" r="5" class="point-dot" />
+                        <text x="245" y="180" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="18">B</text>
+                    </g>
+
+                    <!-- İnteraktif Nokta: C -->
+                    <g class="point-group" id="pt-C" onclick="togglePt('C')">
+                        <circle cx="350" cy="100" r="24" class="point-hitbox" />
+                        <circle cx="350" cy="100" r="14" class="point-ring" />
+                        <circle cx="350" cy="100" r="5" class="point-dot" />
+                        <text x="345" y="130" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="18">C</text>
+                    </g>
+
+
+                    <!-- === SAĞ ŞEKİL (Dik Kesişen Doğrular) === -->
+                    <!-- Doğru f (Dikey) -->
+                    <line x1="700" y1="50" x2="700" y2="250" stroke="#1E293B" stroke-width="2.5" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+                    <!-- Doğru g (Yatay) -->
+                    <line x1="550" y1="150" x2="850" y2="150" stroke="#1E293B" stroke-width="2.5" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+                    
+                    <!-- Diklik Sembolü -->
+                    <polyline points="700,135 715,135 715,150" fill="none" stroke="#1E293B" stroke-width="2"/>
+                    <circle cx="707" cy="142" r="2" fill="#1E293B"/>
+
+                    <!-- Harfler -->
+                    <text x="715" y="45" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="20">f</text>
+                    <text x="860" y="155" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="20">g</text>
+
+                    <!-- İnteraktif Nokta: K -->
+                    <g class="point-group" id="pt-K" onclick="togglePt('K')">
+                        <circle cx="600" cy="150" r="24" class="point-hitbox" />
+                        <circle cx="600" cy="150" r="14" class="point-ring" />
+                        <circle cx="600" cy="150" r="5" class="point-dot" />
+                        <text x="593" y="180" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="18">K</text>
+                    </g>
+
+                    <!-- İnteraktif Nokta: L (Doğru Cevap) -->
+                    <g class="point-group" id="pt-L" onclick="togglePt('L')">
+                        <circle cx="700" cy="150" r="24" class="point-hitbox" />
+                        <circle cx="700" cy="150" r="14" class="point-ring" />
+                        <circle cx="700" cy="150" r="5" class="point-dot" />
+                        <text x="680" y="180" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="18">L</text>
+                    </g>
+
+                    <!-- İnteraktif Nokta: M -->
+                    <g class="point-group" id="pt-M" onclick="togglePt('M')">
+                        <circle cx="800" cy="150" r="24" class="point-hitbox" />
+                        <circle cx="800" cy="150" r="14" class="point-ring" />
+                        <circle cx="800" cy="150" r="5" class="point-dot" />
+                        <text x="790" y="180" fill="#1E293B" font-family="Montserrat" font-weight="700" font-size="18">m</text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- ALT PANEL: Geri Bildirim ve Buton -->
+            <div class="bottom-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        let isCompleted = false;
+        let attempts = 0;
+
+        const allPoints = ['A', 'B', 'C', 'K', 'L', 'M'];
+
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        // Zorunlu Otomatik Oynatma Fonksiyonu
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+        
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function togglePt(id) {
+            if(isCompleted) return;
+            getAudioContext();
+            playSfx('click');
+            document.getElementById(`pt-${id}`).classList.toggle('selected');
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            // Seçili noktaları bul
+            let selectedPts = [];
+            allPoints.forEach(pt => {
+                if (document.getElementById(`pt-${pt}`).classList.contains('selected')) {
+                    selectedPts.push(pt);
+                }
+            });
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+            fbBox.className = "feedback-msg"; // Reset
+
+            // Doğru koşul: Sadece B ve L seçili olmalı
+            const isCorrect = selectedPts.length === 2 && selectedPts.includes('B') && selectedPts.includes('L');
+
+            if(isCorrect) {
+                // BAŞARILI DURUM
+                isCompleted = true;
+                playSfx('success');
+
+                // Tüm noktaları deaktif yap, doğruları yeşile boya
+                allPoints.forEach(pt => document.getElementById(`pt-${pt}`).classList.add('disabled'));
+                document.getElementById('pt-B').classList.add('is-correct');
+                document.getElementById('pt-L').classList.add('is-correct');
+                
+                fbBox.innerHTML = `Tebrikler! Kesişim noktalarını başarıyla buldunuz.`;
+                fbBox.classList.add('fb-success');
+                btnCheck.innerText = "TAMAMLANDI ✓";
+                btnCheck.classList.add('completed');
+                
+                showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                
+                // İlk veya sonradan kendi yaptığı denemede doğruysa a9
+                setVar('a9', true); 
+
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+
+                if(attempts === 1) {
+                    // 1. Hata (İkinci şans verilir)
+                    fbBox.innerHTML = `Eksik veya hatalı işaretlemeleriniz var. Kesişim noktalarını tekrar inceleyiniz.`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Yanlış seçilenleri titret
+                    selectedPts.forEach(pt => {
+                        if (pt !== 'B' && pt !== 'L') {
+                            document.getElementById(`pt-${pt}`).classList.add('is-incorrect');
+                        }
+                    });
+                    
+                    // 1.5 saniye sonra tüm seçimleri temizle
+                    setTimeout(() => { 
+                        allPoints.forEach(pt => {
+                            document.getElementById(`pt-${pt}`).classList.remove('selected', 'is-incorrect');
+                        });
+                        fbBox.style.display = 'none'; 
+                    }, 1500);
+
+                } else {
+                    // 2. Hata (Hak bitti, otomatik çözüm ve 10sn sayaç)
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Deneme hakkınız bitti. Doğru cevaplar işaretleniyor...`;
+                    fbBox.classList.add('fb-error');
+
+                    // Temizlik
+                    allPoints.forEach(pt => {
+                        document.getElementById(`pt-${pt}`).classList.remove('selected', 'is-incorrect');
+                        document.getElementById(`pt-${pt}`).classList.add('disabled');
+                    });
+
+                    // Gecikmeli doğru cevap animasyonu
+                    setTimeout(() => { document.getElementById('pt-B').classList.add('is-correct'); playSfx('click'); }, 500);
+                    setTimeout(() => { document.getElementById('pt-L').classList.add('is-correct'); playSfx('click'); }, 1000);
+
+                    // 10 Saniye Sayacı Başlat
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve();
+                    }, 2000);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve() {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    
+                    // 10 saniye sonunda a10 gönderilir
+                    setVar('a10', true); 
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => {
+            init();
+        };
+
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        window.addEventListener('resize', applyScale);
+
+    </script>
+</body>
+</html>

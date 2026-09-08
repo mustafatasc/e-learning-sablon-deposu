@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Etkinlik: Pergel ve Çap Uzunluğu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+            --cyan-accent: #0ea5e9;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; gap: 10px; height: calc(540px - 85px);
+            z-index: 10;
+        }
+
+        /* --- YÖNERGE ALANI --- */
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            background: white; border-radius: 12px; padding: 10px 20px 10px 15px;
+            border-left: 5px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0;
+        }
+
+        .narrator-speaker {
+            width: 34px; height: 34px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .instruction-text {
+            font-size: 14px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        /* --- ORTA PANEL: ETKİNLİK SATIRLARI --- */
+        .main-activity-area {
+            display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; justify-content: space-evenly;
+        }
+
+        .activity-row {
+            display: flex; align-items: center; background: white; border: 2px solid #e2e8f0;
+            border-radius: 16px; padding: 6px 30px; gap: 50px; justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02); transition: all 0.3s;
+            height: 90px; /* Sabit yükseklik ile ezilmeyi önler */
+        }
+
+        /* Pergel Alanı */
+        .compass-col {
+            display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100px;
+        }
+
+        .compass-svg {
+            width: 70px; height: 75px;
+        }
+
+        .compass-text {
+            font-size: 14px; font-weight: 800; color: var(--cyan-accent); font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Seçenekler Alanı */
+        .options-col {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+        }
+
+        .options-title {
+            font-size: 14px; font-weight: 700; color: #64748B; font-family: 'Times New Roman', Times, serif; font-style: italic; letter-spacing: 0.5px;
+        }
+
+        .options-group {
+            display: flex; gap: 15px;
+        }
+
+        .opt-btn {
+            width: 75px; height: 40px; border-radius: 20px;
+            border: 2px solid #cbd5e1; background: #f8fafc;
+            font-weight: 800; font-size: 15px; color: var(--text-dark);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; font-family: 'Montserrat', sans-serif;
+        }
+
+        .opt-btn:hover { background: #e2e8f0; border-color: #94a3b8; transform: translateY(-2px); }
+        .opt-btn:active { transform: translateY(0); }
+
+        /* Seçili Durum */
+        .opt-btn.selected {
+            border-color: var(--primary-red); background: var(--light-red); color: var(--primary-red);
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.2);
+        }
+
+        /* Doğru / Yanlış Animasyonları */
+        .activity-row.is-correct { border-color: var(--success-green); background: #ecfdf5;}
+        .activity-row.is-correct .opt-btn.selected { background: var(--success-green); border-color: var(--success-green); color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);}
+        
+        .activity-row.is-incorrect { border-color: var(--error-red); background: #fef2f2; animation: shake 0.4s ease-in-out;}
+        .activity-row.is-incorrect .opt-btn.selected { background: var(--error-red); border-color: var(--error-red); color: white; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);}
+        
+        .activity-row.disabled { pointer-events: none; opacity: 0.8;}
+
+        /* --- ALT PANEL: KONTROL VE GERİ BİLDİRİM --- */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 50px; flex-shrink: 0; margin-top: 5px;
+        }
+
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 12px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 240px; height: 50px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto;
+        }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-warning { background-color: var(--warning-orange) !important; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">PERGEL VE ÇAP UZUNLUĞU</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text">
+                    Aşağıda pergellerin kaçar cm açılarak çember çizildiği verilmiştir. Buna göre oluşan çemberlerin çap uzunluğunu işaretleyiniz.
+                </div>
+            </div>
+
+            <!-- ORTA PANEL -->
+            <div class="main-activity-area">
+                
+                <!-- Ortak Pergel SVG Tanımları -->
+                <svg width="0" height="0" style="position:absolute; display:none;">
+                    <defs>
+                        <marker id="arr-start" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                            <path d="M 10 2 L 0 5 L 10 8 z" fill="#0ea5e9"/>
+                        </marker>
+                        <marker id="arr-end" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                            <path d="M 0 2 L 10 5 L 0 8 z" fill="#0ea5e9"/>
+                        </marker>
+                        <g id="compass-shape">
+                            <path d="M48 5 L52 5 L52 20 L48 20 Z" fill="#64748B"/>
+                            <line x1="50" y1="20" x2="25" y2="85" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="50" y1="20" x2="75" y2="85" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+                            <polygon points="25,85 22,95 28,95" fill="#94A3B8"/>
+                            <polygon points="75,85 72,95 78,95" fill="#94A3B8"/>
+                            <circle cx="50" cy="20" r="4" fill="#1E293B"/>
+                            <line x1="22" y1="105" x2="78" y2="105" stroke="#0ea5e9" stroke-width="2" marker-start="url(#arr-start)" marker-end="url(#arr-end)"/>
+                        </g>
+                    </defs>
+                </svg>
+
+                <!-- 1. Satır: 6 cm -->
+                <div class="activity-row" id="row-1">
+                    <div class="compass-col">
+                        <svg class="compass-svg" viewBox="0 0 100 120">
+                            <use href="#compass-shape" />
+                        </svg>
+                        <span class="compass-text">6 cm</span>
+                    </div>
+                    <div class="options-col">
+                        <div class="options-title">Çap Uzunluğu</div>
+                        <div class="options-group">
+                            <button id="btn-1-3" class="opt-btn" onclick="selectOpt(1, 3)">3 cm</button>
+                            <button id="btn-1-6" class="opt-btn" onclick="selectOpt(1, 6)">6 cm</button>
+                            <button id="btn-1-12" class="opt-btn" onclick="selectOpt(1, 12)">12 cm</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Satır: 14 cm -->
+                <div class="activity-row" id="row-2">
+                    <div class="compass-col">
+                        <svg class="compass-svg" viewBox="0 0 100 120">
+                            <use href="#compass-shape" />
+                        </svg>
+                        <span class="compass-text">14 cm</span>
+                    </div>
+                    <div class="options-col">
+                        <div class="options-title">Çap Uzunluğu</div>
+                        <div class="options-group">
+                            <button id="btn-2-7" class="opt-btn" onclick="selectOpt(2, 7)">7 cm</button>
+                            <button id="btn-2-14" class="opt-btn" onclick="selectOpt(2, 14)">14 cm</button>
+                            <button id="btn-2-28" class="opt-btn" onclick="selectOpt(2, 28)">28 cm</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Satır: 20 cm -->
+                <div class="activity-row" id="row-3">
+                    <div class="compass-col">
+                        <svg class="compass-svg" viewBox="0 0 100 120">
+                            <use href="#compass-shape" />
+                        </svg>
+                        <span class="compass-text">20 cm</span>
+                    </div>
+                    <div class="options-col">
+                        <div class="options-title">Çap Uzunluğu</div>
+                        <div class="options-group">
+                            <button id="btn-3-10" class="opt-btn" onclick="selectOpt(3, 10)">10 cm</button>
+                            <button id="btn-3-20" class="opt-btn" onclick="selectOpt(3, 20)">20 cm</button>
+                            <button id="btn-3-40" class="opt-btn" onclick="selectOpt(3, 40)">40 cm</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ALT PANEL: KONTROL VE GERİ BİLDİRİM -->
+            <div class="bottom-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+        
+        // Kullanıcı cevapları ve Doğru cevaplar
+        let userAnswers = { 1: null, 2: null, 3: null };
+        const correctAnswers = { 1: 12, 2: 28, 3: 40 };
+
+        // Zorunlu Otomatik Oynatma Fonksiyonu
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function selectOpt(row, val) {
+            if (isCompleted) return;
+            playSfx('click');
+            userAnswers[row] = val;
+            
+            // Tüm seçimleri temizle (o satır için)
+            const rowBtns = document.getElementById(`row-${row}`).querySelectorAll('.opt-btn');
+            rowBtns.forEach(btn => btn.classList.remove('selected'));
+            
+            // Tıklananı işaretle
+            document.getElementById(`btn-${row}-${val}`).classList.add('selected');
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            let allAnswered = true;
+            let allCorrect = true;
+            let wrongRows = [];
+
+            for(let i=1; i<=3; i++) {
+                if(!userAnswers[i]) {
+                    allAnswered = false;
+                } else if (userAnswers[i] !== correctAnswers[i]) {
+                    allCorrect = false;
+                    wrongRows.push(i);
+                }
+            }
+
+            if(!allAnswered) {
+                showToast("Lütfen tüm seçenekleri işaretleyiniz.", "toast-warning");
+                return;
+            }
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+            fbBox.className = "feedback-msg"; // Reset
+
+            if(allCorrect) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+
+                for(let i=1; i<=3; i++) {
+                    document.getElementById(`row-${i}`).classList.add('is-correct');
+                }
+                
+                if(attempts === 0) {
+                    // İLK DENEMEDE DOĞRU
+                    fbBox.innerHTML = `DOĞRU! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:4px;">Harika! Yarıçap (pergel açıklığı) ile çap arasındaki ilişkiyi doğru hesapladınız.</span>`;
+                    fbBox.classList.add('fb-success');
+                    
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                    setVar('w28', true); // İLK DENEME DOĞRU: w28 = true
+                } else {
+                    // İKİNCİ DENEMEDE KENDİSİ DÜZELTTİ İSE (Güvenlik)
+                    triggerTimerAutoSolve('w29'); 
+                }
+
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+
+                if(attempts === 1) {
+                    // 1. HATA
+                    fbBox.innerHTML = `Hatalı hesaplamalarınız var. Unutmayın, çap uzunluğu yarıçapın (pergel açıklığının) iki katıdır.`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Yanlış olan satırları titret ve temizle
+                    wrongRows.forEach(r => {
+                        const rowEl = document.getElementById(`row-${r}`);
+                        rowEl.classList.add('is-incorrect');
+                        
+                        setTimeout(() => { 
+                            rowEl.classList.remove('is-incorrect'); 
+                            const rowBtns = rowEl.querySelectorAll('.opt-btn');
+                            rowBtns.forEach(btn => btn.classList.remove('selected'));
+                            userAnswers[r] = null; // Cevabı sıfırla
+                        }, 1200);
+                    });
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 4000);
+
+                } else {
+                    // 2. HATA - OTOMATİK ÇÖZÜM
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Doğru cevaplar otomatik olarak işaretleniyor...`;
+                    fbBox.classList.add('fb-error');
+
+                    for(let i=1; i<=3; i++) {
+                        document.getElementById(`row-${i}`).classList.remove('is-incorrect');
+                        document.getElementById(`row-${i}`).classList.add('disabled');
+                        
+                        setTimeout(() => {
+                            // Eski seçimleri temizle
+                            const rowBtns = document.getElementById(`row-${i}`).querySelectorAll('.opt-btn');
+                            rowBtns.forEach(btn => btn.classList.remove('selected'));
+                            
+                            // Doğru cevabı işaretle
+                            document.getElementById(`btn-${i}-${correctAnswers[i]}`).classList.add('selected');
+                            document.getElementById(`row-${i}`).classList.add('is-correct');
+                            playSfx('click');
+                        }, i * 600);
+                    }
+
+                    // Sayaç başlat
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve('w29'); // OTOMATİK ÇÖZÜM: w29 = true
+                    }, 2500);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); // Değişkeni tetikle (w29)
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { init(); };
+    </script>
+</body>
+</html>

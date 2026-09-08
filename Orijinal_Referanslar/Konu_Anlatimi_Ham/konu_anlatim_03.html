@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Açı Nasıl Ölçülür?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --cyan-accent: #0ea5e9;
+            --pink-accent: #ec4899;
+            --box-bg: #ffedd5;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 10px 40px; height: calc(540px - 85px);
+            z-index: 10; position: relative; gap: 5px; min-height: 0;
+        }
+
+        /* --- KONU ANLATIMI KUTUSU --- */
+        .topic-content {
+            background: white; border-radius: 12px; padding: 10px 25px;
+            border-left: 6px solid var(--primary-red); line-height: 1.4;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); width: 100%; 
+            display: flex; flex-direction: column; flex: 1; min-height: 0;
+            overflow: hidden; margin: 0;
+        }
+
+        /* Başlık ve İkonlar */
+        .title-group {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-shrink: 0;
+        }
+
+        .inline-speaker {
+            width: 28px; height: 28px;
+            background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3); cursor: pointer;
+            flex-shrink: 0; transition: transform 0.2s; margin-top: -2px;
+        }
+        .inline-speaker:hover { transform: scale(1.1); }
+
+        @keyframes pulsePlaySmall {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .note-title {
+            color: var(--primary-red); font-weight: 800; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px;
+        }
+
+        .main-grid {
+            display: flex; gap: 20px; height: 100%; min-height: 0;
+        }
+
+        /* Sol Sütun: Metinler */
+        .text-column {
+            flex: 1.1; display: flex; flex-direction: column; gap: 6px; justify-content: center; min-height: 0;
+        }
+
+        .note-paragraph {
+            font-weight: 500; font-size: 13.5px; color: var(--text-dark); text-align: justify; line-height: 1.4;
+        }
+
+        .info-box {
+            background: var(--box-bg); border-radius: 10px; padding: 6px 12px;
+            display: flex; flex-direction: column; gap: 2px; border: 1px solid #fed7aa;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5); flex-shrink: 0;
+        }
+
+        .box-title {
+            font-size: 11px; font-weight: 800; color: #7c2d12; text-transform: uppercase; text-decoration: underline; text-underline-offset: 2px; margin-bottom: 2px;
+        }
+
+        .math-symbol-text {
+            font-family: 'Times New Roman', Times, serif; font-size: 16px; font-weight: 800; color: #1E293B;
+            display: flex; align-items: baseline; gap: 8px; margin-top: 0;
+        }
+
+        /* YENİ: Açı Sembolü (Şapka) Düzeneği */
+        .angle-symbol {
+            display: inline-block; 
+            position: relative; 
+            padding-top: 6px; /* Şapka için üstte ayrılan boşluk */
+            margin: 0 1px;
+            line-height: 1;
+        }
+        
+        .angle-symbol svg { 
+            position: absolute; 
+            top: 0; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            margin: 0; /* Eski negatif margin temizlendi */
+        }
+
+        /* Sağ Sütun: Görsel Animasyon Alanı */
+        .visual-column {
+            flex: 1.3; display: flex; flex-direction: column; gap: 5px; min-height: 0;
+        }
+
+        .img-box {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 5px; border: 2px solid #e2e8f0; border-radius: 10px;
+            background-color: #f8fafc; position: relative; overflow: hidden; min-height: 0;
+            background-image: 
+                linear-gradient(#e2e8f0 1px, transparent 1px), 
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px; background-position: center;
+        }
+
+        .math-svg { width: 100%; height: 100%; max-height: 100%; object-fit: contain; }
+
+        /* --- ANİMASYON SINIFLARI --- */
+        #protractor-group {
+            opacity: 0; transform: translateY(-30px) scale(1.05); transition: all 1s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        #protractor-group.show {
+            opacity: 0.85; transform: translateY(0) scale(1);
+        }
+
+        #measurement-highlight {
+            opacity: 0; stroke-dasharray: 100; stroke-dashoffset: 100; transition: all 0.8s ease-out;
+        }
+        #measurement-highlight.show {
+            opacity: 1; stroke-dashoffset: 0;
+        }
+
+        #measurement-text {
+            opacity: 0; transform: scale(0.5); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Montserrat'; font-size: 20px; font-weight: 900; fill: var(--primary-red);
+        }
+        #measurement-text.show {
+            opacity: 1; transform: scale(1);
+        }
+
+        /* --- ALT PANEL VE BUTON --- */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 40px; flex-shrink: 0; margin-top: 5px;
+        }
+
+        .btn-anim {
+            background: var(--cyan-accent); color: white; padding: 8px 20px;
+            font-size: 13px; font-weight: 800; border-radius: 10px; height: 40px;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-anim:hover { background: #0284c7; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(14, 165, 233, 0.4); }
+        .btn-anim:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7;}
+
+        .btn-next {
+            background: var(--success-green); color: white; padding: 8px 30px; min-width: 200px;
+            font-size: 14px; font-weight: 800; border-radius: 10px; height: 40px;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s ease; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;
+            opacity: 0; pointer-events: none; transform: translateY(15px);
+        }
+
+        .btn-next.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-next:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .btn-next.completed { background: #64748b; pointer-events: none; transform: none; box-shadow: none;}
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white; background-color: var(--success-green);
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Yönerge Sesi -->
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">AÇI NASIL ÖLÇÜLÜR?</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="topic-content">
+                
+                <div class="title-group">
+                    <div id="btn-ses1" class="inline-speaker" onclick="playSectionAudio('ses1', 'btn-ses1')">
+                        <svg class="w-3 h-3 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="note-title" style="margin-top: 3px;">AÇIÖLÇER İLE ÖLÇÜM</div>
+                </div>
+
+                <div class="main-grid">
+                    
+                    <!-- Sol Taraf: Metin ve Kutular -->
+                    <div class="text-column">
+                        <div class="note-paragraph">
+                            Açıölçer kullanılarak bir açının ölçüsü belirlenirken açının köşesi açıölçerin merkezine yerleştirilir. 
+                            Daha sonra açının kollarından biri <strong>0°</strong> yi gösterecek şekilde ayarlanır. 
+                            Bu durumda açının diğer kolunun açıölçerde gösterdiği değer, açının ölçüsüdür.
+                        </div>
+
+                        <!-- Sembolle Gösterim Kutusu -->
+                        <div class="info-box">
+                            <div class="box-title">SEMBOLLE GÖSTERİM</div>
+                            <div class="math-symbol-text">
+                                <span class="angle-symbol">
+                                    <svg width="20" height="5" viewBox="0 0 24 6"><polyline points="2,6 12,2 22,6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    ABC
+                                </span>, 
+                                <span class="angle-symbol">
+                                    <svg width="20" height="5" viewBox="0 0 24 6"><polyline points="2,6 12,2 22,6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    CBA
+                                </span>, 
+                                <span class="angle-symbol">
+                                    <svg width="12" height="5" viewBox="0 0 14 6"><polyline points="2,6 7,2 12,6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    B
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Ölçümün Gösterimi Kutusu -->
+                        <div class="info-box">
+                            <div class="box-title">AÇININ ÖLÇÜSÜNÜN GÖSTERİMİ</div>
+                            <div class="math-symbol-text" style="flex-direction: column; align-items: flex-start; gap: 4px; font-size: 14.5px;">
+                                <div>m(<span class="angle-symbol"><svg width="20" height="5" viewBox="0 0 24 6"><polyline points="2,6 12,2 22,6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>ABC</span>) = 30°</div>
+                                <div>m(<span class="angle-symbol"><svg width="20" height="5" viewBox="0 0 24 6"><polyline points="2,6 12,2 22,6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>CBA</span>) = 30°</div>
+                                <div>m(<span class="angle-symbol"><svg width="12" height="5" viewBox="0 0 14 6"><polyline points="2,6 7,2 12,6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>B</span>) = 30°</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sağ Taraf: Animasyonlu SVG -->
+                    <div class="visual-column">
+                        <div class="img-box">
+                            <svg class="math-svg" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <!-- Ok Uçları -->
+                                    <marker id="arr-dark" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#1E293B"/>
+                                    </marker>
+                                </defs>
+
+                                <!-- 1. SABİT AÇI ÇİZİMİ -->
+                                <!-- BC Işını (Yatay, Sağ) -->
+                                <line x1="150" y1="220" x2="320" y2="220" stroke="#1E293B" stroke-width="3" marker-end="url(#arr-dark)"/>
+                                <!-- BA Işını (30 derece açı ile. dx = 150*cos(-30)=130, dy = 150*sin(-30)=-75. Nokta: 280, 145) -->
+                                <line x1="150" y1="220" x2="280" y2="145" stroke="#1E293B" stroke-width="3" marker-end="url(#arr-dark)"/>
+                                
+                                <!-- Noktalar ve Harfler -->
+                                <circle cx="150" cy="220" r="4" fill="#1E293B"/>
+                                <text x="135" y="235" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">B</text>
+
+                                <circle cx="280" cy="220" r="4" fill="#1E293B"/>
+                                <text x="275" y="240" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">C</text>
+
+                                <circle cx="236.6" cy="170" r="4" fill="#1E293B"/>
+                                <text x="225" y="160" font-family="Montserrat" font-size="16" font-weight="800" fill="#1E293B">A</text>
+
+                                <!-- 2. HAREKETLİ AÇIÖLÇER (İletki) -->
+                                <!-- Merkez noktası tam B(150, 220)'ye oturacak şekilde çizildi -->
+                                <g id="protractor-group">
+                                    <!-- Açıölçer Dış Gövdesi -->
+                                    <path d="M 30 220 A 120 120 0 0 1 270 220 Z" fill="rgba(255,255,255,0.7)" stroke="#94a3b8" stroke-width="2"/>
+                                    <!-- İç Çizgiler / Yaylar -->
+                                    <path d="M 50 220 A 100 100 0 0 1 250 220" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
+                                    <path d="M 80 220 A 70 70 0 0 1 220 220" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
+                                    <!-- Taban Çizgisi -->
+                                    <line x1="20" y1="220" x2="280" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+                                    <!-- Merkez İşareti -->
+                                    <circle cx="150" cy="220" r="3" fill="#ef4444"/>
+                                    <line x1="150" y1="210" x2="150" y2="220" stroke="#ef4444" stroke-width="1.5"/>
+
+                                    <!-- Açı Derece Çizgileri ve Sayıları -->
+                                    <g stroke="#94a3b8" stroke-width="1">
+                                        <!-- 0 (Sağ) -->
+                                        <line x1="270" y1="220" x2="260" y2="220"/>
+                                        <text x="250" y="215" font-family="Montserrat" font-size="10" font-weight="bold" fill="#64748b" text-anchor="middle">0</text>
+                                        <!-- 30 Derece (Ölçüm noktası) -->
+                                        <g transform="translate(150,220) rotate(-30) translate(-150,-220)">
+                                            <line x1="270" y1="220" x2="260" y2="220" stroke="#ef4444" stroke-width="2"/>
+                                            <text x="245" y="224" font-family="Montserrat" font-size="12" font-weight="900" fill="#ef4444" text-anchor="middle">30</text>
+                                        </g>
+                                        <!-- 60 Derece -->
+                                        <g transform="translate(150,220) rotate(-60) translate(-150,-220)">
+                                            <line x1="270" y1="220" x2="260" y2="220"/>
+                                            <text x="248" y="224" font-family="Montserrat" font-size="10" font-weight="bold" fill="#64748b" text-anchor="middle">60</text>
+                                        </g>
+                                        <!-- 90 Derece -->
+                                        <g transform="translate(150,220) rotate(-90) translate(-150,-220)">
+                                            <line x1="270" y1="220" x2="260" y2="220"/>
+                                            <text x="250" y="224" font-family="Montserrat" font-size="10" font-weight="bold" fill="#64748b" text-anchor="middle">90</text>
+                                        </g>
+                                        <!-- 120 Derece -->
+                                        <g transform="translate(150,220) rotate(-120) translate(-150,-220)">
+                                            <line x1="270" y1="220" x2="260" y2="220"/>
+                                            <text x="248" y="224" font-family="Montserrat" font-size="10" font-weight="bold" fill="#64748b" text-anchor="middle">120</text>
+                                        </g>
+                                        <!-- 150 Derece -->
+                                        <g transform="translate(150,220) rotate(-150) translate(-150,-220)">
+                                            <line x1="270" y1="220" x2="260" y2="220"/>
+                                            <text x="245" y="224" font-family="Montserrat" font-size="10" font-weight="bold" fill="#64748b" text-anchor="middle">150</text>
+                                        </g>
+                                        <!-- 180 Derece (Sol) -->
+                                        <line x1="30" y1="220" x2="40" y2="220"/>
+                                        <text x="50" y="215" font-family="Montserrat" font-size="10" font-weight="bold" fill="#64748b" text-anchor="middle">180</text>
+                                    </g>
+                                </g>
+
+                                <!-- 3. ÖLÇÜM SONUCU (Animasyonla çıkacak) -->
+                                <!-- 30 Derecelik Kırmızı Yay -->
+                                <path id="measurement-highlight" d="M 200 220 A 50 50 0 0 0 193.3 195" fill="none" stroke="var(--primary-red)" stroke-width="3"/>
+                                <!-- Metin "30°" -->
+                                <text id="measurement-text" x="210" y="200" transform-origin="210px 200px">30°</text>
+
+                            </svg>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ALT PANEL: Butonlar -->
+            <div class="bottom-panel">
+                <!-- Animasyonu Başlatma Butonu -->
+                <button id="btn-anim" class="btn-anim" onclick="startAnimation()">
+                    ÖLÇÜMÜ GÖSTER 
+                    <svg class="w-4 h-4 inline-block ml-1 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </button>
+
+                <!-- Etkinliği Tamamlama Butonu (Animasyon bitince aktif olur) -->
+                <button id="btn-next" class="btn-next" onclick="completeTopic()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        let isAnimRunning = false;
+
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='slide') { 
+                    osc.type='sine'; osc.frequency.setValueAtTime(200, ctx.currentTime); osc.frequency.linearRampToValueAtTime(400, ctx.currentTime+0.8);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.8); 
+                    osc.start(); osc.stop(ctx.currentTime+0.8); return;
+                }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        function playSectionAudio(audioId, btnId) {
+            let targetAudio = document.getElementById(audioId);
+            let targetBtn = document.getElementById(btnId);
+
+            if (!targetAudio) return;
+
+            if (!targetAudio.paused) {
+                targetAudio.pause();
+                if(targetBtn) targetBtn.style.animation = 'none';
+                isAudioPlaying = false;
+                return;
+            }
+
+            targetAudio.currentTime = 0; 
+            let playPromise = targetAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    if(targetBtn) targetBtn.style.animation = 'pulsePlaySmall 2s infinite';
+                    isAudioPlaying = true;
+                }).catch(e => console.log("Otomatik oynatma engellendi."));
+            }
+            
+            targetAudio.onended = () => {
+                if(targetBtn) targetBtn.style.animation = 'none';
+                isAudioPlaying = false;
+            };
+        }
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            playSectionAudio('ses1', 'btn-ses1');
+            window.removeEventListener('click', forceAutoplay);
+            window.removeEventListener('touchstart', forceAutoplay);
+        }
+
+        function init() {
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        // --- ANİMASYON MANTIĞI ---
+        function startAnimation() {
+            if(isAnimRunning) return;
+            isAnimRunning = true;
+            getAudioContext();
+
+            // Animasyon butonunu deaktif et
+            const btnAnim = document.getElementById('btn-anim');
+            btnAnim.disabled = true;
+            btnAnim.innerHTML = 'ÖLÇÜLÜYOR...';
+
+            // 1. Adım: İletki Kayarak Gelsin
+            playSfx('slide');
+            const protractor = document.getElementById('protractor-group');
+            protractor.classList.add('show');
+
+            // 2. Adım: Açı yayı ve Metin vurgusu
+            setTimeout(() => {
+                playSfx('success');
+                document.getElementById('measurement-highlight').classList.add('show');
+                document.getElementById('measurement-text').classList.add('show');
+                
+                // Tamamla butonunu göster
+                setTimeout(() => {
+                    document.getElementById('btn-next').classList.add('show-btn');
+                    btnAnim.style.display = 'none'; // Animasyon butonunu sakla
+                }, 800);
+
+            }, 1200); // İletkinin oturma süresi
+        }
+
+        function completeTopic() {
+            playSfx('success');
+            const btn = document.getElementById('btn-next');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            // d10 değişkenini tetikle
+            setVar('d10', true);
+            showToast("Konu anlatımını tamamladınız. İlerleyebilirsiniz.");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => { init(); };
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        window.addEventListener('resize', applyScale);
+
+    </script>
+</body>
+</html>

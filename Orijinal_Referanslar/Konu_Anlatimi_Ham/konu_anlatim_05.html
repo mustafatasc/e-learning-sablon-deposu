@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bilgi Kutusu: Tam ve Doğru Açı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --cyan-accent: #0ea5e9;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; gap: 15px; height: calc(540px - 85px);
+            z-index: 10;
+        }
+
+        /* --- SATIR YAPISI --- */
+        .info-row {
+            display: flex; gap: 20px; align-items: stretch; width: 100%;
+        }
+
+        /* Metin Kutuları */
+        .text-box {
+            flex: 1.2; background: white; border-radius: 12px; padding: 16px 20px 16px 25px;
+            border-left: 5px solid #1D4ED8; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; justify-content: center; gap: 10px;
+        }
+
+        .text-header {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer; transition: transform 0.2s;
+        }
+        
+        .narrator-speaker:hover { transform: scale(1.1); }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .note-paragraph {
+            font-size: 14.5px; font-weight: 600; line-height: 1.5; color: var(--text-dark);
+        }
+
+        .note-paragraph strong {
+            color: #1D4ED8; font-weight: 800;
+        }
+
+        /* Görsel Kutuları */
+        .visual-box {
+            flex: 1; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px;
+            display: flex; justify-content: space-evenly; align-items: center; padding: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02); overflow: hidden;
+        }
+
+        .math-svg { width: 100%; height: 100%; }
+
+        /* --- ALT PANEL: KONTROL --- */
+        .bottom-panel {
+            display: flex; justify-content: flex-end; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto;
+        }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 240px; height: 45px;
+            font-size: 15px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto;
+        }
+        
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white; background-color: var(--success-green);
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+    </style>
+</head>
+<body>
+
+    <!-- 2 Farklı Ses Dosyası -->
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+    <audio id="ses2" src="ses2.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">BİLGİ KUTUSU</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- ORTAK OK UÇLARI (Tüm SVG'ler kullanacak) -->
+            <svg width="0" height="0" style="position:absolute; display:none;">
+                <defs>
+                    <marker id="arr-red-e" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 1 L 10 5 L 0 9 z" fill="#B91C1C"/></marker>
+                    <marker id="arr-red-s" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 10 1 L 0 5 L 10 9 z" fill="#B91C1C"/></marker>
+                    <marker id="arr-blue-e" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 1 L 10 5 L 0 9 z" fill="#0ea5e9"/></marker>
+                </defs>
+            </svg>
+
+            <!-- 1. BÖLÜM: DOĞRU VE TAM AÇI TANIMI -->
+            <div class="info-row" style="height: 140px;">
+                <div class="text-box">
+                    <div class="text-header">
+                        <div id="btn-ses1" class="narrator-speaker" onclick="playSectionAudio('ses1', 'btn-ses1')">
+                            <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                        </div>
+                        <span style="font-weight: 800; color: #1D4ED8;">TAM VE DOĞRU AÇI</span>
+                    </div>
+                    <div class="note-paragraph">
+                        Bir ışının bir tam dönüşü ile oluşan açıya <strong>tam açı</strong>, bir tam açının yarısına da <strong>doğru açı</strong> denir.
+                    </div>
+                </div>
+
+                <div class="visual-box">
+                    <svg class="math-svg" viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- DOĞRU AÇI (SOL) -->
+                        <g transform="translate(10, 0)">
+                            <!-- Çizgi (İki tarafı ok) -->
+                            <line x1="10" y1="65" x2="100" y2="65" stroke="#B91C1C" stroke-width="2.5" marker-start="url(#arr-red-s)" marker-end="url(#arr-red-e)"/>
+                            <circle cx="55" cy="65" r="3.5" fill="#B91C1C"/>
+                            <!-- Yarım Yay (Mavi) -->
+                            <path d="M 30 65 A 25 25 0 0 1 80 65" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arr-blue-e)"/>
+                        </g>
+
+                        <!-- TAM AÇI (SAĞ) -->
+                        <g transform="translate(140, 0)">
+                            <!-- Işın (Tek tarafı ok) -->
+                            <line x1="20" y1="65" x2="80" y2="65" stroke="#B91C1C" stroke-width="2.5" marker-end="url(#arr-red-e)"/>
+                            <circle cx="20" cy="65" r="3.5" fill="#B91C1C"/>
+                            <!-- Tam Yay (Mavi) -->
+                            <path d="M 40 65 A 20 20 0 1 0 40 66" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arr-blue-e)"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 2. BÖLÜM: AÇIÖLÇER VE DERECE TANIMI -->
+            <div class="info-row" style="flex: 1;">
+                <div class="text-box">
+                    <div class="text-header">
+                        <div id="btn-ses2" class="narrator-speaker" onclick="playSectionAudio('ses2', 'btn-ses2')">
+                            <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                        </div>
+                        <span style="font-weight: 800; color: #1D4ED8;">DERECE VE AÇIÖLÇER</span>
+                    </div>
+                    <div class="note-paragraph">
+                        Aşağıda tam ve doğru açı açıölçerle gösterilmiştir.
+                    </div>
+                    <div class="note-paragraph">
+                        Bir tam açı 360 eş açıya bölündüğünde oluşan her bir açının ölçüsüne <strong>1 derece</strong> denir ve <strong>"°"</strong> sembolü ile gösterilir. Açıları ölçmek için kullanılan araç, standart ölçü birimlerinden oluşmuş <strong>açıölçerlerdir.</strong>
+                    </div>
+                </div>
+
+                <div class="visual-box">
+                    <svg class="math-svg" viewBox="0 0 340 160" xmlns="http://www.w3.org/2000/svg">
+                        
+                        <!-- TAM AÇI AÇIÖLÇER (SOL) -->
+                        <g transform="translate(90, 80)">
+                            <!-- Açıölçer Gövdesi -->
+                            <circle cx="0" cy="0" r="70" fill="white" stroke="#94a3b8" stroke-width="2"/>
+                            <circle cx="0" cy="0" r="45" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+                            <circle cx="0" cy="0" r="30" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+                            
+                            <!-- Çizgiler (Dereceler) -->
+                            <g stroke="#94a3b8" stroke-width="1">
+                                <line x1="0" y1="-70" x2="0" y2="-64"/>
+                                <line x1="0" y1="70" x2="0" y2="64"/>
+                                <line x1="-70" y1="0" x2="-64" y2="0"/>
+                                <line x1="70" y1="0" x2="64" y2="0"/>
+                                <!-- Çapraz Çizgiler (30'ar derece) -->
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(30)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(60)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(120)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(150)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(210)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(240)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(300)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(330)"/>
+                            </g>
+                            
+                            <!-- Açıölçer Üzerindeki Sayılar -->
+                            <g fill="#64748b" font-family="Montserrat" font-size="8" font-weight="700" text-anchor="middle" dominant-baseline="central">
+                                <text x="54" y="0">0</text>
+                                <text x="47" y="-27">30</text>
+                                <text x="27" y="-47">60</text>
+                                <text x="0" y="-54">90</text>
+                                <text x="-27" y="-47">120</text>
+                                <text x="-47" y="-27">150</text>
+                                <text x="-54" y="0">180</text>
+                                <text x="-47" y="27">210</text>
+                                <text x="-27" y="47">240</text>
+                                <text x="0" y="54">270</text>
+                                <text x="27" y="47">300</text>
+                                <text x="47" y="27">330</text>
+                            </g>
+
+                            <!-- İçi Çizgi (Kırmızı) ve Yay (Mavi) -->
+                            <line x1="-85" y1="0" x2="85" y2="0" stroke="#B91C1C" stroke-width="2.5" marker-start="url(#arr-red-s)" marker-end="url(#arr-red-e)"/>
+                            <circle cx="0" cy="0" r="4" fill="#B91C1C"/>
+                            <path d="M 22 0 A 22 22 0 1 0 22 1" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arr-blue-e)"/>
+                        </g>
+
+                        <!-- DOĞRU AÇI AÇIÖLÇER (SAĞ) -->
+                        <g transform="translate(250, 80)">
+                            <!-- Açıölçer Gövdesi (Yarım) -->
+                            <path d="M -70 0 A 70 70 0 0 1 70 0 Z" fill="white" stroke="#94a3b8" stroke-width="2"/>
+                            <path d="M -45 0 A 45 45 0 0 1 45 0" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+                            <path d="M -30 0 A 30 30 0 0 1 30 0" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+                            
+                            <!-- Çizgiler (Dereceler) -->
+                            <g stroke="#94a3b8" stroke-width="1">
+                                <line x1="0" y1="-70" x2="0" y2="-64"/>
+                                <line x1="-70" y1="0" x2="-64" y2="0"/>
+                                <line x1="70" y1="0" x2="64" y2="0"/>
+                                <!-- Çapraz Çizgiler (30'ar derece) -->
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(30)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(60)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(-30)"/>
+                                <line x1="0" y1="-70" x2="0" y2="-64" transform="rotate(-60)"/>
+                            </g>
+
+                            <!-- Açıölçer Üzerindeki Sayılar -->
+                            <g fill="#64748b" font-family="Montserrat" font-size="8" font-weight="700" text-anchor="middle" dominant-baseline="central">
+                                <text x="54" y="-8">0</text>
+                                <text x="47" y="-27">30</text>
+                                <text x="27" y="-47">60</text>
+                                <text x="0" y="-54">90</text>
+                                <text x="-27" y="-47">120</text>
+                                <text x="-47" y="-27">150</text>
+                                <text x="-54" y="-8">180</text>
+                            </g>
+                            
+                            <!-- İçi Çizgi (Kırmızı) ve Yay (Mavi) -->
+                            <line x1="-85" y1="0" x2="85" y2="0" stroke="#B91C1C" stroke-width="2.5" marker-start="url(#arr-red-s)" marker-end="url(#arr-red-e)"/>
+                            <circle cx="0" cy="0" r="4" fill="#B91C1C"/>
+                            <path d="M -22 0 A 22 22 0 0 1 22 0" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arr-blue-e)"/>
+
+                            <!-- Alt Cetvel Çizgileri -->
+                            <line x1="-70" y1="12" x2="70" y2="12" stroke="#e2e8f0" stroke-width="1"/>
+                            <line x1="-70" y1="12" x2="70" y2="12" stroke="#94a3b8" stroke-width="4" stroke-dasharray="1, 4"/>
+                        </g>
+
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ALT PANEL: BUTON -->
+            <div class="bottom-panel">
+                <button id="btn-complete" class="btn-action" onclick="completeTopic()">
+                    TAMAMLA ✓
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        let currentPlayingId = null;
+
+        const allAudioIds = ['ses1', 'ses2'];
+        const allBtnIds = ['btn-ses1', 'btn-ses2'];
+
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        // Bireysel Başlık Seslerini ve Zincirleme Çalmayı Yöneten Fonksiyon
+        function playSectionAudio(audioId, btnId) {
+            let targetAudio = document.getElementById(audioId);
+            let targetBtn = document.getElementById(btnId);
+
+            if (!targetAudio) return;
+
+            if (currentPlayingId === audioId && !targetAudio.paused) {
+                targetAudio.pause();
+                if(targetBtn) targetBtn.style.animation = 'none';
+                currentPlayingId = null;
+                isAudioPlaying = false;
+                return;
+            }
+
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                let b = document.getElementById(allBtnIds[index]);
+                if (a) { a.pause(); a.currentTime = 0; }
+                if (b) b.style.animation = 'none';
+            });
+
+            let playPromise = targetAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    currentPlayingId = audioId;
+                    if(targetBtn) targetBtn.style.animation = 'pulsePlay 2s infinite';
+                    isAudioPlaying = true;
+                }).catch(e => console.log("Otomatik oynatma engellendi."));
+            }
+            
+            targetAudio.onended = () => {
+                if(targetBtn) targetBtn.style.animation = 'none';
+                currentPlayingId = null;
+                isAudioPlaying = false;
+                
+                let nextIdx = allAudioIds.indexOf(audioId) + 1;
+                if(nextIdx < allAudioIds.length) {
+                    setTimeout(() => {
+                        playSectionAudio(allAudioIds[nextIdx], allBtnIds[nextIdx]);
+                    }, 500); 
+                }
+            };
+        }
+
+        function stopAllAudios() {
+            allAudioIds.forEach((id, index) => {
+                let a = document.getElementById(id);
+                let b = document.getElementById(allBtnIds[index]);
+                if (a) { a.pause(); a.currentTime = 0; }
+                if (b) b.style.animation = 'none';
+            });
+            currentPlayingId = null;
+            isAudioPlaying = false;
+        }
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            playSectionAudio('ses1', 'btn-ses1');
+            window.removeEventListener('click', forceAutoplay);
+            window.removeEventListener('touchstart', forceAutoplay);
+        }
+        
+        function init() {
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function completeTopic() {
+            stopAllAudios();
+            playSfx('success');
+            const btn = document.getElementById('btn-complete');
+            btn.innerHTML = `TAMAMLANDI ✓`;
+            btn.classList.add('completed');
+            
+            // d9 değişkenini tetikle
+            setVar('d9', true);
+            showToast("Bilgi kutusunu başarıyla incelediniz. İlerleyebilirsiniz.");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+
+        window.onload = () => { init(); };
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        window.addEventListener('resize', applyScale);
+
+    </script>
+</body>
+</html>

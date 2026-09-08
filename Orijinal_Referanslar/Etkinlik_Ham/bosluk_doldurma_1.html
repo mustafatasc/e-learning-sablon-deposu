@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fen Bilimleri - Bina Yalıtımı Boşluk Doldurma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            
+            /* Fen Bilimleri Renk Paleti (Zümrüt ve Nane Yeşili) */
+            --science-main: #059669;     /* Emerald 600 - Ana Vurgu */
+            --science-dark: #047857;     /* Emerald 700 - Hover ve Koyu Vurgular */
+            --science-soft: #10B981;     /* Emerald 500 - Yumuşak Vurgu */
+            --science-light: #ECFDF5;    /* Emerald 50 - Arka Plan */
+            --science-grid: rgba(5, 150, 105, 0.08); /* Kareli Kağıt Çizgisi */
+            
+            --text-dark: #1E293B;        /* Slate 800 */
+            --text-muted: #475569;       /* Slate 600 */
+            
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #020617; /* Slate 950 - Dış Uzay Zemin */
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--science-light); 
+            background-image: 
+                linear-gradient(var(--science-grid) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--science-grid) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); border-top: 6px solid var(--science-main);
+            border-radius: 20px;
+        }
+
+        .header {
+            padding: 20px 40px 10px 40px; height: 90px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            flex-shrink: 0;
+        }
+
+        .instruction-container { flex: 1; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+        .instruction-title { font-size: 15px; font-weight: 900; color: var(--science-main); text-transform: uppercase; letter-spacing: 1px; }
+        .instruction-text { font-size: 13.5px; line-height: 1.4; font-weight: 700; color: var(--text-muted); text-align: left; }
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex: 1; padding: 0 40px 15px 40px; gap: 20px; height: calc(540px - 90px);
+            overflow: hidden;
+        }
+
+        /* Sol Panel - Cümleler (Hatasız sıkışma ve sığdırma ayarları) */
+        .left-panel { width: 570px !important; display: flex; flex-direction: column; overflow: hidden; justify-content: center; }
+        
+        .custom-sentences-container {
+            display: flex; flex-direction: column; width: 100%;
+            gap: 6px; 
+        }
+        
+        .sentence-card { 
+            display: block; line-height: 2.1; 
+            font-size: 12px; font-weight: 700; color: #334155;
+            background: white; border: 1.5px solid rgba(5, 150, 105, 0.15); border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); padding: 6px 14px; 
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        
+        .sentence-card:nth-child(even) { background-color: #f0fdf4; }
+        .sentence-card:hover { border-color: rgba(5, 150, 105, 0.4); }
+        
+        .drop-zone {
+            width: 105px; height: 22px; border: 1.5px dashed #94a3b8; background: rgba(255, 255, 255, 0.8);
+            border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; margin: 0 4px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            vertical-align: middle;
+        }
+        .drop-zone.active-hover { border-color: var(--science-main); background: #d1fae5; }
+        .drop-zone.has-card { border: none; background: transparent; box-shadow: none; }
+
+        /* Sağ Panel - Seçenekler Havuzu */
+        .right-panel { width: 300px !important; display: flex; flex-direction: column; gap: 5px; }
+        .pool-title { font-size: 12px; font-weight: 800; color: var(--science-main); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; letter-spacing: 0.5px; }
+        
+        .pool-container {
+            background: rgba(255, 255, 255, 0.6); border: 2px dashed #cbd5e1; border-radius: 16px;
+            padding: 8px 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 6px; flex: 1; align-content: center;
+        }
+
+        .pool-slot { width: 110px; height: 24px; position: relative; justify-self: center; }
+        
+        .draggable-card {
+            position: absolute; width: 100%; height: 100%; background: white;
+            border: 2px solid var(--science-main); border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; cursor: grab; box-shadow: 0 3px 6px rgba(5, 150, 105, 0.15);
+            z-index: 100; touch-action: none; text-align: center; padding: 0 2px;
+            color: var(--science-dark); line-height: 1.1; transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
+        }
+        
+        .draggable-card.dragging { cursor: grabbing; box-shadow: 5px 8px 20px rgba(0,0,0,0.2); z-index: 1000; transition: none; transform: scale(1.05); }
+        
+        .draggable-card.selected { border-color: var(--warning-orange); background: #fffbeb; color: #b45309; }
+        .draggable-card.correct-state { border-color: var(--success-green) !important; background: #d1fae5 !important; color: #065f46 !important; box-shadow: none;}
+        .draggable-card.incorrect-state { border-color: var(--error-red) !important; background: #fee2e2 !important; color: #991b1b !important; }
+        .draggable-card.disabled { cursor: not-allowed; pointer-events: none; }
+
+        .control-panel { height: 75px; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+        .btn-action {
+            background: var(--science-main); color: white; font-size: 15px; font-weight: 800;
+            padding: 10px; border-radius: 10px; transition: 0.2s; cursor: pointer; display: none; width: 100%;
+            text-align: center; border: none; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+            letter-spacing: 1px;
+        }
+        .btn-action:hover { background: var(--science-dark); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(5, 150, 105, 0.4); }
+        .btn-action.completed-state { background-color: var(--text-dark) !important; color: white !important; box-shadow: none !important; cursor: default; transform: none; }
+        .btn-action.timer-active { background-color: var(--warning-orange) !important; color: white !important; pointer-events: none; box-shadow: none; transform: none; }
+
+        .message-box { font-size: 11px; font-weight: 700; padding: 6px; border-radius: 6px; display: none; text-align: center; }
+        .msg-error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+        .msg-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+
+        #toast-msg {
+            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--science-dark); color: white; font-weight: 700; font-size: 13px;
+            padding: 10px 20px; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Yönerge Sesi -->
+    <audio id="audio1" src="ses1.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Etkinlik Başarıyla Tamamlandı! ✓</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                    <div id="main-speaker" style="width: 28px; height: 28px; background: var(--science-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4); cursor: pointer;" onclick="playAudio('audio1')">
+                        <svg style="width: 14px; height: 14px; padding-left: 2px;" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                    </div>
+                    <div class="instruction-title">BİNA YALITIMI VE MALZEMELER</div>
+                </div>
+                <div class="instruction-text" onclick="playAudio('audio1')" style="cursor: pointer;">
+                    Bina yalıtımı, günlük araçlar ve yalıtım malzemeleri hakkında öğrendiklerinizi kullanarak boşlukları doldurunuz.
+                </div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            <!-- Sol Panel - Cümle Kartları -->
+            <div class="left-panel">
+                <div class="custom-sentences-container">
+                    
+                    <!-- Cümle 1 (İki boşluklu, değiş-tokuş yapılabilir) -->
+                    <div class="sentence-card">
+                        <span class="mr-2 font-black text-emerald-600">1.</span> 
+                        Bina yalıtımında tavan ve duvarlara yaygın olarak uygulanan; zor yanan ve uzun ömürlü olan yalıtım malzemesi
+                        <!-- "cam|tas" ile her iki kelime de bu boşluklara konulabilir -->
+                        <div id="zone-1" class="drop-zone" data-ans="cam|tas" onclick="onDropZoneClick(event)"></div>
+                        ve
+                        <div id="zone-2" class="drop-zone" data-ans="cam|tas" onclick="onDropZoneClick(event)"></div>
+                        olarak adlandırılır.
+                    </div>
+
+                    <!-- Cümle 2 -->
+                    <div class="sentence-card">
+                        <span class="mr-2 font-black text-emerald-600">2.</span> 
+                        Çatı yalıtımında tercih edilen ve yüzeyi suya karşı koruyan geleneksel malzeme
+                        <div id="zone-3" class="drop-zone" data-ans="katran" onclick="onDropZoneClick(event)"></div>
+                        olarak bilinir.
+                    </div>
+
+                    <!-- Cümle 3 -->
+                    <div class="sentence-card">
+                        <span class="mr-2 font-black text-emerald-600">3.</span> 
+                        Binalarda plastik köpük ağırlıklı olarak
+                        <div id="zone-4" class="drop-zone" data-ans="dis" onclick="onDropZoneClick(event)"></div>
+                        yalıtımında kullanılır; bu uygulama ısı kayıplarını önemli ölçüde azaltır.
+                    </div>
+
+                    <!-- Cümle 4 -->
+                    <div class="sentence-card">
+                        <span class="mr-2 font-black text-emerald-600">4.</span> 
+                        Tava kulpunda ısı yalıtkanı madde kullanılmasının temel amacı, metalden yapılmış gövdeden kulpa geçecek ısıyı yavaşlatarak kulpu
+                        <div id="zone-5" class="drop-zone" data-ans="yalitkan" onclick="onDropZoneClick(event)"></div>
+                        hâlde tutmaktır.
+                    </div>
+
+                    <!-- Cümle 5 -->
+                    <div class="sentence-card">
+                        <span class="mr-2 font-black text-emerald-600">5.</span> 
+                        Ev ve binalarda uygun ısı yalıtımı yapılması hem ısınma maliyetlerini düşürür hem de
+                        <div id="zone-6" class="drop-zone" data-ans="enerji" onclick="onDropZoneClick(event)"></div>
+                        sağlar.
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Sağ Panel - Havuz -->
+            <div class="right-panel">
+                <div class="pool-title">KELİMELER</div>
+                <div class="pool-container">
+                    
+                    <div class="pool-slot"><div id="c-1" class="draggable-card" data-val="cam" onclick="onCardClick(event)">cam yünü</div></div>
+                    <div class="pool-slot"><div id="c-2" class="draggable-card" data-val="tas" onclick="onCardClick(event)">taş yünü</div></div>
+                    <div class="pool-slot"><div id="c-3" class="draggable-card" data-val="katran" onclick="onCardClick(event)">katran</div></div>
+                    <div class="pool-slot"><div id="c-4" class="draggable-card" data-val="dis" onclick="onCardClick(event)">dış duvar</div></div>
+                    <div class="pool-slot"><div id="c-5" class="draggable-card" data-val="yalitkan" onclick="onCardClick(event)">yalıtkan</div></div>
+                    <div class="pool-slot"><div id="c-6" class="draggable-card" data-val="enerji" onclick="onCardClick(event)">enerji tasarrufu</div></div>
+                    
+                    <!-- Çeldirici -->
+                    <div class="pool-slot"><div id="c-7" class="draggable-card" data-val="celik" onclick="onCardClick(event)">çelik</div></div>
+                    
+                    <!-- Simetri için boş slot (Grid 2 sütun olduğu için düzeni korur) -->
+                    <div class="pool-slot opacity-0 pointer-events-none"></div>
+
+                </div>
+                <div class="control-panel">
+                    <div id="m-box" class="message-box"></div>
+                    <button id="btn-c" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Web Audio API Sentezleyici
+        let audioCtx = null;
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); 
+                osc.connect(gain); gain.connect(ctx.destination);
+                
+                if(type === 'click') { 
+                    osc.type = 'triangle'; 
+                    osc.frequency.setValueAtTime(300, ctx.currentTime); 
+                    osc.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.1); 
+                }
+                else if(type === 'jump') { 
+                    osc.type = 'sine'; 
+                    osc.frequency.setValueAtTime(200, ctx.currentTime); 
+                    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15); 
+                }
+                
+                gain.gain.setValueAtTime(0.1, ctx.currentTime); 
+                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15); 
+                osc.start(); osc.stop(ctx.currentTime + 0.15);
+            } catch(e){}
+        }
+
+        // Global Değişkenler
+        let activeDrag = null, pointerId = null;
+        let startDragX = 0, startDragY = 0, cardStartX = 0, cardStartY = 0;
+        let selCard = null, attempts = 0, done = false, preventClick = false;
+        let isAudioPlaying = false;
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('audio1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            shufflePool();
+            document.querySelectorAll('.draggable-card').forEach(c => {
+                c.addEventListener('pointerdown', down);
+            });
+            
+            const audio1 = document.getElementById('audio1');
+            if(audio1) {
+                audio1.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        function shufflePool() {
+            const container = document.querySelector('.pool-container');
+            const slots = Array.from(container.children);
+            const activeSlots = slots.slice(0, 7); // 7 kartı karıştır
+            for (let i = activeSlots.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                container.insertBefore(activeSlots[j], activeSlots[i].nextSibling);
+            }
+        }
+
+        // --- SÜRÜKLE BIRAK MOTORU ---
+        function down(e) {
+            if(done || activeDrag) return; 
+            if(selCard) { selCard.classList.remove('selected'); selCard=null; }
+            
+            activeDrag = e.currentTarget;
+            pointerId = e.pointerId;
+            activeDrag.setPointerCapture(pointerId); 
+            
+            activeDrag.classList.add('dragging');
+            
+            startDragX = e.clientX;
+            startDragY = e.clientY;
+            
+            const matrix = new DOMMatrixReadOnly(window.getComputedStyle(activeDrag).transform);
+            cardStartX = matrix.m41;
+            cardStartY = matrix.m42;
+            
+            activeDrag.addEventListener('pointermove', move);
+            activeDrag.addEventListener('pointerup', up);
+            activeDrag.addEventListener('pointercancel', up);
+            
+            playSfx('click');
+        }
+
+        function move(e) {
+            if(!activeDrag || e.pointerId !== pointerId) return;
+            
+            const container = document.getElementById('scale-container');
+            const scale = container.getBoundingClientRect().width / 960;
+            
+            const dx = (e.clientX - startDragX) / scale;
+            const dy = (e.clientY - startDragY) / scale;
+            
+            if(Math.abs(dx) > 3 || Math.abs(dy) > 3) preventClick = true;
+            
+            activeDrag.style.transform = `translate(${cardStartX + dx}px, ${cardStartY + dy}px)`;
+        }
+
+        function up(e) {
+            if(!activeDrag || e.pointerId !== pointerId) return;
+            
+            activeDrag.removeEventListener('pointermove', move);
+            activeDrag.removeEventListener('pointerup', up);
+            activeDrag.removeEventListener('pointercancel', up);
+            activeDrag.releasePointerCapture(pointerId);
+            
+            activeDrag.classList.remove('dragging');
+            
+            const zones = document.querySelectorAll('.drop-zone');
+            let bestZone = null, maxOverlap = 0;
+            const container = document.getElementById('scale-container');
+            const scale = container.getBoundingClientRect().width / 960;
+            
+            zones.forEach(zone => {
+                const r1 = activeDrag.getBoundingClientRect();
+                const r2 = zone.getBoundingClientRect();
+                const overlapX = Math.max(0, Math.min(r1.right, r2.right) - Math.max(r1.left, r2.left));
+                const overlapY = Math.max(0, Math.min(r1.bottom, r2.bottom) - Math.max(r1.top, r2.top));
+                const unscaledOverlap = (overlapX * overlapY) / (scale * scale);
+                if(unscaledOverlap > maxOverlap) { maxOverlap = unscaledOverlap; bestZone = zone; }
+            });
+            
+            if(bestZone && maxOverlap > 100) dock(activeDrag, bestZone); 
+            else back(activeDrag);
+            
+            if(preventClick) { setTimeout(() => { preventClick = false; }, 50); }
+            
+            activeDrag = null; pointerId = null;
+            refreshUI();
+        }
+
+        function dock(c, z, duration = '0.2s') {
+            const oldCardId = z.getAttribute('data-card');
+            if(oldCardId && oldCardId !== c.id) back(document.getElementById(oldCardId));
+            
+            const oldZoneId = c.getAttribute('data-zone');
+            if(oldZoneId) {
+                const oldZone = document.getElementById(oldZoneId);
+                oldZone.removeAttribute('data-card');
+                oldZone.classList.remove('has-card');
+            }
+            
+            const scale = document.getElementById('scale-container').getBoundingClientRect().width / 960;
+            const parentSlot = c.parentNode;
+            const slotRect = parentSlot.getBoundingClientRect();
+            const zoneRect = z.getBoundingClientRect();
+            
+            const dx = (zoneRect.left - slotRect.left) / scale;
+            const dy = (zoneRect.top - slotRect.top) / scale;
+
+            c.style.transition = `transform ${duration} cubic-bezier(0.2, 0, 0.2, 1)`;
+            c.style.transform = `translate(${dx}px, ${dy}px)`;
+            
+            c.setAttribute('data-zone', z.id);
+            z.setAttribute('data-card', c.id);
+            z.classList.add('has-card');
+            playSfx('jump');
+        }
+
+        function back(c) {
+            const zId = c.getAttribute('data-zone');
+            if(zId) {
+                const z = document.getElementById(zId);
+                z.removeAttribute('data-card');
+                z.classList.remove('has-card');
+            }
+            c.removeAttribute('data-zone');
+            c.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)';
+            c.style.transform = 'translate(0px, 0px)';
+        }
+
+        // Tıklayarak Yerleştirme
+        function onCardClick(e) {
+            if(done || preventClick) return;
+            const c = e.currentTarget;
+            
+            if(c.getAttribute('data-zone')) {
+                back(c); refreshUI(); return;
+            }
+            if(selCard) selCard.classList.remove('selected');
+            
+            if(selCard === c) { selCard = null; } 
+            else { selCard = c; selCard.classList.add('selected'); playSfx('click'); }
+        }
+
+        function onDropZoneClick(e) {
+            if(done || !selCard) return;
+            dock(selCard, e.currentTarget);
+            selCard.classList.remove('selected');
+            selCard = null;
+            refreshUI();
+        }
+
+        function refreshUI() {
+            const zones = document.querySelectorAll('.drop-zone');
+            // Tüm boşluklar dolduğunda KONTROL ET butonu görünür
+            const allFilled = Array.from(zones).every(z => z.getAttribute('data-card'));
+            document.getElementById('btn-c').style.display = allFilled ? 'block' : 'none';
+        }
+
+        function checkAnswers() {
+            if(done) return;
+            let correctCount = 0;
+            const zones = document.querySelectorAll('.drop-zone');
+            
+            zones.forEach(z => {
+                const cardId = z.getAttribute('data-card');
+                if(cardId) {
+                    const c = document.getElementById(cardId);
+                    const targetAnswers = z.getAttribute('data-ans').split('|'); // Çoklu cevap desteği
+                    
+                    if(targetAnswers.includes(c.getAttribute('data-val'))) {
+                        correctCount++;
+                        c.className = "draggable-card correct-state";
+                    } else {
+                        c.className = "draggable-card incorrect-state";
+                    }
+                }
+            });
+            
+            if(correctCount === zones.length) {
+                // Senaryo 1: Tam Başarı
+                done = true;
+                zones.forEach(z => document.getElementById(z.getAttribute('data-card')).classList.add('disabled'));
+                
+                const actionBtn = document.getElementById('btn-c');
+                actionBtn.className = "btn-action completed-state";
+                actionBtn.innerText = "TAMAMLANDI ✓";
+                actionBtn.disabled = true;
+
+                showMsg('Harika! Tüm kavramları doğru yerleştirdiniz.', 'msg-success');
+                showToast("Tebrikler! Etkinliği tamamladınız.");
+                
+                // Storyline Değişkeni: c3 (Başarı)
+                setVar('c3', true); 
+            } else {
+                // Hata Senaryoları
+                attempts++;
+                if(attempts === 1) {
+                    showMsg('Bazı cevaplar hatalı. Kırmızı olanları tekrar yerleştirin.', 'msg-error');
+                    zones.forEach(z => {
+                        const cardId = z.getAttribute('data-card');
+                        if(cardId) {
+                            const c = document.getElementById(cardId);
+                            const targetAnswers = z.getAttribute('data-ans').split('|');
+                            if(!targetAnswers.includes(c.getAttribute('data-val'))) {
+                                setTimeout(() => { back(c); c.className="draggable-card"; }, 1500); 
+                            }
+                        }
+                    });
+                    setTimeout(() => { document.getElementById('m-box').style.display = 'none'; refreshUI(); }, 2000);
+                } else { 
+                    // İkinci Hata: Otomatik Çözüm
+                    done = true; 
+                    document.getElementById('btn-c').style.display = 'none'; 
+                    solveAll(); 
+                }
+            }
+        }
+
+        // Otomatik Çözüm Motoru
+        function solveAll() {
+            const zones = document.querySelectorAll('.drop-zone'), cards = document.querySelectorAll('.draggable-card');
+            if(selCard) { selCard.classList.remove('selected'); selCard = null; }
+
+            cards.forEach(c => {
+                c.removeAttribute('data-zone');
+                c.style.transition = 'none';
+                c.style.transform = 'translate(0px, 0px)';
+                c.className = "draggable-card";
+            });
+            zones.forEach(z => {
+                z.removeAttribute('data-card'); z.classList.remove('has-card');
+            });
+            
+            document.body.offsetHeight; // Force reflow
+
+            setTimeout(() => {
+                zones.forEach((z, i) => {
+                    const targetVals = z.getAttribute('data-ans').split('|');
+                    // Henüz engellenmemiş (disabled olmamış) doğru kartı bul
+                    const correctCard = Array.from(cards).find(c => targetVals.includes(c.getAttribute('data-val')) && !c.classList.contains('disabled'));
+                    
+                    if(correctCard) {
+                        // Aynı kartın diğer çoklu seçenekli alanda tekrar kullanılmasını engellemek için kilitle
+                        correctCard.classList.add('disabled'); 
+                        
+                        setTimeout(() => { 
+                            dock(correctCard, z, '1.5s'); 
+                            correctCard.className = "draggable-card correct-state disabled"; 
+                        }, i * 400); 
+                    }
+                });
+            }, 100);
+
+            showMsg('Hakkınız bitti. Doğru cevaplar yerleştiriliyor...', 'msg-error');
+            
+            // Animasyonların bitmesini bekleyip inceleme sayacını başlat
+            setTimeout(() => {
+                document.getElementById('m-box').style.display = 'none';
+                triggerTimerAutoSolve('c4'); 
+            }, (zones.length * 400) + 1500); 
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-c');
+            btnCheck.style.display = 'block'; 
+            btnCheck.disabled = false;
+            btnCheck.className = 'btn-action timer-active'; 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.className = 'btn-action completed-state';
+                    btnCheck.disabled = true;
+                    
+                    showToast("İnceleme tamamlandı, eğitim devam ediyor.");
+                    setVar(variableToSet, true); // Değişkeni tetikle (c4)
+                }
+            }, 1000);
+        }
+
+        function showMsg(t, cls) { 
+            const b = document.getElementById('m-box'); 
+            b.innerText = t; b.className = 'message-box ' + cls; b.style.display = 'block'; 
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            if(msg) document.getElementById('toast-text').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+        
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Lokal Test) Storyline Sinyali: ${n} = ${v}`); 
+            } 
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { 
+            window.dispatchEvent(new Event('resize')); 
+            getAudioContext(); 
+            init(); 
+        };
+    </script>
+</body>
+</html>

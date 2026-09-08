@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Etkinlik: Tablo Doldurma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+            --cyan-accent: #0ea5e9;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+            touch-action: none;
+        }
+
+        /* Number Input Oklarını Gizleme */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 10px 40px 0 40px; height: 60px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 65px; height: 65px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -5px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 10px 40px; gap: 4px; height: calc(540px - 60px);
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        /* --- YÖNERGE KUTUSU --- */
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            background: white; border-radius: 12px; padding: 4px 15px;
+            border-left: 5px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0; z-index: 10;
+        }
+
+        .narrator-speaker {
+            width: 28px; height: 28px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .instruction-text-sub {
+            font-size: 14.5px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        /* --- ORTA PANEL: TABLO VE GÖRSELLER --- */
+        .main-activity-area {
+            display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 4px;
+            background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 6px 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        /* Görseller (Şekiller) Satırı */
+        .shapes-row {
+            display: flex; gap: 15px; height: 95px; flex-shrink: 0;
+            padding-left: 180px; /* Sol başlık sütunu boşluğunu ayarla */
+        }
+
+        .shape-box {
+            flex: 1; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; position: relative;
+            background-image: linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px);
+            background-size: 15px 15px; background-position: center; overflow: hidden;
+        }
+
+        .shape-badge {
+            position: absolute; top: 5px; left: 5px; background: #1E293B; color: white;
+            width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 900; z-index: 5;
+        }
+
+        .math-svg { width: 100%; height: 100%; max-height: 75px; }
+
+        /* Tablo Alanı */
+        .table-area {
+            flex: 1; display: flex; flex-direction: column; min-height: 0; border: 2px solid #cbd5e1; border-radius: 10px; overflow: hidden;
+        }
+
+        .t-row {
+            display: flex; flex: 1; border-bottom: 1px solid #cbd5e1;
+        }
+        .t-row:last-child { border-bottom: none; }
+
+        /* İlk sütun (Başlıklar) */
+        .t-col-header {
+            width: 180px; background: #f1f5f9; border-right: 2px solid #cbd5e1;
+            display: flex; align-items: center; justify-content: flex-start; padding-left: 15px;
+            font-size: 12.5px; font-weight: 800; color: #1E293B;
+        }
+
+        /* Soru Hücreleri */
+        .t-cell {
+            flex: 1; border-right: 1px dashed #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 3px;
+            transition: background-color 0.3s;
+        }
+        .t-cell:last-child { border-right: none; }
+
+        /* Input Stilleri */
+        .text-input {
+            width: 90%; height: 28px; border-radius: 6px; font-weight: 800; font-size: 13px;
+            border: 2px solid #cbd5e1; background: white; color: #1D4ED8; text-align: center;
+            outline: none; transition: 0.2s; font-family: 'Montserrat', sans-serif;
+            text-transform: lowercase; 
+        }
+        .text-input::placeholder { color: #94a3b8; font-weight: 500; font-size: 12px; text-transform: none; }
+        
+        .num-input {
+            width: 60%; height: 28px; border-radius: 6px; font-weight: 900; font-size: 15px;
+            border: 2px solid #cbd5e1; background: white; color: #1D4ED8; text-align: center;
+            outline: none; transition: 0.2s; font-family: 'Montserrat', sans-serif;
+        }
+
+        .text-input:focus, .num-input:focus { border-color: #1D4ED8; background: #eff6ff; box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1); }
+
+        /* Hata / Doğru Animasyonları */
+        .t-cell.is-correct { background-color: #ecfdf5; }
+        .t-cell.is-correct input { border-color: var(--success-green); color: var(--success-green); background: white; pointer-events: none;}
+        
+        .t-cell.is-incorrect { background-color: #fef2f2; animation: shake 0.4s ease-in-out;}
+        .t-cell.is-incorrect input { border-color: var(--error-red); color: var(--error-red); }
+
+        /* Seçili Sütun Vurgusu (Tıklanınca sütunu parlat) */
+        .t-cell.active-col { background-color: #f8fafc; }
+
+        /* --- ALT PANEL: KONTROL --- */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 38px; flex-shrink: 0; margin-top: auto;
+        }
+
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 10px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-red); color: white; min-width: 240px; height: 38px;
+            font-size: 13px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto;
+        }
+        .btn-action:hover { background: #991b1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-warning { background-color: var(--warning-orange) !important; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">TABLO DOLDURMA </div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text-sub" onclick="playAudio('ses1')" style="cursor: pointer;">
+                    Aşağıda verilen şekilleri inceleyerek çokgenlerin özelliklerini boşluklara yazınız.
+                </div>
+            </div>
+
+            <!-- ORTA PANEL -->
+            <div class="main-activity-area">
+                
+                <!-- GÖRSELLER (ÜST) -->
+                <div class="shapes-row">
+                    
+                    <!-- a) Yedigen -->
+                    <div class="shape-box" id="shape-1" onclick="focusCol(1)" style="cursor: pointer;">
+                        <div class="shape-badge">a)</div>
+                        <svg class="math-svg" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+                            <!-- P(75, 10), N(125, 40), M(140, 100), L(100, 140), K(50, 140), S(10, 100), R(25, 40) -->
+                            <polygon points="75,10 125,40 140,100 100,140 50,140 10,100 25,40" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linejoin="round"/>
+                            <g font-family="Montserrat" font-size="10" font-weight="800" fill="#1E293B">
+                                <text x="75" y="6" text-anchor="middle">P</text>
+                                <text x="132" y="35" text-anchor="start">N</text>
+                                <text x="145" y="105" text-anchor="start">M</text>
+                                <text x="105" y="150" text-anchor="start">L</text>
+                                <text x="45" y="150" text-anchor="end">K</text>
+                                <text x="5" y="105" text-anchor="end">S</text>
+                                <text x="18" y="35" text-anchor="end">R</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- b) Dörtgen -->
+                    <div class="shape-box" id="shape-2" onclick="focusCol(2)" style="cursor: pointer;">
+                        <div class="shape-badge">b)</div>
+                        <svg class="math-svg" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Z(85, 20), Y(125, 130), V(35, 130), T(35, 50) -->
+                            <polygon points="85,20 125,130 35,130 35,50" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linejoin="round"/>
+                            <g font-family="Montserrat" font-size="10" font-weight="800" fill="#1E293B">
+                                <text x="85" y="15" text-anchor="middle">Z</text>
+                                <text x="130" y="140" text-anchor="start">Y</text>
+                                <text x="25" y="140" text-anchor="end">V</text>
+                                <text x="25" y="55" text-anchor="end">T</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- c) Beşgen -->
+                    <div class="shape-box" id="shape-3" onclick="focusCol(3)" style="cursor: pointer;">
+                        <div class="shape-badge">c)</div>
+                        <svg class="math-svg" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+                            <!-- G(75, 20), F(140, 60), E(90, 130), D(25, 100), H(25, 40) -->
+                            <polygon points="75,20 140,60 90,130 25,100 25,40" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linejoin="round"/>
+                            <g font-family="Montserrat" font-size="10" font-weight="800" fill="#1E293B">
+                                <text x="75" y="15" text-anchor="middle">G</text>
+                                <text x="145" y="65" text-anchor="start">F</text>
+                                <text x="95" y="142" text-anchor="start">E</text>
+                                <text x="15" y="105" text-anchor="end">D</text>
+                                <text x="15" y="45" text-anchor="end">H</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                </div>
+
+                <!-- TABLO (ALT) -->
+                <div class="table-area">
+                    <!-- Satır 1: Çokgenin İsimlendirilmesi -->
+                    <div class="t-row">
+                        <div class="t-col-header">Çokgenin İsimlendirilmesi</div>
+                        <div class="t-cell col-1"><input type="text" id="inp-1-name" class="text-input" placeholder="isim giriniz" onfocus="focusCol(1)"></div>
+                        <div class="t-cell col-2"><input type="text" id="inp-2-name" class="text-input" placeholder="isim giriniz" onfocus="focusCol(2)"></div>
+                        <div class="t-cell col-3"><input type="text" id="inp-3-name" class="text-input" placeholder="isim giriniz" onfocus="focusCol(3)"></div>
+                    </div>
+                    <!-- Satır 2: Kenar Sayısı -->
+                    <div class="t-row">
+                        <div class="t-col-header">Kenar Sayısı</div>
+                        <div class="t-cell col-1"><input type="number" id="inp-1-k" class="num-input" maxlength="2" onfocus="focusCol(1)"></div>
+                        <div class="t-cell col-2"><input type="number" id="inp-2-k" class="num-input" maxlength="2" onfocus="focusCol(2)"></div>
+                        <div class="t-cell col-3"><input type="number" id="inp-3-k" class="num-input" maxlength="2" onfocus="focusCol(3)"></div>
+                    </div>
+                    <!-- Satır 3: Köşe Sayısı -->
+                    <div class="t-row">
+                        <div class="t-col-header">Köşe Sayısı</div>
+                        <div class="t-cell col-1"><input type="number" id="inp-1-ko" class="num-input" maxlength="2" onfocus="focusCol(1)"></div>
+                        <div class="t-cell col-2"><input type="number" id="inp-2-ko" class="num-input" maxlength="2" onfocus="focusCol(2)"></div>
+                        <div class="t-cell col-3"><input type="number" id="inp-3-ko" class="num-input" maxlength="2" onfocus="focusCol(3)"></div>
+                    </div>
+                    <!-- Satır 4: İç Açı Sayısı -->
+                    <div class="t-row">
+                        <div class="t-col-header">İç Açı Sayısı</div>
+                        <div class="t-cell col-1"><input type="number" id="inp-1-ic" class="num-input" maxlength="2" onfocus="focusCol(1)"></div>
+                        <div class="t-cell col-2"><input type="number" id="inp-2-ic" class="num-input" maxlength="2" onfocus="focusCol(2)"></div>
+                        <div class="t-cell col-3"><input type="number" id="inp-3-ic" class="num-input" maxlength="2" onfocus="focusCol(3)"></div>
+                    </div>
+                    <!-- Satır 5: Dış Açı Sayısı -->
+                    <div class="t-row">
+                        <div class="t-col-header">Dış Açı Sayısı</div>
+                        <div class="t-cell col-1"><input type="number" id="inp-1-dis" class="num-input" maxlength="2" onfocus="focusCol(1)"></div>
+                        <div class="t-cell col-2"><input type="number" id="inp-2-dis" class="num-input" maxlength="2" onfocus="focusCol(2)"></div>
+                        <div class="t-cell col-3"><input type="number" id="inp-3-dis" class="num-input" maxlength="2" onfocus="focusCol(3)"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ALT PANEL: KONTROL VE GERİ BİLDİRİM -->
+            <div class="bottom-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+        
+        // Çokgen Verileri: {Sütun_No: { name, k, ko, ic, dis }}
+        // Kabul edilen isim varyasyonları (Boşlukları alıp küçük harfe çevirerek kontrol edeceğiz)
+        const validNames = {
+            1: ['yedigen'],
+            2: ['dörtgen', 'dortgen'],
+            3: ['beşgen', 'besgen']
+        };
+
+        const ansData = {
+            1: { k: 7, ko: 7, ic: 7, dis: 7 },
+            2: { k: 4, ko: 4, ic: 4, dis: 4 },
+            3: { k: 5, ko: 5, ic: 5, dis: 5 }
+        };
+
+        const rows = ['name', 'k', 'ko', 'ic', 'dis'];
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+
+            // Input sınırlandırmaları (Maksimum 2 hane)
+            document.querySelectorAll('.num-input').forEach(inp => {
+                inp.addEventListener('input', function() {
+                    if (this.value.length > 2) this.value = this.value.slice(0, 2);
+                });
+                inp.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') checkAnswers();
+                });
+            });
+
+            document.querySelectorAll('.text-input').forEach(inp => {
+                inp.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') checkAnswers();
+                });
+            });
+        }
+
+        // Tıklanan veya Odaklanılan Sütunu Vurgulama
+        function focusCol(colNum) {
+            if (isCompleted) return;
+            
+            document.querySelectorAll('.t-cell').forEach(cell => cell.classList.remove('active-col'));
+            document.querySelectorAll(`.col-${colNum}`).forEach(cell => cell.classList.add('active-col'));
+            
+            document.querySelectorAll('.shape-box').forEach(box => box.style.borderColor = '#e2e8f0');
+            document.getElementById(`shape-${colNum}`).style.borderColor = '#3b82f6';
+        }
+
+        function normalizeString(str) {
+            return str.replace(/\s+/g, '').toLowerCase();
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            let allFilled = true;
+            let allCorrect = true;
+            let wrongCells = []; // ID listesi örn: "inp-1-name"
+
+            // Tüm inputları kontrol et
+            for (let c = 1; c <= 3; c++) {
+                rows.forEach(r => {
+                    let inputId = `inp-${c}-${r}`;
+                    let inputEl = document.getElementById(inputId);
+                    let val = inputEl.value.trim();
+                    let cellParent = inputEl.parentElement;
+
+                    if (val === '') {
+                        allFilled = false;
+                    } else {
+                        let isCellCorrect = false;
+                        if (r === 'name') {
+                            isCellCorrect = validNames[c].includes(normalizeString(val));
+                        } else {
+                            isCellCorrect = (parseInt(val) === ansData[c][r]);
+                        }
+
+                        if (!isCellCorrect) {
+                            allCorrect = false;
+                            wrongCells.push(inputId);
+                        } else {
+                            // Doğru olanı hemen yeşillendir
+                            cellParent.classList.add('is-correct');
+                        }
+                    }
+                });
+            }
+
+            if(!allFilled) {
+                showToast("Lütfen tüm boşlukları doldurunuz.", "toast-warning");
+                playSfx('error');
+                return;
+            }
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+            fbBox.className = "feedback-msg"; // Reset
+            
+            // Seçili sütun vurgusunu kaldır
+            document.querySelectorAll('.t-cell').forEach(cell => cell.classList.remove('active-col'));
+            document.querySelectorAll('.shape-box').forEach(box => box.style.borderColor = '#e2e8f0');
+
+            if(allCorrect) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+                
+                if(attempts === 0) {
+                    fbBox.innerHTML = `DOĞRU! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:4px;">Harika! Bir çokgenin kenar, köşe ve açı sayılarının birbirine eşit olduğunu kavradınız.</span>`;
+                    fbBox.classList.add('fb-success');
+                    
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                    setVar('w27', true); // İLK DENEME DOĞRU: w27
+                } else {
+                    // İKİNCİ DENEMEDE KENDİSİ DÜZELTTİ İSE
+                    triggerTimerAutoSolve('w28'); 
+                }
+
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+
+                if(attempts === 1) {
+                    // 1. HATA
+                    fbBox.innerHTML = `Hatalı cevaplarınız var. Unutmayın: Çokgenler kenar sayılarına göre isimlendirilir. Kenar, köşe ve açı sayıları birbirine eşittir.`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Yanlış olan hücreleri titret ve temizle
+                    wrongCells.forEach(id => {
+                        const cellEl = document.getElementById(id).parentElement;
+                        cellEl.classList.remove('is-correct');
+                        cellEl.classList.add('is-incorrect');
+                        
+                        setTimeout(() => { 
+                            cellEl.classList.remove('is-incorrect'); 
+                            document.getElementById(id).value = ''; 
+                        }, 1200);
+                    });
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 5000);
+
+                } else {
+                    // 2. HATA - OTOMATİK ÇÖZÜM
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Doğru cevaplar otomatik olarak yazılıyor...`;
+                    fbBox.classList.add('fb-error');
+
+                    let delayCounter = 0;
+
+                    for (let c = 1; c <= 3; c++) {
+                        rows.forEach((r) => {
+                            setTimeout(() => {
+                                let inputId = `inp-${c}-${r}`;
+                                let inputEl = document.getElementById(inputId);
+                                let cellEl = inputEl.parentElement;
+                                
+                                cellEl.classList.remove('is-incorrect');
+                                inputEl.disabled = true; // Kutuyu kilitle
+
+                                if (r === 'name') {
+                                    inputEl.value = validNames[c][0]; // İlk geçerli ismi yaz
+                                } else {
+                                    inputEl.value = ansData[c][r];
+                                }
+                                
+                                cellEl.classList.add('is-correct');
+                                playSfx('click');
+                            }, delayCounter * 150);
+                            delayCounter++;
+                        });
+                    }
+
+                    // Tüm doldurmalar bittikten sonra sayacı başlat
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve('w28'); // OTOMATİK ÇÖZÜM: w28
+                    }, delayCounter * 150 + 1000);
+                }
+            }
+        }
+
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); // Değişkeni tetikle (w28)
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { init(); };
+    </script>
+</body>
+</html>

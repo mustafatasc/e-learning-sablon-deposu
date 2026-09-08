@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Komşu Açılar Etkinliği</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            /* Matematik Teması Renkleri */
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --light-red: #FEF2F2;
+            --hover-red: #DC2626;
+            --text-dark: #1E293B;
+            
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --warning-orange: #F59E0B;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+        }
+
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            /* Matematik defteri ızgarası */
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px 40px 0 40px; height: 85px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text { font-size: 15px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 0.5px;}
+        .sub-instruction { font-size: 13.5px; font-weight: 600; color: #475569; margin-top: 4px; }
+        .logo-right-container { width: 80px; height: 80px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: row; flex: 1; padding: 5px 40px 20px 40px; gap: 30px; height: calc(540px - 85px);
+            z-index: 10;
+        }
+
+        /* --- SOL PANEL: BÜYÜK SVG ÇİZİMİ --- */
+        .left-panel {
+            width: 440px; display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .drawing-card {
+            background: white; border: 3px solid rgba(185, 28, 28, 0.15); border-radius: 16px;
+            padding: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: center; height: 100%;
+        }
+
+        .math-svg {
+            width: 100%; height: 100%;
+        }
+
+        .math-text { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 24px; fill: #1E293B; }
+        .point-dot { fill: #1E293B; }
+
+        /* --- SAĞ PANEL: SEÇENEKLER VE KONTROL --- */
+        .right-panel {
+            flex: 1; display: flex; flex-direction: column; position: relative; justify-content: space-between;
+        }
+
+        .options-container {
+            display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: center;
+        }
+
+        .opt-row {
+            display: flex; align-items: center; gap: 15px; background: white; border: 2px solid #e2e8f0;
+            border-radius: 12px; padding: 8px 15px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); min-height: 45px;
+        }
+        
+        .opt-row:hover { border-color: var(--primary-red); background: #fef2f2; transform: translateY(-1px); }
+        .opt-row:active { transform: translateY(1px); }
+
+        .opt-letter { font-size: 15px; font-weight: 900; color: #64748B; width: 25px;}
+
+        /* Özel Şapkalı Açı Gösterimi (KÔL vb.) */
+        .angle-name { font-size: 15px; font-weight: 800; color: #1e293b; display: inline-block;}
+        .angle-name span { position: relative; display: inline-block; }
+        .angle-name span::after {
+            content: '^'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            font-size: 14px; font-weight: 900;
+        }
+        
+        .opt-text { font-size: 15px; font-weight: 600; color: #334155; flex: 1; display: flex; align-items: center; gap: 6px;}
+
+        /* Özel Checkbox İkonu */
+        .checkbox-box {
+            width: 26px; height: 26px; border: 2.5px solid #cbd5e1; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; background: white;
+            transition: 0.2s; flex-shrink: 0; color: transparent; font-weight: 900; font-size: 16px;
+        }
+        
+        .opt-row.selected {
+            background: #fef2f2; border-color: var(--primary-red); box-shadow: inset 0 0 0 1px var(--primary-red);
+        }
+        .opt-row.selected .checkbox-box {
+            background: var(--primary-red); border-color: var(--primary-red); color: white;
+        }
+        .opt-row.selected .opt-letter { color: var(--primary-red); }
+
+        /* Hata / Doğru Durumları */
+        .opt-row.is-correct { border-color: var(--success-green) !important; background: #ecfdf5 !important; pointer-events: none;}
+        .opt-row.is-correct .checkbox-box { background: var(--success-green); border-color: var(--success-green); color: white; content: '✓';}
+        .opt-row.is-correct .opt-letter { color: var(--success-green); }
+        
+        .opt-row.is-incorrect { border-color: var(--error-red) !important; background: #fef2f2 !important; animation: shake 0.4s ease-in-out;}
+        .opt-row.is-incorrect .checkbox-box { background: var(--error-red); border-color: var(--error-red); color: white; content: '✗';}
+        .opt-row.is-incorrect .opt-letter { color: var(--error-red); }
+        
+        .opt-row.disabled { pointer-events: none; opacity: 0.7;}
+
+        /* KONTROL BUTONU VE GERİ BİLDİRİM */
+        .control-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 10px; }
+
+        .feedback-msg {
+            font-size: 12px; font-weight: 800; text-align: center; padding: 8px; border-radius: 8px;
+            display: none; line-height: 1.4; width: 100%;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--primary-red); color: white; width: 100%; height: 45px;
+            font-size: 14px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(185, 28, 28, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+        }
+        .btn-action:hover { background: var(--hover-red); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(185, 28, 28, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: none; transform: none; box-shadow: none;}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Toast Bildirimleri */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: var(--primary-dark); color: white; font-weight: 800; font-size: 13px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; color: white !important;}
+
+    </style>
+</head>
+<body>
+
+    <audio id="audio1" src="ses1.mp3" preload="auto"></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text">Tebrikler!</span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text">DOĞRULARIN BİRBİRİNE GÖRE DURUMLARI</div>
+                <div class="sub-instruction">Aşağıda verilen şekle göre açı çiftlerinden <strong>komşu açı</strong> olanları işaretleyiniz.</div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <!-- SOL PANEL: ÇİZİM -->
+            <div class="left-panel">
+                <div class="drawing-card">
+                    <svg class="math-svg" viewBox="0 0 320 280">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#1E293B" />
+                            </marker>
+                        </defs>
+
+                        <!-- Işınlar (Rays) -->
+                        <line x1="40" y1="240" x2="260" y2="240" stroke="#1E293B" stroke-width="4" marker-end="url(#arrow)" />
+                        <line x1="40" y1="240" x2="250" y2="150" stroke="#1E293B" stroke-width="4" marker-end="url(#arrow)" />
+                        <line x1="40" y1="240" x2="180" y2="60" stroke="#1E293B" stroke-width="4" marker-end="url(#arrow)" />
+                        <line x1="40" y1="240" x2="110" y2="30" stroke="#1E293B" stroke-width="4" marker-end="url(#arrow)" />
+
+                        <!-- Noktalar -->
+                        <circle cx="40" cy="240" r="6" class="point-dot"/>
+                        <text x="25" y="260" class="math-text">O</text>
+
+                        <!-- N -->
+                        <circle cx="210" cy="240" r="6" class="point-dot"/>
+                        <text x="210" y="225" class="math-text" text-anchor="middle">N</text>
+
+                        <!-- M -->
+                        <circle cx="195" cy="173" r="6" class="point-dot"/>
+                        <text x="180" y="160" class="math-text">M</text>
+
+                        <!-- L -->
+                        <circle cx="140" cy="111" r="6" class="point-dot"/>
+                        <text x="120" y="105" class="math-text">L</text>
+
+                        <!-- K -->
+                        <circle cx="90" cy="90" r="6" class="point-dot"/>
+                        <text x="65" y="85" class="math-text">K</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- SAĞ PANEL: SEÇENEKLER VE KONTROL -->
+            <div class="right-panel">
+                
+                <div class="options-container">
+                    
+                    <!-- a) KOL ile LOM (DOĞRU) -->
+                    <div class="opt-row" id="opt-0" onclick="toggleOption(0)">
+                        <div class="opt-letter">a)</div>
+                        <div class="opt-text">
+                            <div class="angle-name">K<span>O</span>L</div>
+                            &nbsp;ile&nbsp;
+                            <div class="angle-name">L<span>O</span>M</div>
+                        </div>
+                        <div class="checkbox-box">✓</div>
+                    </div>
+
+                    <!-- b) LOM ile LON (YANLIŞ) -->
+                    <div class="opt-row" id="opt-1" onclick="toggleOption(1)">
+                        <div class="opt-letter">b)</div>
+                        <div class="opt-text">
+                            <div class="angle-name">L<span>O</span>M</div>
+                            &nbsp;ile&nbsp;
+                            <div class="angle-name">L<span>O</span>N</div>
+                        </div>
+                        <div class="checkbox-box">✓</div>
+                    </div>
+
+                    <!-- c) KOL ile MON (YANLIŞ) -->
+                    <div class="opt-row" id="opt-2" onclick="toggleOption(2)">
+                        <div class="opt-letter">c)</div>
+                        <div class="opt-text">
+                            <div class="angle-name">K<span>O</span>L</div>
+                            &nbsp;ile&nbsp;
+                            <div class="angle-name">M<span>O</span>N</div>
+                        </div>
+                        <div class="checkbox-box">✓</div>
+                    </div>
+
+                    <!-- d) KOM ile MON (DOĞRU) -->
+                    <div class="opt-row" id="opt-3" onclick="toggleOption(3)">
+                        <div class="opt-letter">d)</div>
+                        <div class="opt-text">
+                            <div class="angle-name">K<span>O</span>M</div>
+                            &nbsp;ile&nbsp;
+                            <div class="angle-name">M<span>O</span>N</div>
+                        </div>
+                        <div class="checkbox-box">✓</div>
+                    </div>
+
+                    <!-- e) KOL ile LON (DOĞRU) -->
+                    <div class="opt-row" id="opt-4" onclick="toggleOption(4)">
+                        <div class="opt-letter">e)</div>
+                        <div class="opt-text">
+                            <div class="angle-name">K<span>O</span>L</div>
+                            &nbsp;ile&nbsp;
+                            <div class="angle-name">L<span>O</span>N</div>
+                        </div>
+                        <div class="checkbox-box">✓</div>
+                    </div>
+
+                </div>
+
+                <div class="control-panel">
+                    <div id="q-fb" class="feedback-msg"></div>
+                    <button id="btn-check" class="btn-action" onclick="checkAnswers()">KONTROL ET</button>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function getAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='click') { osc.type='triangle'; osc.frequency.setValueAtTime(440, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime+0.1); }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        let isCompleted = false;
+        let attempts = 0;
+
+        // Doğru şıklar: a(0), d(3), e(4). Yanlışlar: b(1), c(2)
+        const correctIndicies = [0, 3, 4];
+
+        function init() {
+            document.getElementById('audio1').play().catch(()=>{});
+        }
+
+        function toggleOption(id) {
+            if(isCompleted) return;
+            getAudioContext();
+            playSfx('click');
+            
+            const row = document.getElementById(`opt-${id}`);
+            row.classList.toggle('selected');
+        }
+
+        function checkAnswers() {
+            if(isCompleted) return;
+            
+            // Tüm satırların mevcut seçim durumlarını kontrol et
+            const s0 = document.getElementById('opt-0').classList.contains('selected');
+            const s1 = document.getElementById('opt-1').classList.contains('selected');
+            const s2 = document.getElementById('opt-2').classList.contains('selected');
+            const s3 = document.getElementById('opt-3').classList.contains('selected');
+            const s4 = document.getElementById('opt-4').classList.contains('selected');
+
+            const fbBox = document.getElementById('q-fb');
+            const btnCheck = document.getElementById('btn-check');
+
+            fbBox.className = "feedback-msg"; // Reset sınıfları
+
+            // Doğru koşul: a, d, e seçili olmalı; b ve c seçili OLMAMALI
+            if(s0 && !s1 && !s2 && s3 && s4) {
+                // TAM BAŞARI
+                isCompleted = true;
+                playSfx('success');
+
+                // Görsellik güncellemesi
+                document.getElementById('opt-0').classList.add('is-correct');
+                document.getElementById('opt-3').classList.add('is-correct');
+                document.getElementById('opt-4').classList.add('is-correct');
+                
+                document.getElementById('opt-1').classList.add('disabled');
+                document.getElementById('opt-2').classList.add('disabled');
+                
+                if(attempts === 0 || attempts === 1) {
+                    fbBox.innerHTML = `TEBRİKLER! <br><span style="font-weight:600; font-size:11.5px; display:block; margin-top:4px;">Komşu açı çiftlerini doğru tespit ettiniz.</span>`;
+                    fbBox.classList.add('fb-success');
+                    
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("Etkinlik başarıyla tamamlandı. İlerleyebilirsiniz.", "toast-success");
+                    setVar('a16', true); // BAŞARI: a16 = true
+                }
+
+            } else {
+                // HATA DURUMU
+                attempts++;
+                playSfx('error');
+
+                if(attempts === 1) {
+                    // 1. HATA
+                    fbBox.innerHTML = `Eksik veya hatalı seçimleriniz var. "Komşu" olmaları için bir ışınlarının ortak ve iç bölgelerinin ayrık olması gerekir. Tekrar deneyin!`;
+                    fbBox.classList.add('fb-error');
+                    
+                    // Sadece Yanlış seçilmiş olanları (b ve c) salla ve seçimini kaldır
+                    if(s1) {
+                        const row1 = document.getElementById('opt-1');
+                        row1.classList.add('is-incorrect');
+                        setTimeout(() => { row1.classList.remove('is-incorrect', 'selected'); }, 1500);
+                    }
+                    if(s2) {
+                        const row2 = document.getElementById('opt-2');
+                        row2.classList.add('is-incorrect');
+                        setTimeout(() => { row2.classList.remove('is-incorrect', 'selected'); }, 1500);
+                    }
+                    
+                    setTimeout(() => { fbBox.style.display = 'none'; }, 3500);
+
+                } else {
+                    // 2. HATA - OTOMATİK ÇÖZÜM VE SAYAÇ
+                    isCompleted = true;
+                    
+                    fbBox.innerHTML = `Hakkınız bitti. Doğru cevaplar işaretleniyor...`;
+                    fbBox.classList.add('fb-error');
+
+                    // Temizlik
+                    for(let i=0; i<5; i++) {
+                        const row = document.getElementById(`opt-${i}`);
+                        row.classList.remove('selected', 'is-incorrect');
+                        row.classList.add('disabled');
+                    }
+
+                    // Gecikmeli doğru cevap animasyonu
+                    setTimeout(() => { document.getElementById('opt-0').classList.add('is-correct'); playSfx('click'); }, 500);
+                    setTimeout(() => { document.getElementById('opt-3').classList.add('is-correct'); playSfx('click'); }, 1000);
+                    setTimeout(() => { document.getElementById('opt-4').classList.add('is-correct'); playSfx('click'); }, 1500);
+
+                    // Sayaç başlat
+                    setTimeout(() => {
+                        fbBox.style.display = 'none';
+                        triggerTimerAutoSolve('a17');
+                    }, 2500);
+                }
+            }
+        }
+
+        // İnceleme Sayacı Fonksiyonu
+        function triggerTimerAutoSolve(variableToSet) {
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.classList.add('timer-active'); 
+            
+            let countdown = 10;
+            btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+            
+            const interval = setInterval(() => {
+                countdown--;
+                btnCheck.innerText = `İNCELEME SÜRESİ: ${countdown}S`;
+                
+                if(countdown <= 0) {
+                    clearInterval(interval);
+                    btnCheck.innerText = "TAMAMLANDI ✓";
+                    btnCheck.classList.remove('timer-active');
+                    btnCheck.classList.add('completed');
+                    
+                    showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                    setVar(variableToSet, true); // a17 değişkenini tetikle
+                }
+            }, 1000);
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            
+            toast.className = ''; 
+            toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        window.addEventListener('resize', () => {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        });
+        
+        window.onload = () => { 
+            window.dispatchEvent(new Event('resize')); 
+            init(); 
+        };
+    </script>
+</body>
+</html>

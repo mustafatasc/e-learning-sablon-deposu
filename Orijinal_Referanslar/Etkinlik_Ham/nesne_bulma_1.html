@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Etkinlik: Dik Açıları Bulma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --slide-width: 960px;
+            --slide-height: 540px;
+            --bg-cream: #FCF9F2;
+            --grid-line: rgba(185, 28, 28, 0.08);
+            
+            --primary-red: #B91C1C; 
+            --text-dark: #1E293B;
+            --success-green: #10B981;
+            --error-red: #EF4444;
+            --cyan-accent: #0ea5e9;
+            --blue-mark: #2563EB;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0F172A; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Montserrat', sans-serif;
+            font-weight: 500; color: var(--text-dark);
+            user-select: none; -webkit-user-select: none;
+            visibility: hidden;
+        }
+
+        #scale-container {
+            width: var(--slide-width); height: var(--slide-height);
+            background-color: var(--bg-cream); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--grid-line) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border-top: 6px solid var(--primary-red);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 15px 40px 0 40px; height: 75px;
+            display: flex; justify-content: space-between; align-items: start;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        .instruction-container { flex: 1; padding: 0; }
+        .instruction-text-main { font-size: 16px; line-height: 1.4; font-weight: 900; color: var(--primary-red); text-transform: uppercase; letter-spacing: 1px;}
+        .logo-right-container { width: 75px; height: 75px; display: flex; justify-content: center; align-items: flex-start; flex-shrink: 0; margin-left: 20px; margin-top: -10px; }
+
+        .content-wrapper {
+            display: flex; flex-direction: column; flex: 1; padding: 0 40px 15px 40px; gap: 10px; height: calc(540px - 75px);
+            z-index: 10; position: relative; min-height: 0;
+        }
+
+        /* --- YÖNERGE KUTUSU --- */
+        .instruction-group {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            background: white; border-radius: 12px; padding: 8px 20px 8px 15px;
+            border-left: 5px solid #1D4ED8; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            margin-top: 0; z-index: 10;
+        }
+
+        .narrator-speaker {
+            width: 32px; height: 32px; background: var(--primary-red); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4); cursor: pointer;
+        }
+
+        @keyframes pulsePlay {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+
+        .instruction-text-sub {
+            font-size: 14px; line-height: 1.4; font-weight: 700; color: var(--text-dark);
+        }
+
+        /* --- ORTA PANEL --- */
+        .main-activity-area {
+            display: flex; gap: 20px; flex: 1; min-height: 0; align-items: stretch;
+        }
+
+        /* Sol: SVG Kareli Zemin */
+        .svg-board {
+            flex: 2; background-color: #f8fafc; border: 3px solid #cbd5e1; border-radius: 16px;
+            position: relative; overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .grid-svg { width: 100%; height: 100%; cursor: crosshair; }
+
+        /* Sağ: Oyunlaştırma Paneli */
+        .status-panel {
+            flex: 0.8; display: flex; flex-direction: column; gap: 15px; justify-content: center;
+        }
+
+        .status-card {
+            background: white; border: 2px solid #e2e8f0; border-radius: 12px;
+            padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .status-title { font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;}
+        
+        .counter-value { font-size: 32px; font-weight: 900; color: var(--blue-mark); font-family: 'Montserrat', sans-serif;}
+        .counter-total { font-size: 20px; color: #94a3b8;}
+
+        .progress-bar-container {
+            width: 100%; height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; width: 0%; background: var(--blue-mark); transition: width 0.4s ease-out;
+        }
+
+        .hearts-container {
+            display: flex; gap: 8px; font-size: 24px;
+        }
+        .heart { transition: all 0.3s; }
+        .heart.lost { filter: grayscale(100%); opacity: 0.3; transform: scale(0.8); }
+
+        /* --- İNTERAKTİF SVG STİLLERİ --- */
+        
+        /* Dik Açı Hedefleri */
+        .angle-target { cursor: pointer; }
+        
+        .hitbox { fill: transparent; }
+        
+        .hover-mark {
+            fill: rgba(37, 99, 235, 0.15); opacity: 0; transition: opacity 0.2s; pointer-events: none;
+        }
+        .angle-target:hover .hover-mark { opacity: 1; }
+
+        .correct-mark {
+            opacity: 0; pointer-events: none;
+        }
+        .correct-lines {
+            stroke: var(--blue-mark); stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round;
+            stroke-dasharray: 60; stroke-dashoffset: 60; transition: stroke-dashoffset 0.4s ease-out;
+        }
+        .correct-dot {
+            fill: var(--blue-mark); transform: scale(0); transform-origin: 10px 10px; transition: transform 0.3s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Bulunduğunda */
+        .angle-target.found .correct-mark { opacity: 1; }
+        .angle-target.found .correct-lines { stroke-dashoffset: 0; }
+        .angle-target.found .correct-dot { transform: scale(1); }
+        .angle-target.found .hover-mark { display: none; }
+        .angle-target.found { pointer-events: none; }
+
+        /* Dar Açı Hata Hedefleri */
+        .acute-target { cursor: pointer; }
+        .acute-error-arc {
+            fill: none; stroke: var(--error-red); stroke-width: 3.5; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .acute-target.show-error .acute-error-arc {
+            animation: flashRed 1s ease-out;
+        }
+
+        @keyframes flashRed {
+            0% { opacity: 1; stroke-width: 5; }
+            100% { opacity: 0; stroke-width: 3.5; }
+        }
+
+        /* Yanlış Tıklama Evi Titretme (Hafif) */
+        .shake-board { animation: shakeBoard 0.3s ease-in-out; }
+        @keyframes shakeBoard {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-3px); }
+            40%, 80% { transform: translateX(3px); }
+        }
+
+        /* --- ALT PANEL: KONTROL --- */
+        .bottom-panel {
+            display: flex; justify-content: space-between; align-items: center; height: 45px; flex-shrink: 0; margin-top: auto; z-index: 20;
+        }
+
+        .feedback-msg {
+            font-size: 13px; font-weight: 800; padding: 10px 20px; border-radius: 10px;
+            display: none; line-height: 1.4; flex: 1; margin-right: 20px;
+        }
+        .fb-success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #10b981; }
+        .fb-error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; }
+
+        .btn-action {
+            background: var(--success-green); color: white; min-width: 240px; height: 45px;
+            font-size: 14px; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); border: none;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+            padding: 0 25px; margin-left: auto; opacity: 0; pointer-events: none; transform: translateY(15px);
+        }
+        .btn-action.show-btn { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .btn-action:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .btn-action.completed { background: var(--success-green); pointer-events: auto; transform: none; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);}
+        .btn-action.timer-active { background: var(--warning-orange); pointer-events: none; transform: none; box-shadow: none;}
+
+        /* Toast Bildirimi */
+        #toast-msg {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            font-weight: 800; font-size: 14px;
+            padding: 12px 24px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 3000; color: white;
+        }
+        #toast-msg.show { transform: translateX(-50%) translateY(0); }
+        .toast-success { background-color: var(--success-green) !important; }
+        .toast-error { background-color: var(--error-red) !important; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="ses1" src="ses1.mp3" preload="auto" autoplay></audio>
+
+    <div id="scale-container">
+        
+        <div id="toast-msg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="toast-text"></span>
+        </div>
+
+        <header class="header">
+            <div class="instruction-container">
+                <div class="instruction-text-main">DİK AÇILARI BULMA ETKİNLİĞİ</div>
+            </div>
+            <div class="logo-right-container">
+                <img src="r1.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.style.display='none';">
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            
+            <div class="instruction-group">
+                <div id="main-speaker" class="narrator-speaker" onclick="playAudio('ses1')">
+                    <svg class="w-4 h-4 pl-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 4.06c0-1.336-1.546-2.07-2.584-1.23L6.15 6.75H3A1.5 1.5 0 001.5 8.25v7.5A1.5 1.5 0 003 17.25h3.15l4.766 3.92c1.038.84 2.584.106 2.584-1.23V4.06z"/></svg>
+                </div>
+                <div class="instruction-text-sub">
+                    Aşağıda kareli zemin üzerinde verilen ev modelindeki <strong>dik açıları bularak</strong> köşelerin iç kısımlarına tıklayınız.
+                </div>
+            </div>
+
+            <!-- ORTA PANEL -->
+            <div class="main-activity-area">
+                
+                <!-- SOL: Kareli Zemin ve Ev Çizimi -->
+                <div class="svg-board">
+                    <!-- SVG viewBox daha fazla küçültülerek ev maksimum boyuta ulaştırıldı -->
+                    <svg class="grid-svg" viewBox="80 80 340 390" xmlns="http://www.w3.org/2000/svg" onclick="handleWrongClick(event)">
+                        <defs>
+                            <!-- 25x25 Kareli Zemin Deseni -->
+                            <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse">
+                                <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
+                            </pattern>
+                        </defs>
+
+                        <!-- Zemin (Tüm alanı kaplayacak kadar büyük) -->
+                        <rect width="600" height="600" fill="url(#grid)" />
+
+                        <!-- EV MODELİ ÇİZİMİ (Tıklamaları engellemesin diye pointer-events: none) -->
+                        <g stroke="#1E293B" stroke-width="3.5" fill="transparent" pointer-events="none">
+                            <!-- Ev Gövdesi (100,250'den 400,450'ye. W:300, H:200) -->
+                            <rect x="100" y="250" width="300" height="200" />
+                            
+                            <!-- Çatı (Tepe: 250,100) -->
+                            <polygon points="100,250 250,100 400,250" />
+                            
+                            <!-- Sol Pencere (150,300'den W:50, H:50) -->
+                            <rect x="150" y="300" width="50" height="50" />
+                            
+                            <!-- Sağ Pencere (300,300'den W:50, H:50) -->
+                            <rect x="300" y="300" width="50" height="50" />
+                            
+                            <!-- Kapı (225,375'den W:50, H:75) -->
+                            <rect x="225" y="375" width="50" height="75" />
+                        </g>
+
+                        <!-- DİNAMİK OLARAK OLUŞTURULACAK İNTERAKTİF NOKTALAR BURAYA EKLENECEK -->
+                        <g id="targets-container"></g>
+
+                    </svg>
+                </div>
+
+                <!-- SAĞ: Oyunlaştırma Paneli -->
+                <div class="status-panel">
+                    
+                    <!-- Sayaç Kartı -->
+                    <div class="status-card">
+                        <div class="status-title">Bulunan Dik Açılar</div>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span class="counter-value" id="count-text">0</span>
+                            <span class="counter-total">/ 17</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Can (Hata Hakkı) Kartı -->
+                    <div class="status-card">
+                        <div class="status-title">Kalan Hata Hakkı</div>
+                        <div class="hearts-container mt-1" id="hearts-container">
+                            <span class="heart" id="heart-1">❤️</span>
+                            <span class="heart" id="heart-2">❤️</span>
+                            <span class="heart" id="heart-3">❤️</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ALT PANEL: KONTROL VE GERİ BİLDİRİM -->
+            <div class="bottom-panel">
+                <div id="q-fb" class="feedback-msg"></div>
+                <!-- İnceleme butonuna tıklandığında (veya süre bittiğinde) kullanılacak id eklendi -->
+                <button id="btn-next" class="btn-action" onclick="finishActivity()">TAMAMLANDI ✓</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        
+        function getAudioContext() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            return audioCtx; 
+        }
+        
+        function playSfx(type) {
+            try {
+                const ctx = getAudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination);
+                if(type==='pop') { 
+                    osc.type='sine'; osc.frequency.setValueAtTime(600, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime+0.1); 
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.1);
+                    osc.start(); osc.stop(ctx.currentTime+0.1); return;
+                }
+                else if(type==='success') { osc.type='sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.25); }
+                else if(type==='error') { osc.type='sawtooth'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.3); }
+                gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3);
+            } catch(e){}
+        }
+
+        // --- VERİ MODELİ ---
+        const totalTargets = 17;
+        let foundCount = 0;
+        let lives = 3;
+        let isCompleted = false;
+
+        // 17 Adet Dik Açı Noktası (Ev ve Pencereler)
+        const rightAngles = [
+            { id: 1, cx: 250, cy: 100, rot: 45 },  // Çatı Tepesi
+            { id: 2, cx: 100, cy: 250, rot: 0 },   // Ev Sol Üst
+            { id: 3, cx: 400, cy: 250, rot: 90 },  // Ev Sağ Üst
+            { id: 4, cx: 400, cy: 450, rot: 180 }, // Ev Sağ Alt
+            { id: 5, cx: 100, cy: 450, rot: 270 }, // Ev Sol Alt
+            
+            // Sol Pencere
+            { id: 6, cx: 150, cy: 300, rot: 0 },
+            { id: 7, cx: 200, cy: 300, rot: 90 },
+            { id: 8, cx: 200, cy: 350, rot: 180 },
+            { id: 9, cx: 150, cy: 350, rot: 270 },
+            
+            // Sağ Pencere
+            { id: 10, cx: 300, cy: 300, rot: 0 },
+            { id: 11, cx: 350, cy: 300, rot: 90 },
+            { id: 12, cx: 350, cy: 350, rot: 180 },
+            { id: 13, cx: 300, cy: 350, rot: 270 },
+            
+            // Kapı
+            { id: 14, cx: 225, cy: 375, rot: 0 },
+            { id: 15, cx: 275, cy: 375, rot: 90 },
+            { id: 16, cx: 275, cy: 450, rot: 180 },
+            { id: 17, cx: 225, cy: 450, rot: 270 }
+        ];
+
+        // 2 Adet Çeldirici Dar Açı (Çatı Tabanı)
+        const acuteAngles = [
+            { id: 18, cx: 100, cy: 250, path: "M 100 250 L 130 250 A 30 30 0 0 0 121.2 228.8 Z", arc: "M 125 250 A 25 25 0 0 0 117.6 232.4" },
+            { id: 19, cx: 400, cy: 250, path: "M 400 250 L 370 250 A 30 30 0 0 1 378.8 228.8 Z", arc: "M 375 250 A 25 25 0 0 1 382.4 232.4" }
+        ];
+
+        function forceAutoplay() {
+            if (isAudioPlaying) return; 
+            const audio = document.getElementById('ses1');
+            const speaker = document.getElementById('main-speaker');
+            
+            if (audio) {
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                        window.removeEventListener('click', forceAutoplay);
+                        window.removeEventListener('touchstart', forceAutoplay);
+                    }).catch(error => {
+                        if(speaker) speaker.style.animation = 'none';
+                    });
+                }
+            }
+        }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            const speaker = document.getElementById('main-speaker');
+            if(audio) {
+                audio.pause(); audio.currentTime = 0; 
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        if(speaker) speaker.style.animation = 'pulsePlay 2s infinite';
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function init() {
+            renderTargets();
+            
+            const s = document.getElementById('ses1');
+            if(s) {
+                s.addEventListener('ended', () => {
+                    const speaker = document.getElementById('main-speaker');
+                    if(speaker) speaker.style.animation = 'none'; 
+                    isAudioPlaying = false; 
+                });
+            }
+
+            forceAutoplay();
+            window.addEventListener('click', forceAutoplay);
+            window.addEventListener('touchstart', forceAutoplay);
+        }
+
+        // SVG İçine İnteraktif Alanları Çizme
+        function renderTargets() {
+            const container = document.getElementById('targets-container');
+            
+            // Doğru Hedefleri Çiz
+            rightAngles.forEach(target => {
+                const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                g.setAttribute("class", "angle-target");
+                g.setAttribute("id", `target-${target.id}`);
+                g.setAttribute("transform", `translate(${target.cx}, ${target.cy}) rotate(${target.rot})`);
+                g.setAttribute("onclick", `handleRightClick(${target.id}, event)`);
+
+                // İç kısımdaki vurgu (Hover)
+                const hoverMark = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                hoverMark.setAttribute("cx", "12"); hoverMark.setAttribute("cy", "12");
+                hoverMark.setAttribute("r", "16"); hoverMark.setAttribute("class", "hover-mark");
+                
+                // Tıklama Alanı (Yakınlaştığı için Hitbox'lar biraz daha genişletildi)
+                const hitbox = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                hitbox.setAttribute("cx", "12"); hitbox.setAttribute("cy", "12");
+                hitbox.setAttribute("r", "26"); hitbox.setAttribute("class", "hitbox");
+
+                // Doğru İşareti (Gizli)
+                const correctMark = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                correctMark.setAttribute("class", "correct-mark");
+                correctMark.innerHTML = `
+                    <polyline points="0,18 18,18 18,0" class="correct-lines"/>
+                    <circle cx="9" cy="9" r="3" class="correct-dot"/>
+                `;
+
+                g.appendChild(hoverMark);
+                g.appendChild(correctMark);
+                g.appendChild(hitbox);
+                container.appendChild(g);
+            });
+
+            // Çeldirici (Dar) Hedefleri Çiz
+            acuteAngles.forEach(target => {
+                const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                g.setAttribute("class", "acute-target");
+                g.setAttribute("id", `target-${target.id}`);
+                g.setAttribute("onclick", `handleWrongClick(event, ${target.id})`);
+
+                // Tıklama Alanı
+                const hitbox = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                hitbox.setAttribute("d", target.path);
+                hitbox.setAttribute("class", "hitbox");
+
+                // Hata Çizgisi (Kırmızı Yay)
+                const errorArc = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                errorArc.setAttribute("d", target.arc);
+                errorArc.setAttribute("class", "acute-error-arc");
+
+                g.appendChild(hitbox);
+                g.appendChild(errorArc);
+                container.appendChild(g);
+            });
+        }
+
+        // Doğru açıya tıklandığında
+        function handleRightClick(id, event) {
+            event.stopPropagation(); 
+            if (isCompleted) return;
+
+            const target = document.getElementById(`target-${id}`);
+            if (target.classList.contains('found')) return; 
+
+            // Bulundu İşaretle
+            getAudioContext();
+            playSfx('pop');
+            target.classList.add('found');
+            foundCount++;
+            
+            // Arayüzü Güncelle
+            document.getElementById('count-text').innerText = foundCount;
+            document.getElementById('progress-fill').style.width = `${(foundCount / totalTargets) * 100}%`;
+
+            // Tüm açıları buldu mu kontrol et
+            if (foundCount === totalTargets) {
+                triggerSuccess();
+            }
+        }
+
+        // Yanlış yere tıklandığında
+        function handleWrongClick(event, acuteId = null) {
+            if (event) event.stopPropagation();
+            if (isCompleted || lives <= 0) return;
+
+            getAudioContext();
+            playSfx('error');
+            
+            // Evi (SVG panosunu) hafifçe titret
+            const board = document.querySelector('.svg-board');
+            board.classList.remove('shake-board');
+            void board.offsetWidth; // Reflow
+            board.classList.add('shake-board');
+
+            if (acuteId) {
+                const target = document.getElementById(`target-${acuteId}`);
+                target.classList.remove('show-error');
+                void target.offsetWidth;
+                target.classList.add('show-error');
+            }
+
+            // Can düş
+            lives--;
+            const heart = document.getElementById(`heart-${3 - lives}`);
+            if (heart) heart.classList.add('lost');
+
+            const fbBox = document.getElementById('q-fb');
+            fbBox.className = "feedback-msg";
+
+            if (lives > 0) {
+                fbBox.innerHTML = `Dikkat! Sadece 90 derecelik dik açı köşelerine tıklamalısın.`;
+                fbBox.classList.add('fb-error');
+                setTimeout(() => { fbBox.style.display = 'none'; }, 2500);
+            } else {
+                // Hakkı bitti, Otomatik Çözüm
+                fbBox.innerHTML = `Hata hakkınız bitti. Kalan tüm dik açılar otomatik olarak gösteriliyor...`;
+                fbBox.classList.add('fb-error');
+                triggerAutoSolve();
+            }
+        }
+
+        // Tümünü başarıyla bulduğunda
+        function triggerSuccess() {
+            isCompleted = true;
+            
+            // Butonu hemen görünür yapıp sayacı başlat
+            const btn = document.getElementById('btn-next');
+            btn.classList.add('show-btn', 'timer-active');
+            
+            setTimeout(() => {
+                playSfx('success');
+                
+                const fbBox = document.getElementById('q-fb');
+                fbBox.className = "feedback-msg fb-success";
+                fbBox.innerHTML = `HARİKA! <br><span style="font-weight:600; font-size:11px; display:block; margin-top:4px;">Ev modelindeki tüm dik açıları başarıyla buldunuz.</span>`;
+                
+                // Başarı durumunda 10 saniye inceleme süresi (SADECE d20 DÖNECEK)
+                let countdown = 10;
+                btn.innerText = `İNCELEME SÜRESİ: ${countdown} Saniye`;
+                
+                const interval = setInterval(() => {
+                    countdown--;
+                    btn.innerText = `İNCELEME SÜRESİ: ${countdown} Saniye`;
+                    
+                    if(countdown <= 0) {
+                        clearInterval(interval);
+                        btn.innerText = "İLERLE";
+                        btn.classList.remove('timer-active');
+                        btn.classList.add('completed');
+                        
+                        showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                        // Yönergeye göre: Her durumda sadece d20
+                        setVar('d20', true);
+                    }
+                }, 1000);
+
+            }, 500);
+        }
+
+        // Canı bitince kalanları gösterme
+        function triggerAutoSolve() {
+            isCompleted = true;
+            
+            // Butonu hemen animasyon aşamasında bilgi vermek için göster
+            const btn = document.getElementById('btn-next');
+            btn.classList.add('show-btn', 'timer-active');
+            btn.innerText = "OTOMATİK ÇÖZÜLÜYOR...";
+            
+            // Bulunmamış olanları bul ve sırayla aç
+            let remaining = [];
+            rightAngles.forEach(t => {
+                if (!document.getElementById(`target-${t.id}`).classList.contains('found')) {
+                    remaining.push(t.id);
+                }
+            });
+
+            remaining.forEach((id, index) => {
+                setTimeout(() => {
+                    const target = document.getElementById(`target-${id}`);
+                    target.classList.add('found');
+                    playSfx('pop');
+                    
+                    foundCount++;
+                    document.getElementById('count-text').innerText = foundCount;
+                    document.getElementById('progress-fill').style.width = `${(foundCount / totalTargets) * 100}%`;
+                }, (index + 1) * 300);
+            });
+
+            // Tüm animasyonlar bitince inceleme sayacını başlat
+            setTimeout(() => {
+                document.getElementById('q-fb').style.display = 'none';
+                
+                // 10 saniye bekleme sayacı
+                let countdown = 10;
+                btn.innerText = `İNCELEME SÜRESİ: ${countdown} Saniye`;
+                
+                const interval = setInterval(() => {
+                    countdown--;
+                    btn.innerText = `İNCELEME SÜRESİ: ${countdown} Saniye`;
+                    
+                    if(countdown <= 0) {
+                        clearInterval(interval);
+                        btn.innerText = "İLERLE";
+                        btn.classList.remove('timer-active');
+                        btn.classList.add('completed');
+                        
+                        showToast("İnceleme tamamlandı, ilerleyebilirsiniz.", "toast-success");
+                        // Yönergeye göre: Her durumda sadece d20
+                        setVar('d20', true);
+                    }
+                }, 1000);
+
+            }, (remaining.length + 1) * 300);
+        }
+
+        function finishActivity() {
+            // Sonradan manuel tıklanırsa sadece ses çalsın (değişken zaten yollanmış oluyor)
+            playSfx('click');
+        }
+
+        function showToast(msg, typeCls) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = msg;
+            toast.className = ''; toast.classList.add('show');
+            if(typeCls) toast.classList.add(typeCls);
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        function setVar(n, v) { 
+            try { 
+                parent.GetPlayer().SetVar(n, v); 
+                console.log(`Storyline Variable Set: ${n} = ${v}`); 
+            } catch(e) { 
+                console.log(`(Local) Storyline Variable: ${n} = ${v}`); 
+            } 
+        }
+
+        function applyScale() {
+            const sc = Math.min(window.innerWidth/960, window.innerHeight/540);
+            document.getElementById('scale-container').style.transform = `translate(-50%, -50%) scale(${sc})`;
+        }
+        
+        applyScale(); 
+        document.body.style.visibility = 'visible'; 
+        
+        window.addEventListener('resize', applyScale);
+        window.onload = () => { init(); };
+    </script>
+</body>
+</html>
